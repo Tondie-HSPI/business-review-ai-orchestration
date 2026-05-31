@@ -84,10 +84,10 @@ export default function Home() {
         <section className="hero">
           <div>
             <p className="eyebrow">AI-assisted paperwork review</p>
-            <h1>Turn messy request notes into a structured review packet.</h1>
+            <h1>Turn an initial request into a submission-ready application draft.</h1>
             <p>
               PaperworkPro demonstrates intake, extraction, rule-based validation,
-              risk flagging, missing-information detection, and human review routing.
+              risk flagging, missing-information detection, and carrier submission review.
             </p>
           </div>
           <div className="heroPanel">

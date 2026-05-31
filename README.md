@@ -1,6 +1,6 @@
 # PaperworkPro: Business Review AI Orchestration
 
-AI workflow prototype for turning messy paperwork, business requests, and insurance application notes into structured review outputs with rule-based validation, risk flags, and human review boundaries.
+AI workflow prototype that takes an initial quote or application request and creates a submission-ready application draft for carrier submission review.
 
 ## Business Problem
 
@@ -24,7 +24,7 @@ The project uses mock extraction logic so it can run locally without an API key.
 
 ## PaperworkPro Use Case
 
-PaperworkPro includes an insurance application preparation workflow that turns rough application notes into a structured review packet. The sample uses fake data and a **USLI-style application preparation** scenario to demonstrate how an assistant could support paperwork completion without acting as the final submitter.
+PaperworkPro includes an insurance application preparation workflow that turns an initial application request into a structured review packet. The sample uses fake data and a carrier-style application preparation scenario to demonstrate how an assistant could support paperwork completion without acting as the final submitter.
 
 The workflow can:
 
@@ -67,7 +67,7 @@ flowchart TD
 
 ## How It Works
 
-1. A user provides messy business request text.
+1. A user provides an initial business, quote, or application request.
 2. The intake step classifies the request type.
 3. The extraction step converts the text into structured fields.
 4. The mapping step organizes fields into a business review or application-prep packet.
