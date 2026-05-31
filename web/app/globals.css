@@ -98,6 +98,7 @@ main {
   padding: 12px;
   color: #dbeafe;
   background: rgba(255, 255, 255, 0.08);
+  text-align: left;
 }
 
 .segmented button.active {

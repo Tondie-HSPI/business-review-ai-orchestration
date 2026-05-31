@@ -134,6 +134,19 @@ Sample output fields include:
 - `recommended_next_action`
 - `requires_human_review`
 
+## Liquor / Restaurant Quote Intake Example
+
+PaperworkPro also includes a quote-intake workflow for restaurant and bar risks. It converts generic producer or customer intake notes into:
+
+- applicant and location details
+- sales and coverage limits
+- operations and liquor-control details
+- missing information
+- underwriting review flags
+- draft PDF field mappings for an application packet
+
+The uploaded carrier form is not stored in this public repository. The workflow demonstrates how intake data can be structured for review before any licensed or human submission step.
+
 ## Run Locally
 
 Run the polished Next.js interface:
@@ -169,9 +182,11 @@ business-review-ai-orchestration/
   src/
     demo.py
     demo_application.py
+    demo_liquor_restaurant.py
     application_packet.py
     extraction.py
     intake.py
+    liquor_restaurant_packet.py
     orchestration.py
     output_formatter.py
     risk_flags.py
@@ -179,8 +194,10 @@ business-review-ai-orchestration/
     sample_data.py
   data/
     sample_business_request.txt
+    sample_liquor_restaurant_quote_request.txt
     sample_usli_application_notes.txt
   outputs/
+    sample_liquor_restaurant_packet.json
     sample_review_output.json
     sample_usli_application_packet.json
   docs/
@@ -190,6 +207,7 @@ business-review-ai-orchestration/
     evaluation_notes.md
   tests/
     test_application_packet.py
+    test_liquor_restaurant_packet.py
     test_rules_engine.py
 ```
 

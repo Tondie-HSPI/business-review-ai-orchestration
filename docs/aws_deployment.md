@@ -14,6 +14,12 @@ Use AWS Amplify for the first polished demo deployment:
 
 This path is the simplest way to show a clean web product without managing servers.
 
+The deployed demo includes three workflows:
+
+- Liquor / Restaurant quote intake
+- Application prep
+- Business review
+
 ## Local Next.js Commands
 
 ```bash

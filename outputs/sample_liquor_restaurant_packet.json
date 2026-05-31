@@ -1,0 +1,65 @@
+{
+  "workflow_name": "PaperworkPro Liquor / Restaurant Quote Intake",
+  "risk_type": "restaurant_bar_liquor_liability",
+  "official_form_status": "Draft intake support only; human review required before carrier submission.",
+  "intake_summary": {
+    "applicant": "Harbor & Vine Kitchen LLC",
+    "location": "1420 Market Street, Raleigh, NC, 27601",
+    "coverage_requested": "General Liability, Liquor Liability, Property",
+    "operations": "Full-service restaurant with bar seating and weekend DJ."
+  },
+  "application_packet": {
+    "applicant_information": {
+      "applicant": "Harbor & Vine Kitchen LLC",
+      "dba": "Harbor & Vine",
+      "location_address": "1420 Market Street",
+      "city": "Raleigh",
+      "state": "NC",
+      "zip": "27601",
+      "email": "manager@example.com",
+      "phone": "919-555-0182"
+    },
+    "sales_and_limits": {
+      "food_sales": "850000",
+      "alcohol_sales": "420000",
+      "catering_sales": "50000",
+      "gl_limit": "1000000/2000000",
+      "liquor_limit": "1000000/1000000"
+    },
+    "operations_and_controls": {
+      "close_time": "1:00 a.m.",
+      "alcohol_sales_cease": "12:30 a.m.",
+      "entertainment": "DJ with dancing on Friday and Saturday.",
+      "security": "Door person on weekends.",
+      "byob": "No",
+      "liquor_training": "Yes",
+      "id_scanner": "Yes",
+      "fire_suppression": "Wet system with cleaning contract."
+    }
+  },
+  "mapped_pdf_fields": {
+    "01 Applicant name": "Harbor & Vine Kitchen LLC",
+    "02 Location address": "1420 Market Street",
+    "03 City": "Raleigh",
+    "04 State": "NC",
+    "05 Zip": "27601",
+    "07 email": "manager@example.com",
+    "08 phone": "919-555-0182",
+    "014 Description": "Full-service restaurant with bar seating and weekend DJ.",
+    "AR Food": "850000",
+    "AR Alc": "420000",
+    "AR Catering": "50000",
+    "11 hours": "1:00 a.m.",
+    "59 lowest price": "4.00",
+    "60 lowest price": "7.00"
+  },
+  "missing_information": [],
+  "risk_flags": [
+    "Entertainment or dancing should be reviewed for underwriting eligibility.",
+    "Security or door staff exposure should be reviewed.",
+    "Late closing time should be reviewed.",
+    "Late alcohol service cutoff should be reviewed."
+  ],
+  "recommended_next_action": "Prepare draft application field map and route flagged exposures to a human reviewer.",
+  "requires_human_review": true
+}

@@ -5,13 +5,16 @@ import {
   ApplicationPacket,
   applicationSample,
   buildApplicationPacket,
+  buildLiquorRestaurantPacket,
   businessSample,
+  LiquorRestaurantPacket,
+  liquorRestaurantSample,
   reviewBusinessRequest,
   ReviewOutput,
   WorkflowMode
 } from "../lib/workflows";
 
-type Result = ReviewOutput | ApplicationPacket;
+type Result = ReviewOutput | ApplicationPacket | LiquorRestaurantPacket;
 
 export default function Home() {
   const [mode, setMode] = useState<WorkflowMode>("application-prep");
@@ -20,12 +23,14 @@ export default function Home() {
   const result = useMemo<Result>(() => {
     return mode === "application-prep"
       ? buildApplicationPacket(text)
+      : mode === "liquor-restaurant"
+        ? buildLiquorRestaurantPacket(text)
       : reviewBusinessRequest(text);
   }, [mode, text]);
 
   function switchMode(nextMode: WorkflowMode) {
     setMode(nextMode);
-    setText(nextMode === "application-prep" ? applicationSample : businessSample);
+    setText(sampleForMode(nextMode));
   }
 
   const missingCount = result.missing_information.length;
@@ -45,6 +50,12 @@ export default function Home() {
         <div className="controlGroup">
           <label>Workflow</label>
           <div className="segmented">
+            <button
+              className={mode === "liquor-restaurant" ? "active" : ""}
+              onClick={() => switchMode("liquor-restaurant")}
+            >
+              Liquor / Restaurant
+            </button>
             <button
               className={mode === "application-prep" ? "active" : ""}
               onClick={() => switchMode("application-prep")}
@@ -102,7 +113,7 @@ export default function Home() {
               <button
                 className="secondaryButton"
                 onClick={() =>
-                  setText(mode === "application-prep" ? applicationSample : businessSample)
+              setText(sampleForMode(mode))
                 }
               >
                 Reload sample
@@ -124,6 +135,8 @@ export default function Home() {
             </div>
             {mode === "application-prep" ? (
               <ApplicationView result={result as ApplicationPacket} />
+            ) : mode === "liquor-restaurant" ? (
+              <LiquorRestaurantView result={result as LiquorRestaurantPacket} />
             ) : (
               <BusinessReviewView result={result as ReviewOutput} />
             )}
@@ -142,6 +155,12 @@ export default function Home() {
       </section>
     </main>
   );
+}
+
+function sampleForMode(mode: WorkflowMode) {
+  if (mode === "application-prep") return applicationSample;
+  if (mode === "liquor-restaurant") return liquorRestaurantSample;
+  return businessSample;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
@@ -170,6 +189,40 @@ function ApplicationView({ result }: { result: ApplicationPacket }) {
       ))}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
       <ChipGroup title="Review notes" values={result.review_notes} variant="risk" />
+      <div className="nextAction">{result.recommended_next_action}</div>
+    </div>
+  );
+}
+
+function LiquorRestaurantView({ result }: { result: LiquorRestaurantPacket }) {
+  return (
+    <div className="outputStack">
+      <div className="notice">{result.official_form_status}</div>
+      <div className="summary">
+        {result.intake_summary.applicant} | {result.intake_summary.location}
+      </div>
+      {Object.entries(result.application_packet).map(([section, fields]) => (
+        <div className="sectionBlock" key={section}>
+          <h3>{formatLabel(section)}</h3>
+          {Object.entries(fields).map(([field, value]) => (
+            <div className="fieldRow" key={field}>
+              <span>{formatLabel(field)}</span>
+              <strong>{value || "Missing"}</strong>
+            </div>
+          ))}
+        </div>
+      ))}
+      <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
+      <ChipGroup title="Risk flags" values={result.risk_flags} variant="risk" />
+      <div className="sectionBlock">
+        <h3>Draft PDF Field Map</h3>
+        {Object.entries(result.mapped_pdf_fields).map(([field, value]) => (
+          <div className="fieldRow" key={field}>
+            <span>{field}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
       <div className="nextAction">{result.recommended_next_action}</div>
     </div>
   );
