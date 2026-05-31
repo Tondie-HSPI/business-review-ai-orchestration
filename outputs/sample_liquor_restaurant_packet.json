@@ -53,6 +53,72 @@
     "59 lowest price": "4.00",
     "60 lowest price": "7.00"
   },
+  "answered_form_questions": [
+    {
+      "id": "applicant_name",
+      "question": "Applicant's name, including DBA name",
+      "answer": "Harbor & Vine Kitchen LLC",
+      "source_field": "account.name",
+      "pdf_field": "01 Applicant name",
+      "confidence": "high"
+    },
+    {
+      "id": "location_address",
+      "question": "Location address",
+      "answer": "1420 Market Street",
+      "source_field": "location.street",
+      "pdf_field": "02 Location address",
+      "confidence": "high"
+    },
+    {
+      "id": "coverage_requested",
+      "question": "Coverage desired",
+      "answer": "General Liability, Liquor Liability, Property",
+      "source_field": "opportunity.requested_coverages",
+      "pdf_field": "01 Coverage 1 / 2 / 3",
+      "confidence": "high"
+    },
+    {
+      "id": "description_of_operations",
+      "question": "Description of operations",
+      "answer": "Full-service restaurant with bar seating and weekend DJ.",
+      "source_field": "risk_profile.operations",
+      "pdf_field": "014 Description",
+      "confidence": "high"
+    },
+    {
+      "id": "annual_food_sales",
+      "question": "Annual food sales",
+      "answer": 850000,
+      "source_field": "risk_profile.food_sales",
+      "pdf_field": "AR Food",
+      "confidence": "high"
+    },
+    {
+      "id": "annual_alcohol_sales",
+      "question": "Annual alcohol sales",
+      "answer": 420000,
+      "source_field": "risk_profile.alcohol_sales",
+      "pdf_field": "AR Alc",
+      "confidence": "high"
+    },
+    {
+      "id": "entertainment",
+      "question": "Does the establishment feature entertainment?",
+      "answer": "DJ with dancing on Friday and Saturday.",
+      "source_field": "risk_profile.entertainment",
+      "pdf_field": "7 if yes",
+      "confidence": "high"
+    },
+    {
+      "id": "liquor_training",
+      "question": "Are alcohol-serving employees certified in formal alcohol training?",
+      "answer": "Yes",
+      "source_field": "risk_profile.liquor_training",
+      "pdf_field": "44 R56",
+      "confidence": "high"
+    }
+  ],
   "missing_information": [],
   "risk_flags": [
     "Entertainment or dancing should be reviewed for underwriting eligibility.",

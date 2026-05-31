@@ -2,11 +2,13 @@ import json
 from pathlib import Path
 
 from src.liquor_restaurant_packet import build_liquor_restaurant_packet
-from src.sample_data import SAMPLE_LIQUOR_RESTAURANT_QUOTE
+from src.salesforce_intake import load_fake_salesforce_record, salesforce_record_to_quote_text
 
 
 def main() -> None:
-    output = build_liquor_restaurant_packet(SAMPLE_LIQUOR_RESTAURANT_QUOTE)
+    record = load_fake_salesforce_record()
+    quote_text = salesforce_record_to_quote_text(record)
+    output = build_liquor_restaurant_packet(quote_text, source_record=record)
     print(json.dumps(output, indent=2))
 
     output_path = Path("outputs/sample_liquor_restaurant_packet.json")

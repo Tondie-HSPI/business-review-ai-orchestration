@@ -141,6 +141,8 @@ PaperworkPro also includes a quote-intake workflow for restaurant and bar risks.
 - applicant and location details
 - sales and coverage limits
 - operations and liquor-control details
+- fake Salesforce-style account and opportunity data
+- preprocessed form questions represented as JSON
 - missing information
 - underwriting review flags
 - draft PDF field mappings for an application packet
@@ -193,6 +195,8 @@ business-review-ai-orchestration/
     rules_engine.py
     sample_data.py
   data/
+    fake_salesforce_liquor_restaurant_account.json
+    liquor_restaurant_form_questions.json
     sample_business_request.txt
     sample_liquor_restaurant_quote_request.txt
     sample_usli_application_notes.txt

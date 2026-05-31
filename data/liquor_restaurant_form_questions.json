@@ -1,0 +1,50 @@
+[
+  {
+    "id": "applicant_name",
+    "question": "Applicant's name, including DBA name",
+    "source_field": "account.name",
+    "pdf_field": "01 Applicant name"
+  },
+  {
+    "id": "location_address",
+    "question": "Location address",
+    "source_field": "location.street",
+    "pdf_field": "02 Location address"
+  },
+  {
+    "id": "coverage_requested",
+    "question": "Coverage desired",
+    "source_field": "opportunity.requested_coverages",
+    "pdf_field": "01 Coverage 1 / 2 / 3"
+  },
+  {
+    "id": "description_of_operations",
+    "question": "Description of operations",
+    "source_field": "risk_profile.operations",
+    "pdf_field": "014 Description"
+  },
+  {
+    "id": "annual_food_sales",
+    "question": "Annual food sales",
+    "source_field": "risk_profile.food_sales",
+    "pdf_field": "AR Food"
+  },
+  {
+    "id": "annual_alcohol_sales",
+    "question": "Annual alcohol sales",
+    "source_field": "risk_profile.alcohol_sales",
+    "pdf_field": "AR Alc"
+  },
+  {
+    "id": "entertainment",
+    "question": "Does the establishment feature entertainment?",
+    "source_field": "risk_profile.entertainment",
+    "pdf_field": "7 if yes"
+  },
+  {
+    "id": "liquor_training",
+    "question": "Are alcohol-serving employees certified in formal alcohol training?",
+    "source_field": "risk_profile.liquor_training",
+    "pdf_field": "44 R56"
+  }
+]

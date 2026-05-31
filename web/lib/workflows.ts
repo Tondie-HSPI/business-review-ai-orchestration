@@ -31,6 +31,14 @@ export type LiquorRestaurantPacket = {
   intake_summary: Record<string, string | null>;
   application_packet: Record<string, Record<string, string | null>>;
   mapped_pdf_fields: Record<string, string>;
+  answered_form_questions: Array<{
+    id: string;
+    question: string;
+    answer: string | null;
+    source_field: string;
+    pdf_field: string;
+    confidence: "high" | "missing";
+  }>;
   missing_information: string[];
   risk_flags: string[];
   recommended_next_action: string;
@@ -52,7 +60,7 @@ Prior carrier:
 Loss history:
 Notes: Applicant needs help preparing the application packet. Do not submit without human review.`;
 
-export const liquorRestaurantSample = `Quote request for a restaurant and bar risk.
+export const liquorRestaurantSample = `Quote request generated from fake Salesforce intake data.
 Applicant: Harbor & Vine Kitchen LLC
 DBA: Harbor & Vine
 Location address: 1420 Market Street
@@ -318,6 +326,7 @@ export function buildLiquorRestaurantPacket(text: string): LiquorRestaurantPacke
       }
     },
     mapped_pdf_fields: mapLiquorPdfFields(fields),
+    answered_form_questions: answerLiquorFormQuestions(fields),
     missing_information: missing,
     risk_flags: riskFlags,
     recommended_next_action: missing.length
@@ -325,6 +334,73 @@ export function buildLiquorRestaurantPacket(text: string): LiquorRestaurantPacke
       : "Prepare draft application field map and route flagged exposures to a human reviewer.",
     requires_human_review: true
   };
+}
+
+function answerLiquorFormQuestions(fields: Record<string, string | null | undefined>) {
+  const questions = [
+    {
+      id: "applicant_name",
+      question: "Applicant's name, including DBA name",
+      answer: fields.applicant,
+      source_field: "account.name",
+      pdf_field: "01 Applicant name"
+    },
+    {
+      id: "location_address",
+      question: "Location address",
+      answer: fields.location_address,
+      source_field: "location.street",
+      pdf_field: "02 Location address"
+    },
+    {
+      id: "coverage_requested",
+      question: "Coverage desired",
+      answer: fields.coverage_requested,
+      source_field: "opportunity.requested_coverages",
+      pdf_field: "01 Coverage 1 / 2 / 3"
+    },
+    {
+      id: "description_of_operations",
+      question: "Description of operations",
+      answer: fields.operations,
+      source_field: "risk_profile.operations",
+      pdf_field: "014 Description"
+    },
+    {
+      id: "annual_food_sales",
+      question: "Annual food sales",
+      answer: fields.food_sales,
+      source_field: "risk_profile.food_sales",
+      pdf_field: "AR Food"
+    },
+    {
+      id: "annual_alcohol_sales",
+      question: "Annual alcohol sales",
+      answer: fields.alcohol_sales,
+      source_field: "risk_profile.alcohol_sales",
+      pdf_field: "AR Alc"
+    },
+    {
+      id: "entertainment",
+      question: "Does the establishment feature entertainment?",
+      answer: fields.entertainment,
+      source_field: "risk_profile.entertainment",
+      pdf_field: "7 if yes"
+    },
+    {
+      id: "liquor_training",
+      question: "Are alcohol-serving employees certified in formal alcohol training?",
+      answer: fields.liquor_training,
+      source_field: "risk_profile.liquor_training",
+      pdf_field: "44 R56"
+    }
+  ];
+
+  return questions.map((question) => ({
+    ...question,
+    answer: question.answer ?? null,
+    confidence: question.answer ? "high" as const : "missing" as const
+  }));
 }
 
 function lineValue(text: string, label: string): string | null {

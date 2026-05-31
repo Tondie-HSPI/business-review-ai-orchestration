@@ -1,0 +1,44 @@
+{
+  "account": {
+    "name": "Harbor & Vine Kitchen LLC",
+    "dba": "Harbor & Vine",
+    "industry": "Restaurant and Bar",
+    "website": "https://example.com/harbor-vine",
+    "phone": "919-555-0182",
+    "email": "manager@example.com"
+  },
+  "location": {
+    "street": "1420 Market Street",
+    "city": "Raleigh",
+    "state": "NC",
+    "zip": "27601"
+  },
+  "opportunity": {
+    "requested_coverages": ["General Liability", "Liquor Liability", "Property"],
+    "general_liability_limit": "1000000/2000000",
+    "liquor_liability_limit": "1000000/1000000",
+    "target_effective_date": "2026-07-01"
+  },
+  "risk_profile": {
+    "operations": "Full-service restaurant with bar seating and weekend DJ.",
+    "years_experience": 8,
+    "business_start_year": 2021,
+    "food_sales": 850000,
+    "alcohol_sales": 420000,
+    "catering_sales": 50000,
+    "close_time": "1:00 a.m.",
+    "alcohol_sales_cease": "12:30 a.m.",
+    "entertainment": "DJ with dancing on Friday and Saturday.",
+    "security": "Door person on weekends.",
+    "byob": "No",
+    "claims_or_violations": "None in the past five years.",
+    "liquor_training": "Yes",
+    "id_scanner": "Yes",
+    "happy_hour_after_9pm": "No",
+    "lowest_beer_price": "4.00",
+    "lowest_wine_liquor_price": "7.00",
+    "building_owner": "No",
+    "fryers": "Yes",
+    "fire_suppression": "Wet system with cleaning contract."
+  }
+}

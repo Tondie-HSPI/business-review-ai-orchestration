@@ -1,4 +1,5 @@
 from src.sample_data import SAMPLE_LIQUOR_RESTAURANT_QUOTE
+from src.salesforce_intake import answer_form_questions, load_liquor_restaurant_questions
 
 
 REQUIRED_INTAKE_FIELDS = [
@@ -41,7 +42,7 @@ PDF_FIELD_MAP = {
 }
 
 
-def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE) -> dict:
+def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, source_record: dict | None = None) -> dict:
     fields = _parse_key_values(text)
     normalized = _normalize_fields(fields)
     missing = [field for field in REQUIRED_INTAKE_FIELDS if not normalized.get(field)]
@@ -87,6 +88,11 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE) -
             },
         },
         "mapped_pdf_fields": _mapped_pdf_fields(normalized),
+        "answered_form_questions": (
+            answer_form_questions(source_record, load_liquor_restaurant_questions())
+            if source_record
+            else []
+        ),
         "missing_information": missing,
         "risk_flags": risk_flags,
         "recommended_next_action": _next_action(missing, risk_flags),

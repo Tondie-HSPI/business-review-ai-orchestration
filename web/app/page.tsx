@@ -215,6 +215,18 @@ function LiquorRestaurantView({ result }: { result: LiquorRestaurantPacket }) {
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
       <ChipGroup title="Risk flags" values={result.risk_flags} variant="risk" />
       <div className="sectionBlock">
+        <h3>Form Questions Answered From Fake Salesforce Data</h3>
+        {result.answered_form_questions.map((item) => (
+          <div className="questionRow" key={item.id}>
+            <span>{item.question}</span>
+            <strong>{item.answer || "Missing"}</strong>
+            <small>
+              {item.source_field} to {item.pdf_field}
+            </small>
+          </div>
+        ))}
+      </div>
+      <div className="sectionBlock">
         <h3>Draft PDF Field Map</h3>
         {Object.entries(result.mapped_pdf_fields).map(([field, value]) => (
           <div className="fieldRow" key={field}>
