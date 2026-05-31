@@ -136,6 +136,16 @@ Sample output fields include:
 
 ## Run Locally
 
+Run the polished Next.js interface:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Run the Python command-line demo from the repository root:
+
 ```bash
 python -m src.demo
 ```
@@ -143,7 +153,6 @@ python -m src.demo
 Run tests:
 
 ```bash
-pip install -r requirements.txt
 python -m pytest
 ```
 
@@ -153,6 +162,10 @@ python -m pytest
 business-review-ai-orchestration/
   README.md
   requirements.txt
+  web/
+    app/
+    lib/
+    package.json
   src/
     demo.py
     demo_application.py
@@ -172,6 +185,7 @@ business-review-ai-orchestration/
     sample_usli_application_packet.json
   docs/
     architecture.md
+    aws_deployment.md
     business_case.md
     evaluation_notes.md
   tests/
@@ -185,8 +199,8 @@ This is a portfolio prototype, not a production compliance system, licensed insu
 
 ## Future Improvements
 
-- Add a Streamlit interface for request review.
 - Add optional OpenAI extraction behind an environment-variable API key.
+- Add a Python API layer with FastAPI or AWS Lambda.
 - Store review history in SQLite.
 - Add reviewer feedback loops.
 - Add role-specific dashboards for operations, compliance, and account teams.
