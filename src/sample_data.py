@@ -1,0 +1,5 @@
+SAMPLE_BUSINESS_REQUEST = """Client is requesting vendor onboarding approval for Northstar Claims Services.
+They need access by June 15 for claims intake support. Contract language mentions
+SOC 2, data handling, indemnification, and a 24-hour incident notice requirement.
+Insurance limits were not included. The request asks for expedited approval.
+"""

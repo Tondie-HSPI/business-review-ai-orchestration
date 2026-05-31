@@ -1,0 +1,29 @@
+{
+  "document_type": "vendor_onboarding_request",
+  "summary": "Vendor Onboarding Request for Northstar Claims Services involving soc 2 mentioned, data handling requirement mentioned, indemnification mentioned.",
+  "extracted_requirements": [
+    "SOC 2 mentioned",
+    "Data handling requirement mentioned",
+    "Indemnification mentioned",
+    "Incident notice requirement mentioned",
+    "Approval requested",
+    "Expedited review requested"
+  ],
+  "missing_information": [
+    "insurance_limits",
+    "business_owner"
+  ],
+  "risk_flags": [
+    "SOC 2 requirement requires security review",
+    "Data handling language requires review",
+    "Indemnification language requires legal review",
+    "Incident notice requirement requires review",
+    "Expedited approval requested",
+    "Insurance Limits missing",
+    "Business Owner missing"
+  ],
+  "recommended_next_action": "Route to human reviewer before approval and request missing insurance limits, business owner.",
+  "email_draft": "Thank you for the request. Before we can complete review, please provide the following missing information: insurance limits, business owner.",
+  "confidence_level": "medium",
+  "requires_human_review": true
+}
