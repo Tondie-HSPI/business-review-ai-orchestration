@@ -1,0 +1,41 @@
+{
+  "workflow_name": "PaperworkPro Application Prep",
+  "carrier_context": "USLI-style application preparation",
+  "official_form_status": "Not an official carrier form; human review required before use.",
+  "application_sections": {
+    "applicant_information": {
+      "applicant_name": "Northstar Risk Advisory LLC",
+      "operations_description": "Compliance consulting and insurance documentation support for small businesses",
+      "effective_date": "June 15"
+    },
+    "coverage_request": {
+      "requested_limits": "$1,000,000/$2,000,000",
+      "prior_carrier": null
+    },
+    "underwriting_review": {
+      "loss_history": null,
+      "extracted_requirements": []
+    }
+  },
+  "missing_information": [
+    "loss_history",
+    "prior_carrier"
+  ],
+  "field_completion_status": {
+    "applicant_name": "complete",
+    "effective_date": "complete",
+    "insurance_limits": "complete",
+    "business_owner": "complete",
+    "operations_description": "complete",
+    "loss_history": "missing",
+    "prior_carrier": "missing"
+  },
+  "review_notes": [
+    "Do not submit to carrier without licensed/human review.",
+    "Confirm all applicant-provided facts before completing final paperwork.",
+    "Carrier context mentioned; verify current carrier form requirements.",
+    "Application packet is incomplete and needs follow-up."
+  ],
+  "recommended_next_action": "Request missing application information before carrier submission: loss history, prior carrier.",
+  "requires_human_review": true
+}

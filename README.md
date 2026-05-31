@@ -1,10 +1,10 @@
-# Business Review AI Orchestration
+# PaperworkPro: Business Review AI Orchestration
 
-AI workflow prototype for turning messy business requests into structured review outputs with rule-based validation, risk flags, and human review boundaries.
+AI workflow prototype for turning messy paperwork, business requests, and insurance application notes into structured review outputs with rule-based validation, risk flags, and human review boundaries.
 
 ## Business Problem
 
-Operations, compliance, insurance, customer success, and implementation teams often review requests that arrive as emails, forms, notes, contracts, or policy language. The work is repetitive but judgment-heavy: reviewers must identify the request type, extract important details, check for missing information, flag risk, and decide the next action.
+Operations, compliance, insurance, customer success, and implementation teams often review requests that arrive as emails, forms, notes, contracts, policy language, or application packets. The work is repetitive but judgment-heavy: reviewers must identify the request type, extract important details, check for missing information, flag risk, and decide the next action.
 
 When this process is handled manually, teams can face delays, inconsistent review quality, missed requirements, and rework.
 
@@ -21,6 +21,21 @@ This project demonstrates a controlled AI-assisted workflow that separates flexi
 - Business-friendly output formatting
 
 The project uses mock extraction logic so it can run locally without an API key. The architecture is designed so an LLM could later be added for the extraction step while keeping rules, thresholds, and human review controls deterministic.
+
+## PaperworkPro Use Case
+
+PaperworkPro includes an insurance application preparation workflow that turns rough application notes into a structured review packet. The sample uses fake data and a **USLI-style application preparation** scenario to demonstrate how an assistant could support paperwork completion without acting as the final submitter.
+
+The workflow can:
+
+- organize applicant information
+- identify missing application fields
+- separate completed and incomplete fields
+- prepare review notes
+- recommend follow-up before submission
+- require human review before any carrier-facing action
+
+This repository does not copy or recreate any official carrier form. It shows the workflow pattern: intake, extraction, field mapping, missing-information detection, and human review.
 
 ## What This Demonstrates
 
@@ -39,14 +54,15 @@ The project uses mock extraction logic so it can run locally without an API key.
 flowchart TD
     A["Business Request Text"] --> B["Intake Classifier"]
     B --> C["Structured Extraction"]
-    C --> D["Deterministic Rules Engine"]
-    D --> E["Risk Flag Generator"]
-    E --> F["Human Review Gate"]
-    F --> G["Next Best Action"]
-    G --> H["Structured Review Output"]
+    C --> D["Application / Request Mapping"]
+    D --> E["Deterministic Rules Engine"]
+    E --> F["Risk Flag Generator"]
+    F --> G["Human Review Gate"]
+    G --> H["Next Best Action"]
+    H --> I["Structured Review Output"]
 
     C -. "LLM-ready boundary" .-> C1["Optional LLM Extraction"]
-    D -. "No LLM decision authority" .-> D1["Business Rules"]
+    E -. "No LLM decision authority" .-> E1["Business Rules"]
 ```
 
 ## How It Works
@@ -54,10 +70,11 @@ flowchart TD
 1. A user provides messy business request text.
 2. The intake step classifies the request type.
 3. The extraction step converts the text into structured fields.
-4. The rules engine checks required information and deterministic business conditions.
-5. The risk flag step identifies review concerns.
-6. The workflow decides whether human review is required.
-7. The formatter returns JSON that can be used in a dashboard, ticket, CRM, or review queue.
+4. The mapping step organizes fields into a business review or application-prep packet.
+5. The rules engine checks required information and deterministic business conditions.
+6. The risk flag step identifies review concerns.
+7. The workflow decides whether human review is required.
+8. The formatter returns JSON that can be used in a dashboard, ticket, CRM, or review queue.
 
 ## Sample Input
 
@@ -96,6 +113,26 @@ Insurance limits were not included. The request asks for expedited approval.
 }
 ```
 
+## Insurance Application Prep Example
+
+Run the PaperworkPro application-prep demo:
+
+```bash
+python -m src.demo_application
+```
+
+Sample output fields include:
+
+- `workflow_name`
+- `carrier_context`
+- `official_form_status`
+- `application_sections`
+- `missing_information`
+- `field_completion_status`
+- `review_notes`
+- `recommended_next_action`
+- `requires_human_review`
+
 ## Run Locally
 
 ```bash
@@ -117,6 +154,8 @@ business-review-ai-orchestration/
   requirements.txt
   src/
     demo.py
+    demo_application.py
+    application_packet.py
     extraction.py
     intake.py
     orchestration.py
@@ -126,8 +165,10 @@ business-review-ai-orchestration/
     sample_data.py
   data/
     sample_business_request.txt
+    sample_usli_application_notes.txt
   outputs/
     sample_review_output.json
+    sample_usli_application_packet.json
   docs/
     architecture.md
     business_case.md
@@ -138,7 +179,7 @@ business-review-ai-orchestration/
 
 ## Limitations and Human Review
 
-This is a portfolio prototype, not a production compliance system. It does not make final approval decisions. High-risk, ambiguous, incomplete, or time-sensitive requests are routed to human review.
+This is a portfolio prototype, not a production compliance system, licensed insurance tool, or official carrier application system. It does not make final approval or submission decisions. High-risk, ambiguous, incomplete, or time-sensitive requests are routed to human review.
 
 ## Future Improvements
 

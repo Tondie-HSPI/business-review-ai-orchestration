@@ -25,9 +25,11 @@ def extract_requirements(text: str) -> dict:
 
     effective_date = _extract_date_phrase(text)
     vendor_name = _extract_vendor_name(text)
+    applicant_name = _extract_applicant_name(text)
 
     return {
         "vendor_name": vendor_name,
+        "applicant_name": applicant_name,
         "effective_date": effective_date,
         "business_owner": None,
         "insurance_limits": None if "insurance limits were not included" in lowered else _extract_limits(text),
@@ -45,6 +47,13 @@ def _extract_date_phrase(text: str) -> str | None:
 
 def _extract_vendor_name(text: str) -> str | None:
     match = re.search(r"for\s+([A-Z][A-Za-z0-9&,\-\s]+?)(?:\.|\n|$)", text)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
+def _extract_applicant_name(text: str) -> str | None:
+    match = re.search(r"(?:applicant|insured|business):\s*([A-Z][A-Za-z0-9&,\-\s]+)", text, re.IGNORECASE)
     if match:
         return match.group(1).strip()
     return None
