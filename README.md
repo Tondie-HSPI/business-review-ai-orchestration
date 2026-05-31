@@ -108,6 +108,7 @@ Insurance limits were not included. The request asks for expedited approval.
     "Incident notice requirement requires review"
   ],
   "recommended_next_action": "Route to human reviewer before approval and request missing insurance limits, business owner, and effective date.",
+  "email_draft": "Thank you for the request. Before we can complete review, please provide the missing information.",
   "confidence_level": "medium",
   "requires_human_review": true
 }
@@ -174,6 +175,7 @@ business-review-ai-orchestration/
     business_case.md
     evaluation_notes.md
   tests/
+    test_application_packet.py
     test_rules_engine.py
 ```
 
