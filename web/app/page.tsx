@@ -198,6 +198,13 @@ function LiquorRestaurantView({ result }: { result: LiquorRestaurantPacket }) {
   return (
     <div className="outputStack">
       <div className="notice">{result.official_form_status}</div>
+      <div className="readinessBox">
+        <span>Submission readiness</span>
+        <strong>{formatLabel(result.submission_readiness.status)}</strong>
+        <small>
+          Carrier agnostic draft | {result.submission_readiness.blocking_missing_information_count} blocking missing fields
+        </small>
+      </div>
       <div className="summary">
         {result.intake_summary.applicant} | {result.intake_summary.location}
       </div>
@@ -214,6 +221,11 @@ function LiquorRestaurantView({ result }: { result: LiquorRestaurantPacket }) {
       ))}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
       <ChipGroup title="Risk flags" values={result.risk_flags} variant="risk" />
+      <ChipGroup
+        title="Rep double-check checklist"
+        values={result.submission_readiness.rep_double_checks}
+        variant="risk"
+      />
       <div className="sectionBlock">
         <h3>Form Questions Answered From Fake Salesforce Data</h3>
         {result.answered_form_questions.map((item) => (

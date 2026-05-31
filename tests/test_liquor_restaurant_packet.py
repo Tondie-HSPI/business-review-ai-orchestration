@@ -22,6 +22,8 @@ def test_liquor_restaurant_packet_flags_underwriting_review_items():
     assert packet["requires_human_review"] is True
     assert any("Entertainment" in flag for flag in packet["risk_flags"])
     assert any("Late closing" in flag for flag in packet["risk_flags"])
+    assert packet["submission_readiness"]["status"] == "ready_for_human_review"
+    assert packet["submission_readiness"]["rep_double_checks"]
 
 
 def test_fake_salesforce_record_answers_form_questions():
@@ -30,6 +32,7 @@ def test_fake_salesforce_record_answers_form_questions():
     answers = answer_form_questions(record, questions)
 
     assert answers[0]["answer"] == "Harbor & Vine Kitchen LLC"
+    assert answers[4]["answer"] == "850000"
     assert answers[0]["pdf_field"] == "01 Applicant name"
     assert all(answer["confidence"] == "high" for answer in answers)
 

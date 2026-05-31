@@ -2,6 +2,20 @@
   "workflow_name": "PaperworkPro Liquor / Restaurant Quote Intake",
   "risk_type": "restaurant_bar_liquor_liability",
   "official_form_status": "Draft intake support only; human review required before carrier submission.",
+  "submission_readiness": {
+    "status": "ready_for_human_review",
+    "carrier_agnostic": true,
+    "blocking_missing_information_count": 0,
+    "rep_double_checks": [
+      "Confirm all applicant-provided facts before carrier submission.",
+      "Confirm the selected carrier application version and state-specific requirements.",
+      "Review inferred answers against source intake notes and producer guidance.",
+      "Review underwriting flags before sending the application packet.",
+      "Confirm entertainment type, frequency, and whether dancing is permitted.",
+      "Confirm security or door staff duties and employment status.",
+      "Confirm fire suppression system type, service status, and cleaning contract."
+    ]
+  },
   "intake_summary": {
     "applicant": "Harbor & Vine Kitchen LLC",
     "location": "1420 Market Street, Raleigh, NC, 27601",
@@ -89,7 +103,7 @@
     {
       "id": "annual_food_sales",
       "question": "Annual food sales",
-      "answer": 850000,
+      "answer": "850000",
       "source_field": "risk_profile.food_sales",
       "pdf_field": "AR Food",
       "confidence": "high"
@@ -97,7 +111,7 @@
     {
       "id": "annual_alcohol_sales",
       "question": "Annual alcohol sales",
-      "answer": 420000,
+      "answer": "420000",
       "source_field": "risk_profile.alcohol_sales",
       "pdf_field": "AR Alc",
       "confidence": "high"

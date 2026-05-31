@@ -65,6 +65,8 @@ def answer_form_questions(record: dict, questions: list[dict]) -> list[dict]:
         answer = _lookup_path(record, question["source_field"])
         if isinstance(answer, list):
             answer = ", ".join(answer)
+        elif answer is not None:
+            answer = str(answer)
 
         answers.append(
             {

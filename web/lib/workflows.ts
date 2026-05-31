@@ -28,6 +28,12 @@ export type LiquorRestaurantPacket = {
   workflow_name: string;
   risk_type: string;
   official_form_status: string;
+  submission_readiness: {
+    status: "ready_for_human_review" | "needs_more_information";
+    carrier_agnostic: boolean;
+    blocking_missing_information_count: number;
+    rep_double_checks: string[];
+  };
   intake_summary: Record<string, string | null>;
   application_packet: Record<string, Record<string, string | null>>;
   mapped_pdf_fields: Record<string, string>;
@@ -288,6 +294,12 @@ export function buildLiquorRestaurantPacket(text: string): LiquorRestaurantPacke
     risk_type: "restaurant_bar_liquor_liability",
     official_form_status:
       "Draft intake support only; human review required before carrier submission.",
+    submission_readiness: {
+      status: missing.length ? "needs_more_information" : "ready_for_human_review",
+      carrier_agnostic: true,
+      blocking_missing_information_count: missing.length,
+      rep_double_checks: repDoubleChecks(fields, riskFlags)
+    },
     intake_summary: {
       applicant: fields.applicant,
       location: [fields.location_address, fields.city, fields.state, fields.zip]
@@ -478,6 +490,29 @@ function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
   }
 
   return flags;
+}
+
+function repDoubleChecks(fields: Record<string, string | null | undefined>, riskFlags: string[]) {
+  const checks = [
+    "Confirm all applicant-provided facts before carrier submission.",
+    "Confirm the selected carrier application version and state-specific requirements.",
+    "Review inferred answers against source intake notes and producer guidance."
+  ];
+
+  if (riskFlags.length) {
+    checks.push("Review underwriting flags before sending the application packet.");
+  }
+  if (fields.entertainment) {
+    checks.push("Confirm entertainment type, frequency, and whether dancing is permitted.");
+  }
+  if (fields.security) {
+    checks.push("Confirm security or door staff duties and employment status.");
+  }
+  if (fields.fryers === "Yes") {
+    checks.push("Confirm fire suppression system type, service status, and cleaning contract.");
+  }
+
+  return checks;
 }
 
 function extractDate(text: string): string | null {

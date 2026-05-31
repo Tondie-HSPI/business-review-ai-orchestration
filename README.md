@@ -146,8 +146,10 @@ PaperworkPro also includes a quote-intake workflow for restaurant and bar risks.
 - missing information
 - underwriting review flags
 - draft PDF field mappings for an application packet
+- submission readiness status for human review
+- rep double-check checklist for inferred answers and underwriting concerns
 
-The uploaded carrier form is not stored in this public repository. The workflow demonstrates how intake data can be structured for review before any licensed or human submission step.
+The uploaded carrier form is not stored in this public repository. The workflow demonstrates how intake data can be structured against a carrier-agnostic form-question schema for review before any licensed or human submission step.
 
 ## Run Locally
 

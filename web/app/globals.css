@@ -283,7 +283,8 @@ textarea:focus {
 .notice,
 .summary,
 .nextAction,
-.emailDraft {
+.emailDraft,
+.readinessBox {
   border-radius: 8px;
   padding: 13px 14px;
   line-height: 1.45;
@@ -298,6 +299,33 @@ textarea:focus {
 .summary {
   background: #f8fafc;
   border: 1px solid var(--line);
+}
+
+.readinessBox {
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: #064e3b;
+}
+
+.readinessBox span,
+.readinessBox strong,
+.readinessBox small {
+  display: block;
+}
+
+.readinessBox span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.readinessBox strong {
+  margin-top: 4px;
+  font-size: 1.05rem;
+}
+
+.readinessBox small {
+  margin-top: 3px;
 }
 
 .nextAction {

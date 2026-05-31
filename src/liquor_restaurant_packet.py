@@ -52,6 +52,12 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, s
         "workflow_name": "PaperworkPro Liquor / Restaurant Quote Intake",
         "risk_type": "restaurant_bar_liquor_liability",
         "official_form_status": "Draft intake support only; human review required before carrier submission.",
+        "submission_readiness": {
+            "status": "ready_for_human_review" if not missing else "needs_more_information",
+            "carrier_agnostic": True,
+            "blocking_missing_information_count": len(missing),
+            "rep_double_checks": _rep_double_checks(normalized, risk_flags),
+        },
         "intake_summary": {
             "applicant": normalized.get("applicant"),
             "location": _location_summary(normalized),
@@ -199,3 +205,22 @@ def _next_action(missing: list[str], risk_flags: list[str]) -> str:
     if risk_flags:
         return "Prepare draft application field map and route flagged exposures to a human reviewer."
     return "Prepare draft application field map for human review."
+
+
+def _rep_double_checks(fields: dict, risk_flags: list[str]) -> list[str]:
+    checks = [
+        "Confirm all applicant-provided facts before carrier submission.",
+        "Confirm the selected carrier application version and state-specific requirements.",
+        "Review inferred answers against source intake notes and producer guidance.",
+    ]
+
+    if risk_flags:
+        checks.append("Review underwriting flags before sending the application packet.")
+    if fields.get("entertainment"):
+        checks.append("Confirm entertainment type, frequency, and whether dancing is permitted.")
+    if fields.get("security"):
+        checks.append("Confirm security or door staff duties and employment status.")
+    if fields.get("fryers") == "Yes":
+        checks.append("Confirm fire suppression system type, service status, and cleaning contract.")
+
+    return checks
