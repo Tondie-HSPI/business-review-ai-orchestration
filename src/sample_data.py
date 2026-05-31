@@ -8,7 +8,7 @@ Insurance limits were not included. The request asks for expedited approval.
 SAMPLE_USLI_APPLICATION_NOTES = """USLI application prep notes for a sample professional services applicant.
 Applicant: Northstar Risk Advisory LLC
 Operations: Compliance consulting and insurance documentation support for small businesses
-Business owner: T. Robles
+Business owner: Jordan Lee
 Requested effective date: June 15
 Requested limits: 1M/2M
 Prior carrier:
