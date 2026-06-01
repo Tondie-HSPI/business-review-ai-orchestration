@@ -127,36 +127,46 @@ export default function Home() {
           <label>Workflow</label>
           <div className="segmented">
             <button
-              className={mode === "contractor" ? "active" : ""}
-              onClick={() => switchMode("contractor")}
-            >
-              Contractor
-            </button>
-            <button
-              className={mode === "landscaper" ? "active" : ""}
-              onClick={() => switchMode("landscaper")}
-            >
-              Landscaper
-            </button>
-            <button
-              className={mode === "liquor-restaurant" ? "active" : ""}
-              onClick={() => switchMode("liquor-restaurant")}
-            >
-              Restaurant / Liquor
-            </button>
-            <button
-              className={mode === "application-prep" ? "active" : ""}
-              onClick={() => switchMode("application-prep")}
-            >
-              Application Prep
-            </button>
-            <button
               className={mode === "business-review" ? "active" : ""}
               onClick={() => switchMode("business-review")}
             >
               Business Review
             </button>
+            <div className="workflowGroup">
+              <button
+                className={mode === "application-prep" ? "active" : ""}
+                onClick={() => switchMode("application-prep")}
+              >
+                Application Prep
+              </button>
+              <span>Class-specific app prep</span>
+              <button
+                className={mode === "contractor" ? "active nested" : "nested"}
+                onClick={() => switchMode("contractor")}
+              >
+                Contractor
+              </button>
+              <button
+                className={mode === "landscaper" ? "active nested" : "nested"}
+                onClick={() => switchMode("landscaper")}
+              >
+                Landscaper
+              </button>
+              <button
+                className={mode === "liquor-restaurant" ? "active nested" : "nested"}
+                onClick={() => switchMode("liquor-restaurant")}
+              >
+                Restaurant / Liquor
+              </button>
+            </div>
           </div>
+        </div>
+
+        <div className="sidebarNote">
+          <strong>How the app is organized</strong>
+          <span>Business Review: general document/request review for requirements, missing information, and next action.</span>
+          <span>Application Prep: carrier-neutral application packet for human review.</span>
+          <span>Contractor, Landscaper, and Restaurant / Liquor are class-specific app prep paths. Only one is used per client.</span>
         </div>
 
         <div className="sidebarNote">
@@ -165,22 +175,6 @@ export default function Home() {
             The demo separates flexible extraction from deterministic rules,
             missing-field checks, and human review controls.
           </span>
-        </div>
-
-        <div className="sidebarNote">
-          <strong>Choose one workflow</strong>
-          <span>Each client review uses one selected app path at a time.</span>
-          <span>Business Review: general document/request review.</span>
-          <span>Application Prep: carrier-neutral application packet.</span>
-          <span>Contractor, Landscaper, and Restaurant / Liquor each use their own intake sample and review logic.</span>
-        </div>
-
-        <div className="sidebarNote">
-          <strong>Upload flow</strong>
-          <span>1. Upload intake data or use the sample.</span>
-          <span>2. Upload form-question JSON or use the default schema.</span>
-          <span>3. Attach a carrier PDF for tracking.</span>
-          <span>4. Download the review packet JSON.</span>
         </div>
       </aside>
 

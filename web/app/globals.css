@@ -86,6 +86,23 @@ main {
   gap: 8px;
 }
 
+.workflowGroup {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(191, 219, 254, 0.18);
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.workflowGroup span {
+  color: #bfdbfe;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 2px 4px 0;
+  text-transform: uppercase;
+}
+
 .segmented button,
 .secondaryButton {
   border: 1px solid transparent;
@@ -104,6 +121,11 @@ main {
 .segmented button.active {
   color: #0f172a;
   background: #ffffff;
+}
+
+.segmented button.nested {
+  margin-left: 12px;
+  padding: 10px 12px;
 }
 
 .sidebarNote {

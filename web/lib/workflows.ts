@@ -41,7 +41,7 @@ export type LiquorRestaurantPacket = {
     rep_double_checks: string[];
   };
   intake_summary: Record<string, string | null>;
-  application_packet: Record<string, Record<string, string | null>>;
+  application_packet: Record<string, Record<string, string | null | undefined>>;
   csr_certificate_request: {
     requested: boolean;
     status: "ready_for_csr_review" | "missing_information" | "not_requested";
@@ -209,24 +209,9 @@ Food sales:
 Alcohol sales:
 Catering sales:
 GL limit: 1000000/2000000
-Liquor limit:
-Close time:
-Alcohol sales cease:
-Entertainment:
-Security:
-BYOB:
 Claims or violations: None in the past five years.
-Liquor training:
-ID scanner:
-Happy hour after 9pm:
-Lowest beer price:
-Lowest wine/liquor price:
 Building owner: No
-Fryers:
-Fire suppression:
-Food truck operations:
 Contractor operations: Uses subcontractors for electrical and plumbing; certificates collected before job start.
-Landscaping operations:
 Certificate requested: Yes
 Certificate holder: Queen City Property Group
 Certificate holder address: 100 Owner Plaza, Charlotte, NC 28202
@@ -255,23 +240,8 @@ Food sales:
 Alcohol sales:
 Catering sales:
 GL limit: 1000000/2000000
-Liquor limit:
-Close time:
-Alcohol sales cease:
-Entertainment:
-Security:
-BYOB:
 Claims or violations: None in the past five years.
-Liquor training:
-ID scanner:
-Happy hour after 9pm:
-Lowest beer price:
-Lowest wine/liquor price:
 Building owner: No
-Fryers:
-Fire suppression:
-Food truck operations:
-Contractor operations:
 Landscaping operations: Uses mowers, trailers, trimmers, and pesticide subcontractor for chemical applications. No tree removal over 15 feet.
 Certificate requested: Yes
 Certificate holder: Lakeside HOA
@@ -345,7 +315,7 @@ const requiredApplicationFields = [
   "prior_carrier"
 ];
 
-const requiredLiquorRestaurantFields = [
+const commonIntakeFields = [
   "applicant",
   "location_address",
   "city",
@@ -355,15 +325,31 @@ const requiredLiquorRestaurantFields = [
   "phone",
   "coverage_requested",
   "operations",
+  "gl_limit",
+  "claims_or_violations",
+];
+
+const requiredLiquorRestaurantFields = [
+  ...commonIntakeFields,
   "food_sales",
   "alcohol_sales",
-  "gl_limit",
   "liquor_limit",
   "close_time",
   "alcohol_sales_cease",
-  "claims_or_violations",
   "liquor_training",
   "id_scanner"
+];
+
+const requiredContractorFields = [
+  ...commonIntakeFields,
+  "contractor_operations",
+  "years_experience"
+];
+
+const requiredLandscaperFields = [
+  ...commonIntakeFields,
+  "landscaping_operations",
+  "years_experience"
 ];
 
 export function reviewBusinessRequest(text: string): ReviewOutput {
@@ -565,7 +551,8 @@ export function buildLiquorRestaurantPacket(
     special_certificate_wording: raw["special certificate wording"]
   };
 
-  const missing = requiredLiquorRestaurantFields.filter(
+  const selectedRequiredFields = requiredFieldsFor(fields);
+  const missing = selectedRequiredFields.filter(
     (field) => !fields[field as keyof typeof fields]
   );
   const riskFlags = liquorRiskFlags(fields);
@@ -603,48 +590,7 @@ export function buildLiquorRestaurantPacket(
       coverage_requested: fields.coverage_requested,
       operations: fields.operations
     },
-    application_packet: {
-      applicant_information: {
-        applicant: fields.applicant,
-        dba: fields.dba,
-        location_address: fields.location_address,
-        city: fields.city,
-        state: fields.state,
-        zip: fields.zip,
-        email: fields.email,
-        phone: fields.phone
-      },
-      sales_and_limits: {
-        food_sales: fields.food_sales,
-        alcohol_sales: fields.alcohol_sales,
-        catering_sales: fields.catering_sales,
-        gl_limit: fields.gl_limit,
-        liquor_limit: fields.liquor_limit
-      },
-      operations_and_controls: {
-        business_class: fields.business_class,
-        food_truck_operations: fields.food_truck_operations,
-        contractor_operations: fields.contractor_operations,
-        landscaping_operations: fields.landscaping_operations,
-        close_time: fields.close_time,
-        alcohol_sales_cease: fields.alcohol_sales_cease,
-        entertainment: fields.entertainment,
-        security: fields.security,
-        byob: fields.byob,
-        liquor_training: fields.liquor_training,
-        id_scanner: fields.id_scanner,
-        fire_suppression: fields.fire_suppression
-      },
-      certificate_requirements: {
-        certificate_requested: fields.certificate_requested,
-        certificate_holder: fields.certificate_holder,
-        certificate_purpose: fields.certificate_purpose,
-        additional_insured_requested: fields.additional_insured_requested,
-        waiver_of_subrogation_requested: fields.waiver_requested,
-        primary_and_noncontributory_requested: fields.primary_noncontributory_requested,
-        special_certificate_wording: fields.special_certificate_wording
-      }
-    },
+    application_packet: buildClassSpecificApplicationPacket(fields),
     csr_certificate_request: csrCertificateRequest,
     inferred_application_answers: inferredAnswers,
     mapped_pdf_fields: mapLiquorPdfFields(fields),
@@ -670,7 +616,7 @@ export function buildLiquorRestaurantPacket(
         ...output.risk_flags,
         ...output.csr_certificate_request.review_flags
       ],
-      totalFields: requiredLiquorRestaurantFields.length + output.inferred_application_answers.length,
+      totalFields: selectedRequiredFields.length + output.inferred_application_answers.length,
       autoInferredFields: output.inferred_application_answers.filter((answer) => answer.confidence === "high").length,
       fieldsNeedingReview: output.inferred_application_answers.filter(
         (answer) => answer.flagged_for_review || answer.confidence === "needs_review"
@@ -684,6 +630,65 @@ export function buildLiquorRestaurantPacket(
 }
 
 function inferLiquorApplicationAnswers(fields: Record<string, string | null | undefined>) {
+  const detectedClass = detectedBusinessClass(fields);
+  if (detectedClass === "contractor") {
+    return [
+      inferredAnswer(
+        "subcontractor_use",
+        "Does the contractor use subcontractors?",
+        containsAny(fields.contractor_operations ?? "", ["subcontractor", "subcontractors"]) ? "Yes" : "Review Required",
+        fields.contractor_operations ?? "",
+        "Confirm subcontractor controls, certificate collection, and contract requirements.",
+        "Contractor operations / subcontractors"
+      ),
+      inferredAnswer(
+        "residential_work",
+        "Does the contractor perform residential work?",
+        containsAny(fields.operations ?? "", ["residential", "home", "tenant"]) ? "Yes" : "Review Required",
+        fields.operations ?? "",
+        "Confirm residential/commercial split and any excluded operations.",
+        "Operations class"
+      ),
+      inferredAnswer(
+        "losses_or_claims",
+        "Any losses, claims, or violations in the past five years?",
+        cleanNone(fields.claims_or_violations) ? "No" : "Review Required",
+        fields.claims_or_violations ?? "",
+        "Confirm loss runs and prior claims before submission.",
+        "Loss history"
+      )
+    ];
+  }
+
+  if (detectedClass === "landscaper") {
+    return [
+      inferredAnswer(
+        "chemical_application",
+        "Does the landscaping operation involve chemical or pesticide application?",
+        containsAny(fields.landscaping_operations ?? "", ["chemical", "pesticide"]) ? "Yes" : "No",
+        fields.landscaping_operations ?? "",
+        "Confirm whether chemical application is performed by the insured or a subcontractor.",
+        "Landscape operations / chemicals"
+      ),
+      inferredAnswer(
+        "tree_work",
+        "Does the landscaper perform tree work?",
+        containsAny(fields.landscaping_operations ?? "", ["tree"]) ? "Review Required" : "No",
+        fields.landscaping_operations ?? "",
+        "Confirm tree work height, subcontractor use, and excluded operations.",
+        "Landscape operations / tree work"
+      ),
+      inferredAnswer(
+        "losses_or_claims",
+        "Any losses, claims, or violations in the past five years?",
+        cleanNone(fields.claims_or_violations) ? "No" : "Review Required",
+        fields.claims_or_violations ?? "",
+        "Confirm loss runs and prior claims before submission.",
+        "Loss history"
+      )
+    ];
+  }
+
   const entertainment = fields.entertainment ?? "";
   const security = fields.security ?? "";
   const operations = fields.operations ?? "";
@@ -710,7 +715,7 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
     inferredAnswer(
       "losses_or_violations",
       "Any losses, claims, liquor citations, violations, charges, or enforcement actions in the past five years?",
-      ["none", "no", "none in the past five years"].includes(claims) ? "No" : "Review Required",
+      cleanNone(claims) ? "No" : "Review Required",
       fields.claims_or_violations ?? "",
       "Confirm loss runs and liquor violation history before submission.",
       "4 R1 / 21 / 22"
@@ -748,6 +753,91 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
       "20a R23 / 28 R39"
     )
   ];
+}
+
+function buildClassSpecificApplicationPacket(fields: Record<string, string | null | undefined>) {
+  const baseSections = {
+    applicant_information: {
+      applicant: fields.applicant,
+      dba: fields.dba,
+      location_address: fields.location_address,
+      city: fields.city,
+      state: fields.state,
+      zip: fields.zip,
+      email: fields.email,
+      phone: fields.phone
+    },
+    coverage_request: {
+      coverage_requested: fields.coverage_requested,
+      gl_limit: fields.gl_limit
+    }
+  };
+
+  const certificateRequirements = {
+    certificate_requested: fields.certificate_requested,
+    certificate_holder: fields.certificate_holder,
+    certificate_purpose: fields.certificate_purpose,
+    additional_insured_requested: fields.additional_insured_requested,
+    waiver_of_subrogation_requested: fields.waiver_requested,
+    primary_and_noncontributory_requested: fields.primary_noncontributory_requested,
+    special_certificate_wording: fields.special_certificate_wording
+  };
+
+  const detectedClass = detectedBusinessClass(fields);
+  if (detectedClass === "contractor") {
+    return {
+      ...baseSections,
+      contractor_operations: {
+        business_class: fields.business_class,
+        operations: fields.operations,
+        contractor_operations: fields.contractor_operations,
+        years_experience: fields.years_experience,
+        building_owner: fields.building_owner,
+        claims_or_violations: fields.claims_or_violations
+      },
+      certificate_requirements: certificateRequirements
+    };
+  }
+
+  if (detectedClass === "landscaper") {
+    return {
+      ...baseSections,
+      landscaping_operations: {
+        business_class: fields.business_class,
+        operations: fields.operations,
+        landscaping_operations: fields.landscaping_operations,
+        years_experience: fields.years_experience,
+        building_owner: fields.building_owner,
+        claims_or_violations: fields.claims_or_violations
+      },
+      certificate_requirements: certificateRequirements
+    };
+  }
+
+  return {
+    ...baseSections,
+    sales_and_limits: {
+      food_sales: fields.food_sales,
+      alcohol_sales: fields.alcohol_sales,
+      catering_sales: fields.catering_sales,
+      liquor_limit: fields.liquor_limit
+    },
+    restaurant_liquor_operations: {
+      business_class: fields.business_class,
+      food_truck_operations: fields.food_truck_operations,
+      close_time: fields.close_time,
+      alcohol_sales_cease: fields.alcohol_sales_cease,
+      entertainment: fields.entertainment,
+      security: fields.security,
+      byob: fields.byob,
+      liquor_training: fields.liquor_training,
+      id_scanner: fields.id_scanner,
+      fryers: fields.fryers,
+      fire_suppression: fields.fire_suppression,
+      claims_or_violations: fields.claims_or_violations
+    },
+    certificate_requirements: certificateRequirements
+  };
 }
 
 function buildCsrCertificateRequest(fields: Record<string, string | null | undefined>) {
@@ -1019,6 +1109,13 @@ function detectedBusinessClass(fields: Record<string, string | null | undefined>
   return "restaurant_liquor";
 }
 
+function requiredFieldsFor(fields: Record<string, string | null | undefined>) {
+  const detected = detectedBusinessClass(fields);
+  if (detected === "contractor") return requiredContractorFields;
+  if (detected === "landscaper") return requiredLandscaperFields;
+  return requiredLiquorRestaurantFields;
+}
+
 function selectedWorkflowLabel(fields: Record<string, string | null | undefined>) {
   const detected = detectedBusinessClass(fields);
   if (detected === "contractor") return "Contractor";
@@ -1029,6 +1126,11 @@ function selectedWorkflowLabel(fields: Record<string, string | null | undefined>
 
 function formatAnalyticsLabel(value: string) {
   return value.replaceAll("_", " ");
+}
+
+function cleanNone(value: string | null | undefined) {
+  const cleaned = (value ?? "").toLowerCase().replace(/[. ]+$/g, "");
+  return ["none", "no", "none in the past five years"].includes(cleaned);
 }
 
 function lineValue(text: string, label: string): string | null {
@@ -1077,6 +1179,34 @@ function mapLiquorPdfFields(fields: Record<string, string | null | undefined>) {
 
 function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
   const flags: string[] = [];
+  const detectedClass = detectedBusinessClass(fields);
+
+  if (detectedClass === "contractor") {
+    if (containsAny(fields.contractor_operations ?? "", ["subcontractor"])) {
+      flags.push("Subcontractor exposure should be reviewed for certificate collection and contract controls.");
+    }
+    if (containsAny(fields.operations ?? "", ["remodel", "carpentry", "repair"])) {
+      flags.push("Contractor operations should be reviewed for class eligibility and excluded work.");
+    }
+    if (!cleanNone(fields.claims_or_violations)) {
+      flags.push("Claims or violations need detail before submission.");
+    }
+    return certificateRiskFlags(fields, flags);
+  }
+
+  if (detectedClass === "landscaper") {
+    if (containsAny(fields.landscaping_operations ?? "", ["chemical", "pesticide"])) {
+      flags.push("Chemical or pesticide exposure should be reviewed.");
+    }
+    if (containsAny(fields.landscaping_operations ?? "", ["tree"])) {
+      flags.push("Tree work exposure should be reviewed for height and subcontractor controls.");
+    }
+    if (!cleanNone(fields.claims_or_violations)) {
+      flags.push("Claims or violations need detail before submission.");
+    }
+    return certificateRiskFlags(fields, flags);
+  }
+
   const entertainment = (fields.entertainment ?? "").toLowerCase();
   const security = (fields.security ?? "").toLowerCase();
   const closeTime = (fields.close_time ?? "").toLowerCase();
@@ -1100,10 +1230,13 @@ function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
   if ((fields.id_scanner ?? "").toLowerCase() !== "yes") {
     flags.push("ID scanner control should be confirmed.");
   }
-  const claimsOrViolations = (fields.claims_or_violations ?? "").toLowerCase().replace(/[. ]+$/g, "");
-  if (!["none", "no", "none in the past five years"].includes(claimsOrViolations)) {
+  if (!cleanNone(fields.claims_or_violations)) {
     flags.push("Claims or liquor violations need detail before submission.");
   }
+  return certificateRiskFlags(fields, flags);
+}
+
+function certificateRiskFlags(fields: Record<string, string | null | undefined>, flags: string[]) {
   if ((fields.additional_insured_requested ?? "").toLowerCase() === "yes") {
     flags.push("Additional insured wording may affect quote terms or endorsements.");
   }
@@ -1113,7 +1246,6 @@ function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
   if ((fields.primary_noncontributory_requested ?? "").toLowerCase() === "yes") {
     flags.push("Primary and noncontributory wording may require carrier approval.");
   }
-
   return flags;
 }
 
