@@ -379,6 +379,32 @@ textarea:focus {
   border-top: 1px solid #eef2f7;
 }
 
+.inferenceRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 110px;
+  gap: 8px 14px;
+  padding: 12px 0;
+  border-top: 1px solid #eef2f7;
+}
+
+.inferenceRow:first-of-type {
+  border-top: 0;
+}
+
+.inferenceRow span {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.inferenceRow strong {
+  color: var(--teal);
+}
+
+.inferenceRow small {
+  grid-column: 1 / -1;
+  color: #64748b;
+}
+
 .questionRow:first-of-type {
   border-top: 0;
 }
@@ -485,6 +511,10 @@ pre {
   }
 
   .questionRow {
+    grid-template-columns: 1fr;
+  }
+
+  .inferenceRow {
     grid-template-columns: 1fr;
   }
 }

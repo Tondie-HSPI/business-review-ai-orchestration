@@ -36,6 +36,15 @@ export type LiquorRestaurantPacket = {
   };
   intake_summary: Record<string, string | null>;
   application_packet: Record<string, Record<string, string | null>>;
+  inferred_application_answers: Array<{
+    id: string;
+    question: string;
+    inferred_answer: string;
+    evidence: string;
+    rep_check: string;
+    pdf_field: string;
+    confidence: "high" | "needs_review";
+  }>;
   mapped_pdf_fields: Record<string, string>;
   answered_form_questions: Array<{
     id: string;
@@ -337,6 +346,7 @@ export function buildLiquorRestaurantPacket(text: string): LiquorRestaurantPacke
         fire_suppression: fields.fire_suppression
       }
     },
+    inferred_application_answers: inferLiquorApplicationAnswers(fields),
     mapped_pdf_fields: mapLiquorPdfFields(fields),
     answered_form_questions: answerLiquorFormQuestions(fields),
     missing_information: missing,
@@ -346,6 +356,97 @@ export function buildLiquorRestaurantPacket(text: string): LiquorRestaurantPacke
       : "Prepare draft application field map and route flagged exposures to a human reviewer.",
     requires_human_review: true
   };
+}
+
+function inferLiquorApplicationAnswers(fields: Record<string, string | null | undefined>) {
+  const entertainment = fields.entertainment ?? "";
+  const security = fields.security ?? "";
+  const operations = fields.operations ?? "";
+  const claims = (fields.claims_or_violations ?? "").toLowerCase().replace(/[. ]+$/g, "");
+  const fireSuppression = fields.fire_suppression ?? "";
+
+  return [
+    inferredAnswer(
+      "entertainment_featured",
+      "Does the establishment feature entertainment?",
+      containsAny(entertainment, ["dj", "dancing", "band", "entertainment"]) ? "Yes" : "No",
+      entertainment,
+      "Confirm entertainment type, frequency, and whether dancing is permitted.",
+      "7 if yes"
+    ),
+    inferredAnswer(
+      "security_or_door_staff",
+      "Are bouncers, security, or door persons ever employed?",
+      containsAny(security, ["door", "security", "bouncer"]) ? "Yes" : "No",
+      security,
+      "Confirm whether security is employee, contractor, or third-party service.",
+      "12 R14"
+    ),
+    inferredAnswer(
+      "losses_or_violations",
+      "Any losses, claims, liquor citations, violations, charges, or enforcement actions in the past five years?",
+      ["none", "no", "none in the past five years"].includes(claims) ? "No" : "Review Required",
+      fields.claims_or_violations ?? "",
+      "Confirm loss runs and liquor violation history before submission.",
+      "4 R1 / 21 / 22"
+    ),
+    inferredAnswer(
+      "bar_with_seating",
+      "Is there a bar with seating?",
+      operations.toLowerCase().includes("bar seating") ? "Yes" : "Review Required",
+      operations,
+      "Confirm seating layout and whether bar seating is available to patrons.",
+      "48 R60"
+    ),
+    inferredAnswer(
+      "happy_hour_after_9pm",
+      "Are drink specials or happy hours offered after 9 p.m.?",
+      fields.happy_hour_after_9pm ?? "Review Required",
+      fields.happy_hour_after_9pm ?? "",
+      "Confirm all drink specials, happy hours, and promotional pricing.",
+      "46 R58"
+    ),
+    inferredAnswer(
+      "applicant_building_owner",
+      "Is the applicant the building owner?",
+      fields.building_owner ?? "Review Required",
+      fields.building_owner ?? "",
+      "Confirm ownership, lease terms, and maintenance responsibilities.",
+      "16 R18"
+    ),
+    inferredAnswer(
+      "fire_suppression",
+      "If fryers are present, is a functioning fire extinguishing system in place?",
+      fireSuppression ? "Yes" : "Review Required",
+      fireSuppression,
+      "Confirm system type, cleaning contract, and service status.",
+      "20a R23 / 28 R39"
+    )
+  ];
+}
+
+function inferredAnswer(
+  id: string,
+  question: string,
+  inferred_answer: string,
+  evidence: string,
+  rep_check: string,
+  pdf_field: string
+) {
+  return {
+    id,
+    question,
+    inferred_answer,
+    evidence: evidence || "No direct evidence found in intake.",
+    rep_check,
+    pdf_field,
+    confidence: evidence && inferred_answer !== "Review Required" ? "high" as const : "needs_review" as const
+  };
+}
+
+function containsAny(value: string, keywords: string[]) {
+  const lowered = value.toLowerCase();
+  return keywords.some((keyword) => lowered.includes(keyword));
 }
 
 function answerLiquorFormQuestions(fields: Record<string, string | null | undefined>) {

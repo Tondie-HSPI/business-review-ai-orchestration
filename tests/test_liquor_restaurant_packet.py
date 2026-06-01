@@ -44,3 +44,13 @@ def test_liquor_packet_accepts_fake_salesforce_source_record():
 
     assert packet["intake_summary"]["applicant"] == "Harbor & Vine Kitchen LLC"
     assert packet["answered_form_questions"]
+
+
+def test_liquor_packet_infers_application_answers_with_evidence():
+    packet = build_liquor_restaurant_packet(SAMPLE_LIQUOR_RESTAURANT_QUOTE)
+    inferred = {item["id"]: item for item in packet["inferred_application_answers"]}
+
+    assert inferred["entertainment_featured"]["inferred_answer"] == "Yes"
+    assert "DJ" in inferred["entertainment_featured"]["evidence"]
+    assert inferred["security_or_door_staff"]["inferred_answer"] == "Yes"
+    assert inferred["losses_or_violations"]["inferred_answer"] == "No"

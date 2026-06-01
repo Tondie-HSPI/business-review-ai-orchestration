@@ -93,6 +93,7 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, s
                 "fire_suppression": normalized.get("fire_suppression"),
             },
         },
+        "inferred_application_answers": _inferred_application_answers(normalized),
         "mapped_pdf_fields": _mapped_pdf_fields(normalized),
         "answered_form_questions": (
             answer_form_questions(source_record, load_liquor_restaurant_questions())
@@ -205,6 +206,90 @@ def _next_action(missing: list[str], risk_flags: list[str]) -> str:
     if risk_flags:
         return "Prepare draft application field map and route flagged exposures to a human reviewer."
     return "Prepare draft application field map for human review."
+
+
+def _inferred_application_answers(fields: dict) -> list[dict]:
+    entertainment = fields.get("entertainment") or ""
+    security = fields.get("security") or ""
+    claims = (fields.get("claims_or_violations") or "").lower().strip(" .")
+    fire_suppression = fields.get("fire_suppression") or ""
+    operations = fields.get("operations") or ""
+
+    return [
+        _answer(
+            "entertainment_featured",
+            "Does the establishment feature entertainment?",
+            "Yes" if _contains_any(entertainment, ["dj", "dancing", "band", "entertainment"]) else "No",
+            entertainment,
+            "Confirm entertainment type, frequency, and whether dancing is permitted.",
+            "7 if yes",
+        ),
+        _answer(
+            "security_or_door_staff",
+            "Are bouncers, security, or door persons ever employed?",
+            "Yes" if _contains_any(security, ["door", "security", "bouncer"]) else "No",
+            security,
+            "Confirm whether security is employee, contractor, or third-party service.",
+            "12 R14",
+        ),
+        _answer(
+            "losses_or_violations",
+            "Any losses, claims, liquor citations, violations, charges, or enforcement actions in the past five years?",
+            "No" if claims in {"none", "no", "none in the past five years"} else "Review Required",
+            fields.get("claims_or_violations") or "",
+            "Confirm loss runs and liquor violation history before submission.",
+            "4 R1 / 21 / 22",
+        ),
+        _answer(
+            "bar_with_seating",
+            "Is there a bar with seating?",
+            "Yes" if "bar seating" in operations.lower() else "Review Required",
+            operations,
+            "Confirm seating layout and whether bar seating is available to patrons.",
+            "48 R60",
+        ),
+        _answer(
+            "happy_hour_after_9pm",
+            "Are drink specials or happy hours offered after 9 p.m.?",
+            fields.get("happy_hour_after_9pm") or "Review Required",
+            fields.get("happy_hour_after_9pm") or "",
+            "Confirm all drink specials, happy hours, and promotional pricing.",
+            "46 R58",
+        ),
+        _answer(
+            "applicant_building_owner",
+            "Is the applicant the building owner?",
+            fields.get("building_owner") or "Review Required",
+            fields.get("building_owner") or "",
+            "Confirm ownership, lease terms, and maintenance responsibilities.",
+            "16 R18",
+        ),
+        _answer(
+            "fire_suppression",
+            "If fryers are present, is a functioning fire extinguishing system in place?",
+            "Yes" if fire_suppression else "Review Required",
+            fire_suppression,
+            "Confirm system type, cleaning contract, and service status.",
+            "20a R23 / 28 R39",
+        ),
+    ]
+
+
+def _answer(answer_id: str, question: str, inferred_answer: str, evidence: str, rep_check: str, pdf_field: str) -> dict:
+    return {
+        "id": answer_id,
+        "question": question,
+        "inferred_answer": inferred_answer,
+        "evidence": evidence or "No direct evidence found in intake.",
+        "rep_check": rep_check,
+        "pdf_field": pdf_field,
+        "confidence": "high" if evidence and inferred_answer != "Review Required" else "needs_review",
+    }
+
+
+def _contains_any(value: str, keywords: list[str]) -> bool:
+    lowered = value.lower()
+    return any(keyword in lowered for keyword in keywords)
 
 
 def _rep_double_checks(fields: dict, risk_flags: list[str]) -> list[str]:

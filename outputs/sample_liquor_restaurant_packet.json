@@ -51,6 +51,71 @@
       "fire_suppression": "Wet system with cleaning contract."
     }
   },
+  "inferred_application_answers": [
+    {
+      "id": "entertainment_featured",
+      "question": "Does the establishment feature entertainment?",
+      "inferred_answer": "Yes",
+      "evidence": "DJ with dancing on Friday and Saturday.",
+      "rep_check": "Confirm entertainment type, frequency, and whether dancing is permitted.",
+      "pdf_field": "7 if yes",
+      "confidence": "high"
+    },
+    {
+      "id": "security_or_door_staff",
+      "question": "Are bouncers, security, or door persons ever employed?",
+      "inferred_answer": "Yes",
+      "evidence": "Door person on weekends.",
+      "rep_check": "Confirm whether security is employee, contractor, or third-party service.",
+      "pdf_field": "12 R14",
+      "confidence": "high"
+    },
+    {
+      "id": "losses_or_violations",
+      "question": "Any losses, claims, liquor citations, violations, charges, or enforcement actions in the past five years?",
+      "inferred_answer": "No",
+      "evidence": "None in the past five years.",
+      "rep_check": "Confirm loss runs and liquor violation history before submission.",
+      "pdf_field": "4 R1 / 21 / 22",
+      "confidence": "high"
+    },
+    {
+      "id": "bar_with_seating",
+      "question": "Is there a bar with seating?",
+      "inferred_answer": "Yes",
+      "evidence": "Full-service restaurant with bar seating and weekend DJ.",
+      "rep_check": "Confirm seating layout and whether bar seating is available to patrons.",
+      "pdf_field": "48 R60",
+      "confidence": "high"
+    },
+    {
+      "id": "happy_hour_after_9pm",
+      "question": "Are drink specials or happy hours offered after 9 p.m.?",
+      "inferred_answer": "No",
+      "evidence": "No",
+      "rep_check": "Confirm all drink specials, happy hours, and promotional pricing.",
+      "pdf_field": "46 R58",
+      "confidence": "high"
+    },
+    {
+      "id": "applicant_building_owner",
+      "question": "Is the applicant the building owner?",
+      "inferred_answer": "No",
+      "evidence": "No",
+      "rep_check": "Confirm ownership, lease terms, and maintenance responsibilities.",
+      "pdf_field": "16 R18",
+      "confidence": "high"
+    },
+    {
+      "id": "fire_suppression",
+      "question": "If fryers are present, is a functioning fire extinguishing system in place?",
+      "inferred_answer": "Yes",
+      "evidence": "Wet system with cleaning contract.",
+      "rep_check": "Confirm system type, cleaning contract, and service status.",
+      "pdf_field": "20a R23 / 28 R39",
+      "confidence": "high"
+    }
+  ],
   "mapped_pdf_fields": {
     "01 Applicant name": "Harbor & Vine Kitchen LLC",
     "02 Location address": "1420 Market Street",

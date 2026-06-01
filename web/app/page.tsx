@@ -227,6 +227,18 @@ function LiquorRestaurantView({ result }: { result: LiquorRestaurantPacket }) {
         variant="risk"
       />
       <div className="sectionBlock">
+        <h3>Inferred Application Answers For Rep Review</h3>
+        {result.inferred_application_answers.map((item) => (
+          <div className="inferenceRow" key={item.id}>
+            <span>{item.question}</span>
+            <strong>{item.inferred_answer}</strong>
+            <small>Evidence: {item.evidence}</small>
+            <small>Rep check: {item.rep_check}</small>
+            <small>Target field: {item.pdf_field}</small>
+          </div>
+        ))}
+      </div>
+      <div className="sectionBlock">
         <h3>Form Questions Answered From Fake Salesforce Data</h3>
         {result.answered_form_questions.map((item) => (
           <div className="questionRow" key={item.id}>
