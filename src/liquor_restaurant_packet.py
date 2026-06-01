@@ -47,8 +47,15 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, s
     normalized = _normalize_fields(fields)
     missing = [field for field in REQUIRED_INTAKE_FIELDS if not normalized.get(field)]
     risk_flags = _risk_flags(normalized)
+    csr_certificate_request = _csr_certificate_request(normalized)
+    inferred_answers = _inferred_application_answers(normalized)
+    answered_questions = (
+        answer_form_questions(source_record, load_liquor_restaurant_questions())
+        if source_record
+        else []
+    )
 
-    return {
+    packet = {
         "workflow_name": "PaperworkPro Liquor / Restaurant Quote Intake",
         "risk_type": "restaurant_bar_liquor_liability",
         "official_form_status": "Draft intake support only; human review required before carrier submission.",
@@ -102,19 +109,17 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, s
                 "special_certificate_wording": normalized.get("special_certificate_wording"),
             },
         },
-        "csr_certificate_request": _csr_certificate_request(normalized),
-        "inferred_application_answers": _inferred_application_answers(normalized),
+        "csr_certificate_request": csr_certificate_request,
+        "inferred_application_answers": inferred_answers,
         "mapped_pdf_fields": _mapped_pdf_fields(normalized),
-        "answered_form_questions": (
-            answer_form_questions(source_record, load_liquor_restaurant_questions())
-            if source_record
-            else []
-        ),
+        "answered_form_questions": answered_questions,
         "missing_information": missing,
         "risk_flags": risk_flags,
         "recommended_next_action": _next_action(missing, risk_flags),
         "requires_human_review": True,
     }
+    packet["analytics_summary"] = _analytics_summary(packet)
+    return packet
 
 
 def _parse_key_values(text: str) -> dict:
@@ -397,3 +402,123 @@ def _csr_email_draft(fields: dict, missing: list[str], review_flags: list[str]) 
         f"{flags}\n\n"
         "Please confirm policy permissions and endorsements before issuing."
     )
+
+
+def _analytics_summary(packet: dict) -> dict:
+    missing_information = [
+        *packet["missing_information"],
+        *packet["csr_certificate_request"]["missing_information"],
+    ]
+    risk_flags = [
+        *packet["risk_flags"],
+        *packet["csr_certificate_request"]["review_flags"],
+    ]
+    inferred_answers = packet["inferred_application_answers"]
+    answered_questions = packet["answered_form_questions"]
+    total_fields = len(REQUIRED_INTAKE_FIELDS) + len(inferred_answers)
+    fields_needing_review = (
+        len([answer for answer in inferred_answers if answer["flagged_for_review"] or answer["confidence"] == "needs_review"])
+        + len(packet["missing_information"])
+    )
+    confidence_values = [
+        *(answer["confidence"] for answer in inferred_answers),
+        *(answer["confidence"] for answer in answered_questions),
+    ]
+    average_confidence = _average_confidence_score(confidence_values)
+    metrics = {
+        "submission_readiness_score": _clamp_score(
+            100 - len(missing_information) * 8 - fields_needing_review * 4 - len(risk_flags) * 3 + round(average_confidence * 0.12)
+        ),
+        "percent_fields_auto_inferred": _percent(
+            len([answer for answer in inferred_answers if answer["confidence"] == "high"]),
+            total_fields,
+        ),
+        "percent_fields_needing_review": _percent(fields_needing_review, total_fields),
+        "missing_information_count": len(missing_information),
+        "required_endorsements_count": _required_endorsement_count(risk_flags),
+        "average_confidence_score": average_confidence,
+    }
+
+    return {
+        **metrics,
+        "risk_flags_by_category": _risk_flags_by_category(risk_flags),
+        "common_missing_fields": _common_missing_fields(missing_information),
+        "dashboard_ready_json": {
+            "workflow_name": packet["workflow_name"],
+            "document_type": packet["risk_type"],
+            "review_status": "needs_more_information_for_human_review"
+            if missing_information
+            else "prepared_for_human_review",
+            "metrics": metrics,
+            "human_review_note": (
+                "This score supports document preparation and operations review only. "
+                "It does not approve, reject, bind, issue, or submit anything."
+            ),
+        },
+    }
+
+
+def _average_confidence_score(values: list[str]) -> int:
+    if not values:
+        return 0
+    score_map = {
+        "high": 90,
+        "medium-high": 90,
+        "medium": 70,
+        "needs_review": 55,
+        "missing": 20,
+    }
+    return round(sum(score_map.get(value, 60) for value in values) / len(values))
+
+
+def _risk_flags_by_category(flags: list[str]) -> dict:
+    grouped = {}
+    for flag in flags:
+        category = _risk_category(flag)
+        grouped.setdefault(category, []).append(flag)
+    return grouped
+
+
+def _risk_category(flag: str) -> str:
+    lowered = flag.lower()
+    if any(term in lowered for term in ["additional insured", "waiver", "primary"]):
+        return "certificate_endorsements"
+    if "missing" in lowered:
+        return "missing_information"
+    if any(term in lowered for term in ["entertainment", "security", "late"]):
+        return "operations_review"
+    if any(term in lowered for term in ["legal", "indemnification", "contract"]):
+        return "legal_or_contract_review"
+    if any(term in lowered for term in ["training", "scanner", "claims"]):
+        return "controls_and_history"
+    return "general_review"
+
+
+def _required_endorsement_count(flags: list[str]) -> int:
+    return len(
+        [
+            flag
+            for flag in flags
+            if any(term in flag.lower() for term in ["additional insured", "waiver", "primary"])
+        ]
+    )
+
+
+def _common_missing_fields(fields: list[str]) -> list[dict]:
+    counts = {}
+    for field in fields:
+        counts[field] = counts.get(field, 0) + 1
+    return [
+        {"field": field, "count": count}
+        for field, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    ]
+
+
+def _percent(part: int, whole: int) -> int:
+    if not whole:
+        return 0
+    return round((part / whole) * 100)
+
+
+def _clamp_score(value: int) -> int:
+    return max(0, min(100, value))

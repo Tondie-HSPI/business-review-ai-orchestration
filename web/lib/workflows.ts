@@ -10,6 +10,7 @@ export type ReviewOutput = {
   email_draft: string;
   confidence_level: string;
   requires_human_review: boolean;
+  analytics_summary: AnalyticsSummary;
 };
 
 export type ApplicationPacket = {
@@ -22,6 +23,7 @@ export type ApplicationPacket = {
   review_notes: string[];
   recommended_next_action: string;
   requires_human_review: boolean;
+  analytics_summary: AnalyticsSummary;
 };
 
 export type LiquorRestaurantPacket = {
@@ -75,6 +77,32 @@ export type LiquorRestaurantPacket = {
   risk_flags: string[];
   recommended_next_action: string;
   requires_human_review: boolean;
+  analytics_summary: AnalyticsSummary;
+};
+
+export type AnalyticsSummary = {
+  submission_readiness_score: number;
+  percent_fields_auto_inferred: number;
+  percent_fields_needing_review: number;
+  missing_information_count: number;
+  risk_flags_by_category: Record<string, string[]>;
+  required_endorsements_count: number;
+  average_confidence_score: number;
+  common_missing_fields: Array<{ field: string; count: number }>;
+  dashboard_ready_json: {
+    workflow_name: string;
+    document_type: string;
+    review_status: string;
+    metrics: {
+      submission_readiness_score: number;
+      percent_fields_auto_inferred: number;
+      percent_fields_needing_review: number;
+      missing_information_count: number;
+      required_endorsements_count: number;
+      average_confidence_score: number;
+    };
+    human_review_note: string;
+  };
 };
 
 export type FormQuestion = {
@@ -267,7 +295,7 @@ export function reviewBusinessRequest(text: string): ReviewOutput {
     ...missing.map((field) => `${titleize(field)} missing`)
   ].filter(Boolean) as string[];
 
-  return {
+  const output = {
     document_type: lowered.includes("vendor") ? "vendor_onboarding_request" : "business_review_request",
     summary:
       "Business request reviewed for structured requirements, missing information, risk flags, and next action.",
@@ -286,6 +314,20 @@ export function reviewBusinessRequest(text: string): ReviewOutput {
       : "Thank you for the request. We have enough information to continue standard review.",
     confidence_level: missing.length > 1 || riskFlags.length > 3 ? "medium" : "medium-high",
     requires_human_review: missing.length > 0 || riskFlags.length > 0
+  };
+
+  return {
+    ...output,
+    analytics_summary: buildAnalyticsSummary({
+      workflowName: "PaperworkPro Business Review",
+      documentType: output.document_type,
+      missingInformation: output.missing_information,
+      riskFlags: output.risk_flags,
+      totalFields: requiredBusinessFields.length,
+      autoInferredFields: output.extracted_requirements.length,
+      fieldsNeedingReview: output.missing_information.length + output.risk_flags.length,
+      confidenceValues: [output.confidence_level]
+    })
   };
 }
 
@@ -307,7 +349,7 @@ export function buildApplicationPacket(text: string): ApplicationPacket {
     (field) => !fields[field as keyof typeof fields]
   );
 
-  return {
+  const output = {
     workflow_name: "PaperworkPro Application Prep",
     carrier_context: "USLI-style application preparation",
     official_form_status: "Not an official carrier form; human review required before use.",
@@ -345,6 +387,22 @@ export function buildApplicationPacket(text: string): ApplicationPacket {
           .join(", ")}.`
       : "Send completed packet to human reviewer for final validation before carrier submission.",
     requires_human_review: true
+  };
+
+  return {
+    ...output,
+    analytics_summary: buildAnalyticsSummary({
+      workflowName: output.workflow_name,
+      documentType: "application_prep_packet",
+      missingInformation: output.missing_information,
+      riskFlags: output.review_notes,
+      totalFields: requiredApplicationFields.length,
+      autoInferredFields: Object.values(output.field_completion_status).filter((status) => status === "complete").length,
+      fieldsNeedingReview: output.missing_information.length + output.review_notes.length,
+      confidenceValues: Object.values(output.field_completion_status).map((status) =>
+        status === "complete" ? "high" : "missing"
+      )
+    })
   };
 }
 
@@ -401,13 +459,22 @@ export function buildLiquorRestaurantPacket(
   );
   const riskFlags = liquorRiskFlags(fields);
 
-  return {
+  const inferredAnswers = inferLiquorApplicationAnswers(fields);
+  const answeredQuestions = answerLiquorFormQuestions(
+    fields,
+    options.formQuestions ?? defaultLiquorRestaurantQuestions,
+    options.sourceRecord
+  );
+  const csrCertificateRequest = buildCsrCertificateRequest(fields);
+  const output = {
     workflow_name: "PaperworkPro Liquor / Restaurant Quote Intake",
     risk_type: "restaurant_bar_liquor_liability",
     official_form_status:
       "Draft intake support only; human review required before carrier submission.",
     submission_readiness: {
-      status: missing.length ? "needs_more_information" : "ready_for_human_review",
+      status: (missing.length
+        ? "needs_more_information"
+        : "ready_for_human_review") as LiquorRestaurantPacket["submission_readiness"]["status"],
       carrier_agnostic: true,
       blocking_missing_information_count: missing.length,
       rep_double_checks: repDoubleChecks(fields, riskFlags)
@@ -458,20 +525,41 @@ export function buildLiquorRestaurantPacket(
         special_certificate_wording: fields.special_certificate_wording
       }
     },
-    csr_certificate_request: buildCsrCertificateRequest(fields),
-    inferred_application_answers: inferLiquorApplicationAnswers(fields),
+    csr_certificate_request: csrCertificateRequest,
+    inferred_application_answers: inferredAnswers,
     mapped_pdf_fields: mapLiquorPdfFields(fields),
-    answered_form_questions: answerLiquorFormQuestions(
-      fields,
-      options.formQuestions ?? defaultLiquorRestaurantQuestions,
-      options.sourceRecord
-    ),
+    answered_form_questions: answeredQuestions,
     missing_information: missing,
     risk_flags: riskFlags,
     recommended_next_action: missing.length
       ? "Request missing quote intake fields before preparing the application draft."
       : "Prepare draft application field map and route flagged exposures to a human reviewer.",
     requires_human_review: true
+  };
+
+  return {
+    ...output,
+    analytics_summary: buildAnalyticsSummary({
+      workflowName: output.workflow_name,
+      documentType: output.risk_type,
+      missingInformation: [
+        ...output.missing_information,
+        ...output.csr_certificate_request.missing_information
+      ],
+      riskFlags: [
+        ...output.risk_flags,
+        ...output.csr_certificate_request.review_flags
+      ],
+      totalFields: requiredLiquorRestaurantFields.length + output.inferred_application_answers.length,
+      autoInferredFields: output.inferred_application_answers.filter((answer) => answer.confidence === "high").length,
+      fieldsNeedingReview: output.inferred_application_answers.filter(
+        (answer) => answer.flagged_for_review || answer.confidence === "needs_review"
+      ).length + output.missing_information.length,
+      confidenceValues: [
+        ...output.inferred_application_answers.map((answer) => answer.confidence),
+        ...output.answered_form_questions.map((answer) => answer.confidence)
+      ]
+    })
   };
 }
 
@@ -857,6 +945,120 @@ function repDoubleChecks(fields: Record<string, string | null | undefined>, risk
   }
 
   return checks;
+}
+
+function buildAnalyticsSummary({
+  workflowName,
+  documentType,
+  missingInformation,
+  riskFlags,
+  totalFields,
+  autoInferredFields,
+  fieldsNeedingReview,
+  confidenceValues
+}: {
+  workflowName: string;
+  documentType: string;
+  missingInformation: string[];
+  riskFlags: string[];
+  totalFields: number;
+  autoInferredFields: number;
+  fieldsNeedingReview: number;
+  confidenceValues: string[];
+}): AnalyticsSummary {
+  const missingCount = missingInformation.length;
+  const riskCount = riskFlags.length;
+  const confidenceScore = averageConfidenceScore(confidenceValues);
+  const score = clampScore(
+    100 - missingCount * 8 - fieldsNeedingReview * 4 - riskCount * 3 + Math.round(confidenceScore * 0.12)
+  );
+  const metrics = {
+    submission_readiness_score: score,
+    percent_fields_auto_inferred: percent(autoInferredFields, totalFields),
+    percent_fields_needing_review: percent(fieldsNeedingReview, totalFields),
+    missing_information_count: missingCount,
+    required_endorsements_count: requiredEndorsementCount(riskFlags),
+    average_confidence_score: confidenceScore
+  };
+
+  return {
+    ...metrics,
+    risk_flags_by_category: groupRiskFlagsByCategory(riskFlags),
+    common_missing_fields: commonMissingFields(missingInformation),
+    dashboard_ready_json: {
+      workflow_name: workflowName,
+      document_type: documentType,
+      review_status: missingCount ? "needs_more_information_for_human_review" : "prepared_for_human_review",
+      metrics,
+      human_review_note:
+        "This score supports document preparation and operations review only. It does not approve, reject, bind, issue, or submit anything."
+    }
+  };
+}
+
+function averageConfidenceScore(values: string[]) {
+  if (!values.length) return 0;
+  const scores = values.map((value) => {
+    if (value === "high" || value === "medium-high") return 90;
+    if (value === "medium") return 70;
+    if (value === "needs_review") return 55;
+    if (value === "missing") return 20;
+    return 60;
+  });
+  return Math.round(scores.reduce((total, score) => total + score, 0) / scores.length);
+}
+
+function groupRiskFlagsByCategory(flags: string[]) {
+  return flags.reduce<Record<string, string[]>>((groups, flag) => {
+    const category = riskCategory(flag);
+    groups[category] = [...(groups[category] ?? []), flag];
+    return groups;
+  }, {});
+}
+
+function riskCategory(flag: string) {
+  const lowered = flag.toLowerCase();
+  if (lowered.includes("additional insured") || lowered.includes("waiver") || lowered.includes("primary")) {
+    return "certificate_endorsements";
+  }
+  if (lowered.includes("missing")) return "missing_information";
+  if (lowered.includes("entertainment") || lowered.includes("security") || lowered.includes("late")) {
+    return "operations_review";
+  }
+  if (lowered.includes("legal") || lowered.includes("indemnification") || lowered.includes("contract")) {
+    return "legal_or_contract_review";
+  }
+  if (lowered.includes("training") || lowered.includes("scanner") || lowered.includes("claims")) {
+    return "controls_and_history";
+  }
+  return "general_review";
+}
+
+function requiredEndorsementCount(flags: string[]) {
+  return flags.filter((flag) => {
+    const lowered = flag.toLowerCase();
+    return lowered.includes("additional insured") || lowered.includes("waiver") || lowered.includes("primary");
+  }).length;
+}
+
+function commonMissingFields(fields: string[]) {
+  const counts = fields.reduce<Record<string, number>>((summary, field) => {
+    summary[field] = (summary[field] ?? 0) + 1;
+    return summary;
+  }, {});
+
+  return Object.entries(counts)
+    .map(([field, count]) => ({ field, count }))
+    .sort((left, right) => right.count - left.count || left.field.localeCompare(right.field));
+}
+
+function percent(part: number, whole: number) {
+  if (!whole) return 0;
+  return Math.round((part / whole) * 100);
+}
+
+function clampScore(value: number) {
+  return Math.max(0, Math.min(100, value));
 }
 
 function extractDate(text: string): string | null {

@@ -201,6 +201,60 @@ main {
   margin-bottom: 18px;
 }
 
+.analyticsPanel {
+  margin-bottom: 18px;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.analyticsGrid .metric {
+  box-shadow: none;
+  min-height: 78px;
+}
+
+.analyticsColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.categoryBlock {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+}
+
+.categoryBlock strong {
+  font-size: 0.92rem;
+}
+
+.categoryBlock span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.analyticsNote {
+  margin-top: 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  padding: 12px;
+  line-height: 1.45;
+}
+
 .metric,
 .panel {
   background: var(--panel);
@@ -685,6 +739,14 @@ pre {
   .metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .analyticsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analyticsColumns {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -703,6 +765,15 @@ pre {
 
   .metrics {
     grid-template-columns: 1fr;
+  }
+
+  .analyticsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryBlock {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .fieldRow {

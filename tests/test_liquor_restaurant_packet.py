@@ -77,3 +77,19 @@ def test_certificate_requirements_are_part_of_application_packet_and_quote_flags
     assert cert_requirements["additional_insured_requested"] == "Yes"
     assert any("Additional insured" in flag for flag in packet["risk_flags"])
     assert any("quote preparation" in item for item in packet["submission_readiness"]["rep_double_checks"])
+
+
+def test_liquor_packet_includes_dashboard_ready_analytics_summary():
+    packet = build_liquor_restaurant_packet(SAMPLE_LIQUOR_RESTAURANT_QUOTE)
+    analytics = packet["analytics_summary"]
+
+    assert 0 <= analytics["submission_readiness_score"] <= 100
+    assert analytics["percent_fields_auto_inferred"] > 0
+    assert analytics["percent_fields_needing_review"] > 0
+    assert analytics["missing_information_count"] == len(packet["missing_information"])
+    assert analytics["required_endorsements_count"] >= 3
+    assert analytics["average_confidence_score"] > 0
+    assert "certificate_endorsements" in analytics["risk_flags_by_category"]
+    assert analytics["common_missing_fields"] == []
+    assert analytics["dashboard_ready_json"]["review_status"] == "prepared_for_human_review"
+    assert "does not approve" in analytics["dashboard_ready_json"]["human_review_note"]

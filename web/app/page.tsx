@@ -91,6 +91,7 @@ export default function Home() {
 
   const missingCount = result.missing_information.length;
   const humanReview = result.requires_human_review ? "Required" : "Not required";
+  const analytics = result.analytics_summary;
 
   return (
     <main>
@@ -162,10 +163,12 @@ export default function Home() {
 
         <section className="metrics">
           <Metric label="Workflow" value={workflowTitle(result)} />
+          <Metric label="Readiness score" value={`${analytics.submission_readiness_score}/100`} />
+          <Metric label="Needs review" value={`${analytics.percent_fields_needing_review}%`} />
           <Metric label="Missing fields" value={String(missingCount)} />
-          <Metric label="Review status" value={humanReview} />
-          <Metric label="Output" value="Structured JSON" />
         </section>
+
+        <AnalyticsPanel result={result} />
 
         <section className="grid">
           <div className="panel inputPanel">
@@ -275,6 +278,61 @@ function Metric({ label, value }: { label: string; value: string }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function AnalyticsPanel({ result }: { result: Result }) {
+  const analytics = result.analytics_summary;
+  const categoryEntries = Object.entries(analytics.risk_flags_by_category);
+
+  return (
+    <section className="panel analyticsPanel">
+      <div className="panelHeader">
+        <div>
+          <p className="eyebrow">Operations analytics</p>
+          <h2>Review summary metrics</h2>
+        </div>
+        <span className="reviewBadge required">Human review only</span>
+      </div>
+      <div className="analyticsGrid">
+        <Metric label="Auto-inferred fields" value={`${analytics.percent_fields_auto_inferred}%`} />
+        <Metric label="Fields needing review" value={`${analytics.percent_fields_needing_review}%`} />
+        <Metric label="Missing info count" value={String(analytics.missing_information_count)} />
+        <Metric label="Endorsements" value={String(analytics.required_endorsements_count)} />
+        <Metric label="Avg confidence" value={`${analytics.average_confidence_score}/100`} />
+      </div>
+      <div className="analyticsColumns">
+        <div>
+          <h3>Risk flags by category</h3>
+          {categoryEntries.length ? (
+            categoryEntries.map(([category, flags]) => (
+              <div className="categoryBlock" key={category}>
+                <strong>{formatLabel(category)}</strong>
+                <span>{flags.length} review item{flags.length === 1 ? "" : "s"}</span>
+              </div>
+            ))
+          ) : (
+            <span className="chip success">None detected</span>
+          )}
+        </div>
+        <div>
+          <h3>Common missing fields</h3>
+          {analytics.common_missing_fields.length ? (
+            analytics.common_missing_fields.map((item) => (
+              <div className="categoryBlock" key={item.field}>
+                <strong>{formatLabel(item.field)}</strong>
+                <span>{item.count} occurrence{item.count === 1 ? "" : "s"}</span>
+              </div>
+            ))
+          ) : (
+            <span className="chip success">None detected</span>
+          )}
+        </div>
+      </div>
+      <div className="analyticsNote">
+        {analytics.dashboard_ready_json.human_review_note}
+      </div>
+    </section>
   );
 }
 
