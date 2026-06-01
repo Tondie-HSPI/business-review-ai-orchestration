@@ -5,7 +5,7 @@ Insurance limits were not included. The request asks for expedited approval.
 """
 
 
-SAMPLE_USLI_APPLICATION_NOTES = """USLI application prep notes for a sample professional services applicant.
+SAMPLE_GENERIC_APPLICATION_NOTES = """Generic carrier-neutral application prep notes for a sample professional services applicant.
 Applicant: Northstar Risk Advisory LLC
 Operations: Compliance consulting and insurance documentation support for small businesses
 Business owner: Jordan Lee
@@ -15,6 +15,7 @@ Prior carrier:
 Loss history:
 Notes: Applicant needs help preparing the application packet. Do not submit without human review.
 """
+
 
 
 SAMPLE_LIQUOR_RESTAURANT_QUOTE = """Quote request for a restaurant and bar risk.

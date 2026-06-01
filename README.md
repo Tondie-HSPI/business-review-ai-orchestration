@@ -242,11 +242,11 @@ business-review-ai-orchestration/
     liquor_restaurant_form_questions.json
     sample_business_request.txt
     sample_liquor_restaurant_quote_request.txt
-    sample_usli_application_notes.txt
+    sample_generic_application_notes.txt
   outputs/
     sample_liquor_restaurant_packet.json
     sample_review_output.json
-    sample_usli_application_packet.json
+    sample_generic_application_packet.json
   docs/
     architecture.md
     aws_deployment.md

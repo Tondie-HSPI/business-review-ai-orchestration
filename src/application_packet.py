@@ -30,7 +30,7 @@ def build_application_packet(text: str) -> dict:
 
     return {
         "workflow_name": "PaperworkPro Application Prep",
-        "carrier_context": "USLI-style application preparation",
+        "carrier_context": "Generic carrier-neutral application preparation",
         "official_form_status": "Not an official carrier form; human review required before use.",
         "application_sections": {
             "applicant_information": {
@@ -102,7 +102,7 @@ def _review_notes(text: str, rule_result: dict, missing_fields: list[str]) -> li
         "Confirm all applicant-provided facts before completing final paperwork.",
     ]
 
-    if "usli" in text.lower():
+    if "carrier" in text.lower() or "application" in text.lower():
         notes.append("Carrier context mentioned; verify current carrier form requirements.")
     if missing_fields:
         notes.append("Application packet is incomplete and needs follow-up.")

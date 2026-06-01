@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ApplicationPacket,
   applicationSample,
@@ -341,15 +341,14 @@ function ApplicationView({ result }: { result: ApplicationPacket }) {
     <div className="outputStack">
       <div className="notice">{result.official_form_status}</div>
       {Object.entries(result.application_sections).map(([section, fields]) => (
-        <div className="sectionBlock" key={section}>
-          <h3>{formatLabel(section)}</h3>
+        <ReviewSection title={formatLabel(section)} key={section} defaultOpen={section === "applicant_information"}>
           {Object.entries(fields).map(([field, value]) => (
             <div className="fieldRow" key={field}>
               <span>{formatLabel(field)}</span>
               <strong>{Array.isArray(value) ? value.join(", ") || "None" : value || "Missing"}</strong>
             </div>
           ))}
-        </div>
+        </ReviewSection>
       ))}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
       <ChipGroup title="Review notes" values={result.review_notes} variant="risk" />
@@ -393,7 +392,7 @@ function LiquorRestaurantView({
         </div>
       </div>
       <div className={allReviewed ? "saveGate ready" : "saveGate"}>
-        <span>Save / submit gate</span>
+          <span>Save draft gate</span>
         <strong>{allReviewed ? "Ready To Save Draft" : "Rep Review Required"}</strong>
         <small>
           {completedReviewCount} of {requiredReviewCount} flagged inferred answers reviewed
@@ -410,21 +409,23 @@ function LiquorRestaurantView({
         {result.intake_summary.applicant} | {result.intake_summary.location}
       </div>
       {Object.entries(result.application_packet).map(([section, fields]) => (
-        <div className="sectionBlock" key={section}>
-          <h3>{formatLabel(section)}</h3>
+        <ReviewSection
+          title={formatLabel(section)}
+          key={section}
+          defaultOpen={section === "applicant_information" || section === "certificate_requirements"}
+        >
           {Object.entries(fields).map(([field, value]) => (
             <div className="fieldRow" key={field}>
               <span>{formatLabel(field)}</span>
               <strong>{value || "Missing"}</strong>
             </div>
           ))}
-        </div>
+        </ReviewSection>
       ))}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
       <ChipGroup title="Risk flags" values={result.risk_flags} variant="risk" />
       {result.csr_certificate_request.requested && (
-        <div className="sectionBlock certificateRequest">
-          <h3>CSR Certificate Request Draft</h3>
+        <ReviewSection title="CSR Certificate Request Draft" className="certificateRequest" defaultOpen>
           <div className="fieldRow">
             <span>Status</span>
             <strong>{formatLabel(result.csr_certificate_request.status)}</strong>
@@ -449,15 +450,17 @@ function LiquorRestaurantView({
           <div className="emailDraft">
             <pre>{result.csr_certificate_request.csr_email_draft}</pre>
           </div>
-        </div>
+        </ReviewSection>
       )}
       <ChipGroup
         title="Rep double-check checklist"
         values={result.submission_readiness.rep_double_checks}
         variant="risk"
       />
-      <div className="sectionBlock applicationPreview">
-        <h3>Carrier Application Preview Before Save</h3>
+      <ReviewSection title="Generic Application Draft Before Save" className="applicationPreview" defaultOpen>
+        <div className="reviewHint">
+          Carrier-neutral sample app view. It shows where answers would go without copying a carrier form.
+        </div>
         {result.inferred_application_answers.map((item) => (
           <label className="previewQuestion" key={item.id}>
             <input
@@ -488,9 +491,8 @@ function LiquorRestaurantView({
             </button>
           )}
         </div>
-      </div>
-      <div className="sectionBlock">
-        <h3>Inferred Application Answers For Rep Review</h3>
+      </ReviewSection>
+      <ReviewSection title="Inferred Application Answers For Rep Review">
         {result.inferred_application_answers.map((item) => (
           <div className="inferenceRow" key={item.id}>
             <span>{item.question}</span>
@@ -503,9 +505,8 @@ function LiquorRestaurantView({
             <small>Target field: {item.pdf_field}</small>
           </div>
         ))}
-      </div>
-      <div className="sectionBlock">
-        <h3>Form Questions Answered From Fake Salesforce Data</h3>
+      </ReviewSection>
+      <ReviewSection title="Form Questions Answered From Fake Intake Data">
         {result.answered_form_questions.map((item) => (
           <div className="questionRow" key={item.id}>
             <span>{item.question}</span>
@@ -515,18 +516,39 @@ function LiquorRestaurantView({
             </small>
           </div>
         ))}
-      </div>
-      <div className="sectionBlock">
-        <h3>Draft PDF Field Map</h3>
+      </ReviewSection>
+      <ReviewSection title="Draft PDF Field Map">
         {Object.entries(result.mapped_pdf_fields).map(([field, value]) => (
           <div className="fieldRow" key={field}>
             <span>{field}</span>
             <strong>{value}</strong>
           </div>
         ))}
-      </div>
+      </ReviewSection>
       <div className="nextAction">{result.recommended_next_action}</div>
     </div>
+  );
+}
+
+function ReviewSection({
+  title,
+  children,
+  defaultOpen = false,
+  className = ""
+}: {
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+  className?: string;
+}) {
+  return (
+    <details className={`sectionBlock reviewSection ${className}`} open={defaultOpen}>
+      <summary>
+        <h3>{title}</h3>
+        <span>Review</span>
+      </summary>
+      <div className="reviewSectionBody">{children}</div>
+    </details>
   );
 }
 

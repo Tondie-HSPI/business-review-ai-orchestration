@@ -124,7 +124,7 @@ They need access by June 15 for claims intake support. Contract language mention
 SOC 2, data handling, indemnification, and a 24-hour incident notice requirement.
 Insurance limits were not included. The request asks for expedited approval.`;
 
-export const applicationSample = `USLI application prep notes for a sample professional services applicant.
+export const applicationSample = `Generic carrier-neutral application prep notes for a sample professional services applicant.
 Applicant: Northstar Risk Advisory LLC
 Operations: Compliance consulting and insurance documentation support for small businesses
 Business owner: Jordan Lee
@@ -351,7 +351,7 @@ export function buildApplicationPacket(text: string): ApplicationPacket {
 
   const output = {
     workflow_name: "PaperworkPro Application Prep",
-    carrier_context: "USLI-style application preparation",
+    carrier_context: "Generic carrier-neutral application preparation",
     official_form_status: "Not an official carrier form; human review required before use.",
     application_sections: {
       applicant_information: {

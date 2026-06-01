@@ -570,6 +570,64 @@ textarea:focus {
   padding: 14px;
 }
 
+.reviewSection {
+  padding: 0;
+  overflow: hidden;
+}
+
+.reviewSection summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.reviewSection summary::-webkit-details-marker {
+  display: none;
+}
+
+.reviewSection summary::before {
+  content: ">";
+  color: var(--blue-dark);
+  font-weight: 900;
+  transform: rotate(0deg);
+  transition: transform 0.15s ease;
+}
+
+.reviewSection[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.reviewSection summary h3 {
+  flex: 1;
+  margin: 0;
+}
+
+.reviewSection summary span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.reviewSectionBody {
+  border-top: 1px solid #eef2f7;
+  padding: 0 14px 14px;
+}
+
+.reviewHint {
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  line-height: 1.45;
+  margin: 14px 0 4px;
+  padding: 10px 12px;
+}
+
 .sectionBlock h3,
 .outputStack h3 {
   margin: 0 0 10px;

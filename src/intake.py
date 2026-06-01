@@ -2,7 +2,7 @@ def classify_document(text: str) -> str:
     """Classify the request using transparent keyword logic."""
     lowered = text.lower()
 
-    if "usli" in lowered or ("application" in lowered and "insurance" in lowered):
+    if "application" in lowered and "insurance" in lowered:
         return "insurance_application_intake"
     if "vendor" in lowered and "onboarding" in lowered:
         return "vendor_onboarding_request"

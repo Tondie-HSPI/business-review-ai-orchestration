@@ -1,6 +1,6 @@
 {
   "workflow_name": "PaperworkPro Application Prep",
-  "carrier_context": "USLI-style application preparation",
+  "carrier_context": "Generic carrier-neutral application preparation",
   "official_form_status": "Not an official carrier form; human review required before use.",
   "application_sections": {
     "applicant_information": {

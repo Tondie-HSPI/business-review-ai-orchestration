@@ -18,4 +18,4 @@ The extraction layer is the only step that is LLM-ready. Rules, escalation, miss
 
 ## Application Prep Boundary
 
-The USLI-style sample is not an official carrier form and does not submit anything. It demonstrates how a workflow can prepare a structured packet for human review before any carrier-facing action.
+The generic carrier-neutral sample is not an official carrier form and does not submit anything. It demonstrates how a workflow can prepare a structured packet for human review before any carrier-facing action.
