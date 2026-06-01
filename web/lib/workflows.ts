@@ -30,8 +30,7 @@ export type LiquorRestaurantPacket = {
   workflow_name: string;
   risk_type: string;
   workflow_scope: {
-    supported_business_classes: string[];
-    detected_business_class: string;
+    selected_workflow: string;
     routing_note: string;
   };
   official_form_status: string;
@@ -367,13 +366,6 @@ const requiredLiquorRestaurantFields = [
   "id_scanner"
 ];
 
-const supportedBusinessClasses = [
-  "Contractor",
-  "Landscaper",
-  "Restaurant",
-  "Food truck operations"
-];
-
 export function reviewBusinessRequest(text: string): ReviewOutput {
   const lowered = text.toLowerCase();
   const requirements = [
@@ -589,10 +581,9 @@ export function buildLiquorRestaurantPacket(
     workflow_name: "PaperworkPro Contractor / Landscaper / Restaurant Intake",
     risk_type: detectedBusinessClass(fields),
     workflow_scope: {
-      supported_business_classes: supportedBusinessClasses,
-      detected_business_class: detectedBusinessClass(fields),
+      selected_workflow: selectedWorkflowLabel(fields),
       routing_note:
-        "Routes intake into a carrier-neutral review packet for a rep to verify before any submission-ready use."
+        "Only this workflow is used for the client review packet. PaperworkPro prepares the draft and flags items for rep review."
     },
     official_form_status:
       "Draft intake support only; human review required before carrier submission.",
@@ -1026,6 +1017,14 @@ function detectedBusinessClass(fields: Record<string, string | null | undefined>
   }
   if (text.includes("food truck")) return "restaurant_liquor_food_truck";
   return "restaurant_liquor";
+}
+
+function selectedWorkflowLabel(fields: Record<string, string | null | undefined>) {
+  const detected = detectedBusinessClass(fields);
+  if (detected === "contractor") return "Contractor";
+  if (detected === "landscaper") return "Landscaper";
+  if (detected === "restaurant_liquor_food_truck") return "Restaurant / Liquor with food truck operations";
+  return "Restaurant / Liquor";
 }
 
 function formatAnalyticsLabel(value: string) {

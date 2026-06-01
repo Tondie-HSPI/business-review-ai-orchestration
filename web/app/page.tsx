@@ -168,12 +168,11 @@ export default function Home() {
         </div>
 
         <div className="sidebarNote">
-          <strong>Current workflows</strong>
-          <span>Business Review: general document/request review for requirements, missing information, and next action.</span>
-          <span>Application Prep: carrier-neutral application packet for human review.</span>
-          <span>Contractor: jobsite, subcontractor, and certificate wording review.</span>
-          <span>Landscaper: premises, equipment, chemical/tree/snow exposures, and certificate wording.</span>
-          <span>Restaurant / Liquor: food, liquor, entertainment, food truck operations, and certificate wording.</span>
+          <strong>Choose one workflow</strong>
+          <span>Each client review uses one selected app path at a time.</span>
+          <span>Business Review: general document/request review.</span>
+          <span>Application Prep: carrier-neutral application packet.</span>
+          <span>Contractor, Landscaper, and Restaurant / Liquor each use their own intake sample and review logic.</span>
         </div>
 
         <div className="sidebarNote">
@@ -450,17 +449,13 @@ function LiquorRestaurantView({
       <div className="summary">
         {result.intake_summary.applicant} | {result.intake_summary.location}
       </div>
-      <ReviewSection title="Workflow Routing" defaultOpen>
+      <ReviewSection title="Selected Workflow" defaultOpen>
         <div className="fieldRow">
-          <span>Detected workflow</span>
-          <strong>{formatLabel(result.workflow_scope.detected_business_class)}</strong>
+          <span>Client app path</span>
+          <strong>{result.workflow_scope.selected_workflow}</strong>
         </div>
         <div className="fieldRow">
-          <span>Supported workflows</span>
-          <strong>{result.workflow_scope.supported_business_classes.join(", ")}</strong>
-        </div>
-        <div className="fieldRow">
-          <span>Routing note</span>
+          <span>Review note</span>
           <strong>{result.workflow_scope.routing_note}</strong>
         </div>
       </ReviewSection>
