@@ -27,6 +27,7 @@ export default function Home() {
   const [text, setText] = useState(applicationSample);
   const [sourceRecord, setSourceRecord] = useState<SalesforceLikeRecord | null>(null);
   const [formQuestions, setFormQuestions] = useState<FormQuestion[]>(defaultLiquorRestaurantQuestions);
+  const [applicationText, setApplicationText] = useState<string>(questionsToText(defaultLiquorRestaurantQuestions));
   const [uploadedPdfName, setUploadedPdfName] = useState<string>("");
   const [uploadMessage, setUploadMessage] = useState<string>("");
   const [reviewedAnswers, setReviewedAnswers] = useState<Record<string, boolean>>({});
@@ -97,14 +98,16 @@ export default function Home() {
 
   async function handleQuestionUpload(file: File | null) {
     if (!file) return;
-    const parsed = JSON.parse(await file.text()) as FormQuestion[];
+    const content = await file.text();
+    const parsed = parseApplicationQuestions(content);
+    setApplicationText(content);
     setFormQuestions(parsed);
     setMode((currentMode) => (
       currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
         ? currentMode
         : "application-prep"
     ));
-    setUploadMessage(`Loaded ${parsed.length} form questions from ${file.name}`);
+    setUploadMessage(`Loaded ${parsed.length} application questions from ${file.name}`);
     setReviewedAnswers({});
   }
 
@@ -117,6 +120,12 @@ export default function Home() {
         : "application-prep"
     ));
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
+    setReviewedAnswers({});
+  }
+
+  function handleApplicationTextChange(value: string) {
+    setApplicationText(value);
+    setFormQuestions(parseApplicationQuestions(value));
     setReviewedAnswers({});
   }
 
@@ -235,7 +244,7 @@ export default function Home() {
             <div className="panelHeader">
               <div>
                 <p className="eyebrow">Input</p>
-                <h2>{showsApplicationUploads ? "Intake and application files" : "Business review request"}</h2>
+                <h2>{showsApplicationUploads ? "Quote intake and application mapping" : "Business review request"}</h2>
               </div>
               <button
                 type="button"
@@ -259,10 +268,10 @@ export default function Home() {
               {showsApplicationUploads && (
                 <>
                   <label>
-                    <span>Upload app questions</span>
+                    <span>Upload application text/schema</span>
                     <input
                       type="file"
-                      accept=".json"
+                      accept=".txt,.json"
                       onChange={(event) => handleQuestionUpload(event.target.files?.[0] ?? null)}
                     />
                   </label>
@@ -279,15 +288,36 @@ export default function Home() {
             </div>
             {showsApplicationUploads && (
               <div className="uploadHelp">
-                Upload the intake details first, then attach the application or question list that needs to be prepared for rep review.
+                Paste or upload the quote intake, then paste or upload the application questions that need mapped and prepared for rep review.
               </div>
             )}
             {uploadMessage && <div className="uploadMessage">{uploadMessage}</div>}
-            <textarea
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              aria-label="Request text"
-            />
+            {showsApplicationUploads ? (
+              <div className="intakeAppGrid">
+                <label className="textInputBlock">
+                  <span>Quote intake form</span>
+                  <textarea
+                    value={text}
+                    onChange={(event) => setText(event.target.value)}
+                    aria-label="Quote intake form"
+                  />
+                </label>
+                <label className="textInputBlock">
+                  <span>Application to fill and map</span>
+                  <textarea
+                    value={applicationText}
+                    onChange={(event) => handleApplicationTextChange(event.target.value)}
+                    aria-label="Application to fill and map"
+                  />
+                </label>
+              </div>
+            ) : (
+              <textarea
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                aria-label="Request text"
+              />
+            )}
           </div>
 
           <div className="panel">
@@ -352,6 +382,84 @@ function parseWorkflowMode(value: string | null): WorkflowMode | null {
   ];
 
   return modes.find((mode) => mode === value) ?? null;
+}
+
+function questionsToText(questions: FormQuestion[]) {
+  return questions
+    .map((question) => `${question.pdf_field} | ${question.question} | ${question.source_field}`)
+    .join("\n");
+}
+
+function parseApplicationQuestions(value: string): FormQuestion[] {
+  const trimmed = value.trim();
+  if (!trimmed) return defaultLiquorRestaurantQuestions;
+
+  if (trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed) as FormQuestion[];
+      return parsed.filter((item) => item.id && item.question).map((item, index) => ({
+        id: item.id || `question_${index + 1}`,
+        question: item.question,
+        source_field: item.source_field || guessSourceField(item.question),
+        pdf_field: item.pdf_field || `Application question ${index + 1}`
+      }));
+    } catch {
+      return defaultLiquorRestaurantQuestions;
+    }
+  }
+
+  const questions = trimmed
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const parts = line.split("|").map((part) => part.trim()).filter(Boolean);
+      const pdfField = parts.length >= 2 ? parts[0] : `Application question ${index + 1}`;
+      const question = parts.length >= 2 ? parts[1] : line.replace(/^\d+[\).\-\s]+/, "");
+      const sourceField = parts.length >= 3 ? parts[2] : guessSourceField(question);
+
+      return {
+        id: slugifyQuestion(question) || `question_${index + 1}`,
+        question,
+        source_field: sourceField,
+        pdf_field: pdfField
+      };
+    });
+
+  return questions.length ? questions : defaultLiquorRestaurantQuestions;
+}
+
+function slugifyQuestion(question: string) {
+  return question
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 52);
+}
+
+function guessSourceField(question: string) {
+  const lowered = question.toLowerCase();
+  if (lowered.includes("applicant") || lowered.includes("insured") || lowered.includes("named insured")) return "account.name";
+  if (lowered.includes("dba")) return "account.dba";
+  if (lowered.includes("address") || lowered.includes("location")) return "location.street";
+  if (lowered.includes("city")) return "location.city";
+  if (lowered.includes("state")) return "location.state";
+  if (lowered.includes("zip")) return "location.zip";
+  if (lowered.includes("email")) return "account.email";
+  if (lowered.includes("phone")) return "account.phone";
+  if (lowered.includes("coverage")) return "opportunity.requested_coverages";
+  if (lowered.includes("limit")) return "opportunity.general_liability_limit";
+  if (lowered.includes("operation") || lowered.includes("description")) return "risk_profile.operations";
+  if (lowered.includes("food sales")) return "risk_profile.food_sales";
+  if (lowered.includes("alcohol") || lowered.includes("liquor sales")) return "risk_profile.alcohol_sales";
+  if (lowered.includes("entertainment")) return "risk_profile.entertainment";
+  if (lowered.includes("training")) return "risk_profile.liquor_training";
+  if (lowered.includes("claim") || lowered.includes("loss")) return "risk_profile.claims_or_violations";
+  if (lowered.includes("certificate holder")) return "certificate_request.certificate_holder";
+  if (lowered.includes("additional insured")) return "certificate_request.additional_insured_requested";
+  if (lowered.includes("waiver")) return "certificate_request.waiver_of_subrogation_requested";
+  if (lowered.includes("primary") || lowered.includes("noncontributory")) return "certificate_request.primary_and_noncontributory_requested";
+  return "intake.review_required";
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

@@ -423,6 +423,29 @@ textarea {
   background: #f8fafc;
 }
 
+.intakeAppGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 12px;
+}
+
+.textInputBlock {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.textInputBlock span {
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.textInputBlock textarea {
+  min-height: 460px;
+}
+
 .uploadGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -988,7 +1011,8 @@ pre {
   }
 
   .uploadGrid,
-  .uploadStatus {
+  .uploadStatus,
+  .intakeAppGrid {
     grid-template-columns: 1fr;
   }
 }

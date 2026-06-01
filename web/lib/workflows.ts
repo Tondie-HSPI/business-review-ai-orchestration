@@ -1077,7 +1077,39 @@ function answerQuestion(
     liquor_training: fields.liquor_training
   };
 
-  return fallbackMap[question.id] ?? null;
+  const sourceFieldFallback: Record<string, string | null | undefined> = {
+    "account.name": fields.applicant,
+    "account.dba": fields.dba,
+    "account.email": fields.email,
+    "account.phone": fields.phone,
+    "location.street": fields.location_address,
+    "location.city": fields.city,
+    "location.state": fields.state,
+    "location.zip": fields.zip,
+    "opportunity.requested_coverages": fields.coverage_requested,
+    "opportunity.general_liability_limit": fields.gl_limit,
+    "opportunity.liquor_liability_limit": fields.liquor_limit,
+    "risk_profile.operations": fields.operations,
+    "risk_profile.food_sales": fields.food_sales,
+    "risk_profile.alcohol_sales": fields.alcohol_sales,
+    "risk_profile.catering_sales": fields.catering_sales,
+    "risk_profile.entertainment": fields.entertainment,
+    "risk_profile.security": fields.security,
+    "risk_profile.liquor_training": fields.liquor_training,
+    "risk_profile.claims_or_violations": fields.claims_or_violations,
+    "risk_profile.years_experience": fields.years_experience,
+    "risk_profile.contractor_operations": fields.contractor_operations,
+    "risk_profile.landscaping_operations": fields.landscaping_operations,
+    "certificate_request.certificate_holder": fields.certificate_holder,
+    "certificate_request.certificate_holder_address": fields.certificate_holder_address,
+    "certificate_request.certificate_holder_email": fields.certificate_holder_email,
+    "certificate_request.additional_insured_requested": fields.additional_insured_requested,
+    "certificate_request.waiver_of_subrogation_requested": fields.waiver_requested,
+    "certificate_request.primary_and_noncontributory_requested": fields.primary_noncontributory_requested,
+    "certificate_request.special_certificate_wording": fields.special_certificate_wording
+  };
+
+  return fallbackMap[question.id] ?? sourceFieldFallback[question.source_field] ?? null;
 }
 
 function lookupPath(record: SalesforceLikeRecord, dottedPath: string): unknown {
