@@ -2,6 +2,14 @@
 
 AI-assisted document review and application-prep workflow that takes an initial request and creates a submission-ready packet for carrier or business review.
 
+## Disclaimer
+
+This is an independent portfolio project built for learning and demonstration purposes.
+
+It uses mock data, sample business scenarios, and synthetic insurance/application examples. It does not include employer data, client data, proprietary workflows, carrier-specific confidential information, or internal company tools.
+
+The project is designed to demonstrate applied AI, business analytics, document review, and human-in-the-loop workflow design.
+
 ## Business Problem
 
 Business, insurance, compliance, and service teams often need to turn intake notes, emails, contracts, COI requests, and application forms into accurate review packets. The work is repetitive but judgment-heavy: reviewers must identify what the request is asking for, extract important requirements, check what is missing, flag complex wording, and prepare the next action.
