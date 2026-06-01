@@ -635,6 +635,9 @@ function LiquorRestaurantView({
     (item) => item.flagged_for_review && reviewedAnswers[item.id]
   ).length;
   const allReviewed = requiredReviewCount > 0 && completedReviewCount === requiredReviewCount;
+  const visibleRiskFlags = result.risk_flags.slice(0, 3);
+  const visibleDoubleChecks = result.submission_readiness.rep_double_checks.slice(0, 4);
+  const certificateOptimizer = result.csr_certificate_request.certificate_optimizer;
 
   return (
     <div className="outputStack">
@@ -702,15 +705,24 @@ function LiquorRestaurantView({
           )}
         </div>
       </ReviewSection>
-      <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
-      <ChipGroup title="Risk flags" values={result.risk_flags} variant="risk" />
-      <ChipGroup
-        title="Rep double-check checklist"
-        values={result.submission_readiness.rep_double_checks}
-        variant="risk"
-      />
       {result.csr_certificate_request.requested && (
-        <ReviewSection title="Certificate Optimizer And CSR Draft" className="certificateRequest" defaultOpen>
+        <ReviewSection title="Quoting Certificate Optimizer" className="certificateRequest" defaultOpen>
+          <div className="optimizerBox primaryOptimizer">
+            <h4>Quote impact summary</h4>
+            <div className="fieldRow">
+              <span>Complexity score</span>
+              <strong>{certificateOptimizer.complexity_score}/100</strong>
+            </div>
+            <div className="fieldRow">
+              <span>Suggested next step</span>
+              <strong>{certificateOptimizer.suggested_next_step}</strong>
+            </div>
+            <ChipGroup
+              title="Quote considerations"
+              values={certificateOptimizer.quote_considerations.slice(0, 3)}
+              variant="risk"
+            />
+          </div>
           <div className="fieldRow">
             <span>Status</span>
             <strong>{formatLabel(result.csr_certificate_request.status)}</strong>
@@ -729,35 +741,27 @@ function LiquorRestaurantView({
           </div>
           <ChipGroup
             title="CSR review flags"
-            values={result.csr_certificate_request.review_flags}
+            values={result.csr_certificate_request.review_flags.slice(0, 3)}
             variant="risk"
           />
-          <div className="optimizerBox">
-            <h4>Certificate Optimizer</h4>
-            <div className="fieldRow">
-              <span>Complexity score</span>
-              <strong>{result.csr_certificate_request.certificate_optimizer.complexity_score}/100</strong>
-            </div>
-            <div className="fieldRow">
-              <span>Suggested next step</span>
-              <strong>{result.csr_certificate_request.certificate_optimizer.suggested_next_step}</strong>
-            </div>
-            <ChipGroup
-              title="Quote considerations"
-              values={result.csr_certificate_request.certificate_optimizer.quote_considerations}
-              variant="risk"
-            />
-            <ChipGroup
-              title="CSR review priorities"
-              values={result.csr_certificate_request.certificate_optimizer.csr_review_priorities}
-              variant="risk"
-            />
-          </div>
           <div className="emailDraft">
             <pre>{result.csr_certificate_request.csr_email_draft}</pre>
           </div>
         </ReviewSection>
       )}
+      <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
+      <ChipGroup
+        title="Key review flags"
+        values={visibleRiskFlags}
+        variant="risk"
+        overflowCount={result.risk_flags.length - visibleRiskFlags.length}
+      />
+      <ChipGroup
+        title="Rep double-check checklist"
+        values={visibleDoubleChecks}
+        variant="risk"
+        overflowCount={result.submission_readiness.rep_double_checks.length - visibleDoubleChecks.length}
+      />
       <ReviewSection title="Mapped Application Questions">
         {result.answered_form_questions.map((item) => (
           <div className="questionRow" key={item.id}>
@@ -841,11 +845,13 @@ function BusinessReviewView({ result }: { result: ReviewOutput }) {
 function ChipGroup({
   title,
   values,
-  variant = "default"
+  variant = "default",
+  overflowCount = 0
 }: {
   title: string;
   values: string[];
   variant?: "default" | "missing" | "risk";
+  overflowCount?: number;
 }) {
   return (
     <div>
@@ -859,6 +865,9 @@ function ChipGroup({
           ))
         ) : (
           <span className="chip success">None detected</span>
+        )}
+        {overflowCount > 0 && (
+          <span className="chip mutedChip">+{overflowCount} more in JSON</span>
         )}
       </div>
     </div>

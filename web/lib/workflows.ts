@@ -1323,29 +1323,19 @@ function certificateRiskFlags(fields: Record<string, string | null | undefined>,
 }
 
 function repDoubleChecks(fields: Record<string, string | null | undefined>, riskFlags: string[]) {
-  const checks = [
-    "Confirm all applicant-provided facts before carrier submission.",
-    "Confirm the selected carrier application version and state-specific requirements.",
-    "Review inferred answers against source intake notes and producer guidance."
-  ];
+  const checks = ["Confirm applicant facts and inferred answers against the source intake."];
 
   if (riskFlags.length) {
-    checks.push("Review underwriting flags before sending the application packet.");
+    checks.push("Review underwriting and certificate wording impacts before sending the packet.");
   }
-  if (fields.entertainment) {
-    checks.push("Confirm entertainment type, frequency, and whether dancing is permitted.");
+  if (fields.entertainment || fields.security) {
+    checks.push("Confirm entertainment, dancing, security, and door staff details.");
   }
-  if (fields.security) {
-    checks.push("Confirm security or door staff duties and employment status.");
-  }
-  if (fields.fryers === "Yes") {
-    checks.push("Confirm fire suppression system type, service status, and cleaning contract.");
-  }
-  if ((fields.certificate_requested ?? "").toLowerCase() === "yes") {
-    checks.push("Review certificate wording requirements during quote preparation, not only after binding.");
+  if (fields.fryers === "Yes" || fields.fire_suppression) {
+    checks.push("Confirm fire suppression system, service status, and cleaning contract.");
   }
   if (!fields.claims_or_violations) {
-    checks.push("Claims/losses were defaulted to no known claims disclosed because the intake did not document any; confirm before submission.");
+    checks.push("Confirm the no-known-claims default before submission.");
   }
 
   return checks;

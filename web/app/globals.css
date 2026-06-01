@@ -999,6 +999,12 @@ textarea:focus {
   border-color: #a7f3d0;
 }
 
+.chip.mutedChip {
+  color: #475569;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
 .jsonPanel {
   margin-top: 18px;
   background: #101828;
