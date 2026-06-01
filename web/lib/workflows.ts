@@ -332,7 +332,6 @@ const commonIntakeFields = [
   "coverage_requested",
   "operations",
   "gl_limit",
-  "claims_or_violations",
 ];
 
 const requiredLiquorRestaurantFields = [
@@ -704,7 +703,7 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
   const entertainment = fields.entertainment ?? "";
   const security = fields.security ?? "";
   const operations = fields.operations ?? "";
-  const claims = (fields.claims_or_violations ?? "").toLowerCase().replace(/[. ]+$/g, "");
+  const claimsDefault = defaultClaimsAnswer(fields.claims_or_violations);
   const fireSuppression = fields.fire_suppression ?? "";
 
   return [
@@ -727,10 +726,11 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
     inferredAnswer(
       "losses_or_violations",
       "Any losses, claims, liquor citations, violations, charges, or enforcement actions in the past five years?",
-      cleanNone(claims) ? "No" : "Review Required",
-      fields.claims_or_violations ?? "",
-      "Confirm loss runs and liquor violation history before submission.",
-      "4 R1 / 21 / 22"
+      claimsDefault.answer,
+      claimsDefault.evidence,
+      claimsDefault.repCheck,
+      "4 R1 / 21 / 22",
+      claimsDefault.confidence
     ),
     inferredAnswer(
       "bar_with_seating",
@@ -979,9 +979,10 @@ function inferredAnswer(
   inferred_answer: string,
   evidence: string,
   rep_check: string,
-  pdf_field: string
+  pdf_field: string,
+  confidenceOverride?: "high" | "needs_review"
 ) {
-  const confidence = evidence && inferred_answer !== "Review Required" ? "high" as const : "needs_review" as const;
+  const confidence = confidenceOverride ?? (evidence && inferred_answer !== "Review Required" ? "high" as const : "needs_review" as const);
   return {
     id,
     question,
@@ -1108,7 +1109,7 @@ function answerQuestion(
     "risk_profile.entertainment": fields.entertainment,
     "risk_profile.security": fields.security,
     "risk_profile.liquor_training": fields.liquor_training,
-    "risk_profile.claims_or_violations": fields.claims_or_violations,
+    "risk_profile.claims_or_violations": defaultClaimsAnswer(fields.claims_or_violations).answer,
     "risk_profile.years_experience": fields.years_experience,
     "risk_profile.contractor_operations": fields.contractor_operations,
     "risk_profile.landscaping_operations": fields.landscaping_operations,
@@ -1177,6 +1178,34 @@ function cleanNone(value: string | null | undefined) {
   return ["none", "no", "none in the past five years"].includes(cleaned);
 }
 
+function defaultClaimsAnswer(value: string | null | undefined) {
+  if (!value) {
+    return {
+      answer: "No known claims disclosed",
+      evidence: "Default assumption: the intake does not document claims, losses, liquor citations, or violations.",
+      repCheck:
+        "Confirm with the applicant before submission. If any claims or violations exist, add date, amount, status, and description.",
+      confidence: "needs_review" as const
+    };
+  }
+
+  if (cleanNone(value)) {
+    return {
+      answer: "No",
+      evidence: value,
+      repCheck: "Confirm loss runs and liquor violation history before submission.",
+      confidence: "high" as const
+    };
+  }
+
+  return {
+    answer: "Review Required",
+    evidence: value,
+    repCheck: "Document claim, loss, citation, violation, or enforcement details before submission.",
+    confidence: "needs_review" as const
+  };
+}
+
 function lineValue(text: string, label: string): string | null {
   const prefix = `${label.toLowerCase()}:`;
   const line = text
@@ -1232,7 +1261,7 @@ function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
     if (containsAny(fields.operations ?? "", ["remodel", "carpentry", "repair"])) {
       flags.push("Contractor operations should be reviewed for class eligibility and excluded work.");
     }
-    if (!cleanNone(fields.claims_or_violations)) {
+    if (fields.claims_or_violations && !cleanNone(fields.claims_or_violations)) {
       flags.push("Claims or violations need detail before submission.");
     }
     return certificateRiskFlags(fields, flags);
@@ -1245,7 +1274,7 @@ function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
     if (containsAny(fields.landscaping_operations ?? "", ["tree"])) {
       flags.push("Tree work exposure should be reviewed for height and subcontractor controls.");
     }
-    if (!cleanNone(fields.claims_or_violations)) {
+    if (fields.claims_or_violations && !cleanNone(fields.claims_or_violations)) {
       flags.push("Claims or violations need detail before submission.");
     }
     return certificateRiskFlags(fields, flags);
@@ -1274,7 +1303,7 @@ function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
   if ((fields.id_scanner ?? "").toLowerCase() !== "yes") {
     flags.push("ID scanner control should be confirmed.");
   }
-  if (!cleanNone(fields.claims_or_violations)) {
+  if (fields.claims_or_violations && !cleanNone(fields.claims_or_violations)) {
     flags.push("Claims or liquor violations need detail before submission.");
   }
   return certificateRiskFlags(fields, flags);
@@ -1314,6 +1343,9 @@ function repDoubleChecks(fields: Record<string, string | null | undefined>, risk
   }
   if ((fields.certificate_requested ?? "").toLowerCase() === "yes") {
     checks.push("Review certificate wording requirements during quote preparation, not only after binding.");
+  }
+  if (!fields.claims_or_violations) {
+    checks.push("Claims/losses were defaulted to no known claims disclosed because the intake did not document any; confirm before submission.");
   }
 
   return checks;
