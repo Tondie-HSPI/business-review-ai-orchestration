@@ -50,13 +50,14 @@ export default function Home() {
   }, [mode, text, sourceRecord, formQuestions]);
 
   function switchMode(nextMode: WorkflowMode) {
-    setMode(nextMode);
-    setText(sampleForMode(nextMode));
+    const normalizedMode = nextMode === "application-prep" ? "liquor-restaurant" : nextMode;
+    setMode(normalizedMode);
+    setText(sampleForMode(normalizedMode));
     setUploadMessage("");
     setReviewedAnswers({});
 
     if (typeof window !== "undefined") {
-      window.history.replaceState(null, "", `?workflow=${nextMode}`);
+      window.history.replaceState(null, "", `?workflow=${normalizedMode}`);
     }
   }
 
@@ -165,11 +166,11 @@ export default function Home() {
               <a
                 href="?workflow=application-prep"
                 className={mode === "application-prep" ? "active" : ""}
-                onClick={(event) => handleWorkflowClick(event, "application-prep")}
+                onClick={(event) => handleWorkflowClick(event, "liquor-restaurant")}
               >
-              Application Prep
+              Restaurant App Prep
             </a>
-              <span>Focused demo app</span>
+              <span>Pre-mapped app demo</span>
               <a
                 href="?workflow=liquor-restaurant"
                 className={mode === "liquor-restaurant" ? "active nested" : "nested"}
@@ -216,37 +217,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="decisionPath panel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Presentation flow</p>
-              <h2>Quote intake to submission-ready review</h2>
-            </div>
-          </div>
-          <div className="pathSteps">
-            <div>
-              <span>1</span>
-              <strong>Read the intake</strong>
-              <small>Capture operations, limits, locations, sales, certificates, and special wording.</small>
-            </div>
-            <div>
-              <span>2</span>
-              <strong>Map the app</strong>
-              <small>Match application questions to available intake data and flag unsupported answers.</small>
-            </div>
-            <div>
-              <span>3</span>
-              <strong>Surface judgment calls</strong>
-              <small>Show underwriting flags, missing information, and rep double-check items.</small>
-            </div>
-            <div>
-              <span>4</span>
-              <strong>Prepare for review</strong>
-              <small>Create a draft packet for human review, not automated approval or binding.</small>
-            </div>
-          </div>
-        </section>
-
         <section className="workflowPicker panel">
           <div className="panelHeader">
             <div>
@@ -265,21 +235,44 @@ export default function Home() {
               onClick={(event) => handleWorkflowClick(event, "business-review")}
             />
             <WorkflowCard
-              active={mode === "application-prep"}
-              eyebrow="Application packet"
-              title="General App Prep"
-              body="Prepare a carrier-neutral application packet from quote intake details for human review."
-              href="?workflow=application-prep"
-              onClick={(event) => handleWorkflowClick(event, "application-prep")}
-            />
-            <WorkflowCard
               active={mode === "liquor-restaurant"}
               eyebrow="Flagship demo"
               title="Restaurant / Liquor App"
-              body="Map restaurant intake into a submission-ready application draft with certificate wording and rep-review flags."
+              body="Use a pre-mapped restaurant application schema to infer answers from quote intake for rep review."
               href="?workflow=liquor-restaurant"
               onClick={(event) => handleWorkflowClick(event, "liquor-restaurant")}
             />
+          </div>
+        </section>
+
+        <section className="decisionPath panel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Presentation flow</p>
+              <h2>Quote intake to submission-ready review</h2>
+            </div>
+          </div>
+          <div className="pathSteps">
+            <div>
+              <span>1</span>
+              <strong>Read the intake</strong>
+              <small>Capture operations, limits, locations, sales, certificates, and special wording.</small>
+            </div>
+            <div>
+              <span>2</span>
+              <strong>Use the mapped app</strong>
+              <small>Apply a pre-mapped restaurant application schema to the intake.</small>
+            </div>
+            <div>
+              <span>3</span>
+              <strong>Infer draft answers</strong>
+              <small>Show answer, target field, evidence, and what the rep must verify.</small>
+            </div>
+            <div>
+              <span>4</span>
+              <strong>Prepare for review</strong>
+              <small>Create a draft packet for human review, not automated approval or binding.</small>
+            </div>
           </div>
         </section>
 
@@ -295,7 +288,7 @@ export default function Home() {
             <div className="panelHeader">
               <div>
                 <p className="eyebrow">{showsApplicationUploads ? "Steps 2 and 3" : "Step 2"}</p>
-                <h2>{showsApplicationUploads ? "Quote intake and application mapping" : "Business review request"}</h2>
+                <h2>{showsApplicationUploads ? "Quote intake and pre-mapped app" : "Small business GL request"}</h2>
               </div>
               <button
                 type="button"
@@ -319,7 +312,7 @@ export default function Home() {
               {showsApplicationUploads && (
                 <>
                   <label>
-                    <span>2. Upload app questions</span>
+                    <span>2. Upload mapped app schema</span>
                     <input
                       type="file"
                       accept=".txt,.json"
@@ -339,7 +332,7 @@ export default function Home() {
             </div>
             {showsApplicationUploads && (
               <div className="uploadHelp">
-                Paste or upload the quote intake first. Then paste or upload the application questions that need mapped and prepared for rep review.
+                The demo uses a pre-mapped restaurant app schema. Paste or upload the quote intake, then review how the mapped app fields derive inferred answers for the rep.
               </div>
             )}
             {uploadMessage && <div className="uploadMessage">{uploadMessage}</div>}
@@ -354,7 +347,7 @@ export default function Home() {
                   />
                 </label>
                 <label className="textInputBlock">
-                  <span>2. Application to fill and map</span>
+                  <span>2. Pre-mapped restaurant app schema</span>
                   <textarea
                     value={applicationText}
                     onChange={(event) => handleApplicationTextChange(event.target.value)}
@@ -425,10 +418,10 @@ function sampleForMode(mode: WorkflowMode) {
 
 function normalizeWorkflowMode(value: string | null): WorkflowMode | null {
   if (value === "contractor" || value === "landscaper") return "liquor-restaurant";
+  if (value === "application-prep") return "liquor-restaurant";
 
   const modes: WorkflowMode[] = [
     "business-review",
-    "application-prep",
     "liquor-restaurant"
   ];
 
@@ -649,7 +642,7 @@ function LiquorRestaurantView({
       <div className="uploadStatus">
         <div>
           <span>Carrier app</span>
-          <strong>{uploadedPdfName || "Default preprocessed form schema"}</strong>
+          <strong>{uploadedPdfName || "Pre-mapped restaurant app schema"}</strong>
         </div>
         <div>
           <span>Form questions</span>
@@ -673,9 +666,9 @@ function LiquorRestaurantView({
           Carrier agnostic draft | {result.submission_readiness.blocking_missing_information_count} blocking missing fields
         </small>
       </div>
-      <ReviewSection title="Application Draft For Rep Review" className="applicationPreview" defaultOpen>
+      <ReviewSection title="Inferred Application Answers For Rep Review" className="applicationPreview" defaultOpen>
         <div className="reviewHint">
-          Carrier-neutral preview. The rep reviews flagged answers before saving a draft.
+          Answers are derived from the quote intake using a USLI-style pre-mapped restaurant app schema. The rep reviews each answer, evidence, and target field before saving a draft.
         </div>
         {result.inferred_application_answers.map((item) => (
           <label className="previewQuestion" key={item.id}>
