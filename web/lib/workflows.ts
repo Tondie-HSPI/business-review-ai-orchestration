@@ -1,4 +1,4 @@
-export type WorkflowMode = "business-review" | "application-prep" | "liquor-restaurant";
+export type WorkflowMode = "business-review" | "application-prep" | "contractor" | "landscaper" | "liquor-restaurant";
 
 export type ReviewOutput = {
   document_type: string;
@@ -29,6 +29,11 @@ export type ApplicationPacket = {
 export type LiquorRestaurantPacket = {
   workflow_name: string;
   risk_type: string;
+  workflow_scope: {
+    supported_business_classes: string[];
+    detected_business_class: string;
+    routing_note: string;
+  };
   official_form_status: string;
   submission_readiness: {
     status: "ready_for_human_review" | "needs_more_information";
@@ -50,6 +55,13 @@ export type LiquorRestaurantPacket = {
     requested_wording: Record<string, string | null | undefined>;
     missing_information: string[];
     review_flags: string[];
+    certificate_optimizer: {
+      optimization_goal: string;
+      complexity_score: number;
+      quote_considerations: string[];
+      csr_review_priorities: string[];
+      suggested_next_step: string;
+    };
     csr_email_draft: string;
     requires_csr_review: boolean;
   };
@@ -144,7 +156,8 @@ Zip: 27601
 Email: manager@example.com
 Phone: 919-555-0182
 Coverage requested: General Liability, Liquor Liability, Property
-Operations: Full-service restaurant with bar seating and weekend DJ.
+Operations: Full-service restaurant with bar seating, weekend DJ, and seasonal food truck operations for catering events.
+Business class: Restaurant with food truck operations
 Years experience: 8
 Business start year: 2021
 Food sales: 850000
@@ -166,6 +179,9 @@ Lowest wine/liquor price: 7.00
 Building owner: No
 Fryers: Yes
 Fire suppression: Wet system with cleaning contract.
+Food truck operations: Seasonal food truck used for off-premises catering and festivals.
+Contractor operations:
+Landscaping operations:
 Certificate requested: Yes
 Certificate holder: Triangle Events Group
 Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
@@ -175,6 +191,98 @@ Additional insured requested: Yes
 Waiver of subrogation requested: Yes
 Primary and noncontributory requested: Yes
 Special certificate wording: Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms.`;
+
+export const contractorSample = `Quote request generated from fake intake data.
+Applicant: Apex Build & Repair LLC
+DBA: Apex Build
+Location address: 2250 Trade Center Way
+City: Charlotte
+State: NC
+Zip: 28208
+Email: ops@example.com
+Phone: 704-555-0199
+Coverage requested: General Liability, Inland Marine, Umbrella
+Operations: Residential remodeling contractor performing drywall, flooring, light carpentry, and punch-list repairs.
+Business class: Contractor
+Years experience: 12
+Business start year: 2018
+Food sales:
+Alcohol sales:
+Catering sales:
+GL limit: 1000000/2000000
+Liquor limit:
+Close time:
+Alcohol sales cease:
+Entertainment:
+Security:
+BYOB:
+Claims or violations: None in the past five years.
+Liquor training:
+ID scanner:
+Happy hour after 9pm:
+Lowest beer price:
+Lowest wine/liquor price:
+Building owner: No
+Fryers:
+Fire suppression:
+Food truck operations:
+Contractor operations: Uses subcontractors for electrical and plumbing; certificates collected before job start.
+Landscaping operations:
+Certificate requested: Yes
+Certificate holder: Queen City Property Group
+Certificate holder address: 100 Owner Plaza, Charlotte, NC 28202
+Certificate holder email: certs@example.com
+Certificate purpose: Renovation contract for tenant improvement work
+Additional insured requested: Yes
+Waiver of subrogation requested: Yes
+Primary and noncontributory requested: Yes
+Special certificate wording: Include project name, additional insured, waiver of subrogation, and primary/noncontributory wording if allowed by policy terms.`;
+
+export const landscaperSample = `Quote request generated from fake intake data.
+Applicant: Greenline Grounds LLC
+DBA: Greenline Grounds
+Location address: 810 Garden Ridge Road
+City: Durham
+State: NC
+Zip: 27703
+Email: service@example.com
+Phone: 919-555-0144
+Coverage requested: General Liability, Commercial Auto, Inland Marine
+Operations: Lawn maintenance, mulch installation, seasonal planting, and small hardscape work.
+Business class: Landscaper
+Years experience: 9
+Business start year: 2019
+Food sales:
+Alcohol sales:
+Catering sales:
+GL limit: 1000000/2000000
+Liquor limit:
+Close time:
+Alcohol sales cease:
+Entertainment:
+Security:
+BYOB:
+Claims or violations: None in the past five years.
+Liquor training:
+ID scanner:
+Happy hour after 9pm:
+Lowest beer price:
+Lowest wine/liquor price:
+Building owner: No
+Fryers:
+Fire suppression:
+Food truck operations:
+Contractor operations:
+Landscaping operations: Uses mowers, trailers, trimmers, and pesticide subcontractor for chemical applications. No tree removal over 15 feet.
+Certificate requested: Yes
+Certificate holder: Lakeside HOA
+Certificate holder address: 45 Lakeview Drive, Durham, NC 27703
+Certificate holder email: hoa@example.com
+Certificate purpose: Annual landscape maintenance contract
+Additional insured requested: Yes
+Waiver of subrogation requested: No
+Primary and noncontributory requested: Yes
+Special certificate wording: HOA asks to be additional insured for ongoing landscape maintenance agreement.`;
 
 export const defaultLiquorRestaurantQuestions: FormQuestion[] = [
   {
@@ -257,6 +365,13 @@ const requiredLiquorRestaurantFields = [
   "claims_or_violations",
   "liquor_training",
   "id_scanner"
+];
+
+const supportedBusinessClasses = [
+  "Contractor",
+  "Landscaper",
+  "Restaurant",
+  "Food truck operations"
 ];
 
 export function reviewBusinessRequest(text: string): ReviewOutput {
@@ -422,6 +537,10 @@ export function buildLiquorRestaurantPacket(
     phone: raw.phone,
     coverage_requested: raw["coverage requested"],
     operations: raw.operations,
+    business_class: raw["business class"],
+    food_truck_operations: raw["food truck operations"],
+    contractor_operations: raw["contractor operations"],
+    landscaping_operations: raw["landscaping operations"],
     years_experience: raw["years experience"],
     business_start_year: raw["business start year"],
     food_sales: raw["food sales"],
@@ -467,8 +586,14 @@ export function buildLiquorRestaurantPacket(
   );
   const csrCertificateRequest = buildCsrCertificateRequest(fields);
   const output = {
-    workflow_name: "PaperworkPro Liquor / Restaurant Quote Intake",
-    risk_type: "restaurant_bar_liquor_liability",
+    workflow_name: "PaperworkPro Contractor / Landscaper / Restaurant Intake",
+    risk_type: detectedBusinessClass(fields),
+    workflow_scope: {
+      supported_business_classes: supportedBusinessClasses,
+      detected_business_class: detectedBusinessClass(fields),
+      routing_note:
+        "Routes intake into a carrier-neutral review packet for a rep to verify before any submission-ready use."
+    },
     official_form_status:
       "Draft intake support only; human review required before carrier submission.",
     submission_readiness: {
@@ -506,6 +631,10 @@ export function buildLiquorRestaurantPacket(
         liquor_limit: fields.liquor_limit
       },
       operations_and_controls: {
+        business_class: fields.business_class,
+        food_truck_operations: fields.food_truck_operations,
+        contractor_operations: fields.contractor_operations,
+        landscaping_operations: fields.landscaping_operations,
         close_time: fields.close_time,
         alcohol_sales_cease: fields.alcohol_sales_cease,
         entertainment: fields.entertainment,
@@ -670,10 +799,57 @@ function buildCsrCertificateRequest(fields: Record<string, string | null | undef
     },
     missing_information: missing,
     review_flags: reviewFlags,
+    certificate_optimizer: certificateOptimizer(fields, missing, reviewFlags),
     csr_email_draft: requested
       ? csrEmailDraft(fields, missing, reviewFlags)
       : "",
     requires_csr_review: requested
+  };
+}
+
+function certificateOptimizer(
+  fields: Record<string, string | null | undefined>,
+  missing: string[],
+  reviewFlags: string[]
+) {
+  const quoteConsiderations = [
+    (fields.additional_insured_requested ?? "").toLowerCase() === "yes"
+      ? "Check whether additional insured wording affects quote terms or endorsement availability."
+      : null,
+    (fields.waiver_requested ?? "").toLowerCase() === "yes"
+      ? "Confirm waiver of subrogation can be offered for the requested class and contract."
+      : null,
+    (fields.primary_noncontributory_requested ?? "").toLowerCase() === "yes"
+      ? "Review primary and noncontributory wording before presenting quote terms."
+      : null,
+    detectedBusinessClass(fields).includes("food_truck")
+      ? "Confirm off-premises, festival, and mobile food truck exposures are included in the submission review."
+      : null,
+    detectedBusinessClass(fields).includes("contractor")
+      ? "Confirm subcontractor, jobsite, and completed operations details before certificate wording review."
+      : null,
+    detectedBusinessClass(fields).includes("landscaper")
+      ? "Confirm snow removal, chemical application, tree work, and equipment exposures before certificate wording review."
+      : null
+  ].filter(Boolean) as string[];
+
+  const csrReviewPriorities = [
+    ...missing.map((field) => `Collect missing certificate information: ${formatAnalyticsLabel(field)}.`),
+    ...reviewFlags,
+    fields.special_certificate_wording
+      ? "Compare special wording against policy permissions before issuing any certificate."
+      : null
+  ].filter(Boolean) as string[];
+
+  return {
+    optimization_goal:
+      "Prepare certificate requirements for rep and CSR review while keeping quote-impacting wording visible before issuance.",
+    complexity_score: Math.min(100, reviewFlags.length * 20 + missing.length * 15 + quoteConsiderations.length * 10),
+    quote_considerations: quoteConsiderations,
+    csr_review_priorities: csrReviewPriorities,
+    suggested_next_step: missing.length
+      ? "Collect missing holder details before CSR processing."
+      : "Rep should review wording impact during quoting, then route the certificate request to CSR review."
   };
 }
 
@@ -833,6 +1009,27 @@ function lookupPath(record: SalesforceLikeRecord, dottedPath: string): unknown {
 function stringValue(value: unknown) {
   if (value === null || value === undefined) return "";
   return String(value);
+}
+
+function detectedBusinessClass(fields: Record<string, string | null | undefined>) {
+  const text = [
+    fields.business_class,
+    fields.operations,
+    fields.food_truck_operations,
+    fields.contractor_operations,
+    fields.landscaping_operations
+  ].join(" ").toLowerCase();
+
+  if (text.includes("landscap")) return "landscaper";
+  if (text.includes("contractor") || text.includes("remodel") || text.includes("subcontractor")) {
+    return "contractor";
+  }
+  if (text.includes("food truck")) return "restaurant_liquor_food_truck";
+  return "restaurant_liquor";
+}
+
+function formatAnalyticsLabel(value: string) {
+  return value.replaceAll("_", " ");
 }
 
 function lineValue(text: string, label: string): string | null {

@@ -564,6 +564,21 @@ textarea:focus {
   white-space: pre-wrap;
 }
 
+.optimizerBox {
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  margin: 12px 0;
+  padding: 12px;
+}
+
+.optimizerBox h4 {
+  color: #9a3412;
+  font-size: 0.82rem;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
 .sectionBlock {
   border: 1px solid var(--line);
   border-radius: 8px;

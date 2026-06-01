@@ -7,8 +7,10 @@ import {
   buildApplicationPacket,
   buildLiquorRestaurantPacket,
   businessSample,
+  contractorSample,
   defaultLiquorRestaurantQuestions,
   FormQuestion,
+  landscaperSample,
   LiquorRestaurantPacket,
   liquorRestaurantSample,
   reviewBusinessRequest,
@@ -32,7 +34,7 @@ export default function Home() {
   const result = useMemo<Result>(() => {
     return mode === "application-prep"
       ? buildApplicationPacket(text)
-      : mode === "liquor-restaurant"
+      : mode === "liquor-restaurant" || mode === "contractor" || mode === "landscaper"
         ? buildLiquorRestaurantPacket(text, { sourceRecord, formQuestions })
       : reviewBusinessRequest(text);
   }, [mode, text, sourceRecord, formQuestions]);
@@ -52,7 +54,11 @@ export default function Home() {
       const parsed = JSON.parse(content) as SalesforceLikeRecord;
       setSourceRecord(parsed);
       setText(salesforceRecordToQuoteText(parsed));
-      setMode("liquor-restaurant");
+      setMode((currentMode) => (
+        currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+          ? currentMode
+          : "liquor-restaurant"
+      ));
       setUploadMessage(`Loaded intake data from ${file.name}`);
       setReviewedAnswers({});
       return;
@@ -60,7 +66,11 @@ export default function Home() {
 
     setSourceRecord(null);
     setText(content);
-    setMode("liquor-restaurant");
+    setMode((currentMode) => (
+      currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+        ? currentMode
+        : "liquor-restaurant"
+    ));
     setUploadMessage(`Loaded intake text from ${file.name}`);
     setReviewedAnswers({});
   }
@@ -69,7 +79,11 @@ export default function Home() {
     if (!file) return;
     const parsed = JSON.parse(await file.text()) as FormQuestion[];
     setFormQuestions(parsed);
-    setMode("liquor-restaurant");
+    setMode((currentMode) => (
+      currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+        ? currentMode
+        : "liquor-restaurant"
+    ));
     setUploadMessage(`Loaded ${parsed.length} form questions from ${file.name}`);
     setReviewedAnswers({});
   }
@@ -77,7 +91,11 @@ export default function Home() {
   function handlePdfUpload(file: File | null) {
     if (!file) return;
     setUploadedPdfName(file.name);
-    setMode("liquor-restaurant");
+    setMode((currentMode) => (
+      currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+        ? currentMode
+        : "liquor-restaurant"
+    ));
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
     setReviewedAnswers({});
   }
@@ -92,6 +110,7 @@ export default function Home() {
   const missingCount = result.missing_information.length;
   const humanReview = result.requires_human_review ? "Required" : "Not required";
   const analytics = result.analytics_summary;
+  const isIntakeWorkflow = mode === "contractor" || mode === "landscaper" || mode === "liquor-restaurant";
 
   return (
     <main>
@@ -108,10 +127,22 @@ export default function Home() {
           <label>Workflow</label>
           <div className="segmented">
             <button
+              className={mode === "contractor" ? "active" : ""}
+              onClick={() => switchMode("contractor")}
+            >
+              Contractor
+            </button>
+            <button
+              className={mode === "landscaper" ? "active" : ""}
+              onClick={() => switchMode("landscaper")}
+            >
+              Landscaper
+            </button>
+            <button
               className={mode === "liquor-restaurant" ? "active" : ""}
               onClick={() => switchMode("liquor-restaurant")}
             >
-              Liquor / Restaurant
+              Restaurant / Liquor
             </button>
             <button
               className={mode === "application-prep" ? "active" : ""}
@@ -134,6 +165,15 @@ export default function Home() {
             The demo separates flexible extraction from deterministic rules,
             missing-field checks, and human review controls.
           </span>
+        </div>
+
+        <div className="sidebarNote">
+          <strong>Current workflows</strong>
+          <span>Business Review: general document/request review for requirements, missing information, and next action.</span>
+          <span>Application Prep: carrier-neutral application packet for human review.</span>
+          <span>Contractor: jobsite, subcontractor, and certificate wording review.</span>
+          <span>Landscaper: premises, equipment, chemical/tree/snow exposures, and certificate wording.</span>
+          <span>Restaurant / Liquor: food, liquor, entertainment, food truck operations, and certificate wording.</span>
         </div>
 
         <div className="sidebarNote">
@@ -186,7 +226,7 @@ export default function Home() {
                 Reload sample
               </button>
             </div>
-            {mode === "liquor-restaurant" && (
+            {isIntakeWorkflow && (
               <div className="uploadGrid">
                 <label>
                   <span>Upload intake data</span>
@@ -231,7 +271,7 @@ export default function Home() {
             </div>
             {mode === "application-prep" ? (
               <ApplicationView result={result as ApplicationPacket} />
-            ) : mode === "liquor-restaurant" ? (
+            ) : mode === "liquor-restaurant" || mode === "contractor" || mode === "landscaper" ? (
               <LiquorRestaurantView
                 result={result as LiquorRestaurantPacket}
                 uploadedPdfName={uploadedPdfName}
@@ -268,6 +308,8 @@ export default function Home() {
 
 function sampleForMode(mode: WorkflowMode) {
   if (mode === "application-prep") return applicationSample;
+  if (mode === "contractor") return contractorSample;
+  if (mode === "landscaper") return landscaperSample;
   if (mode === "liquor-restaurant") return liquorRestaurantSample;
   return businessSample;
 }
@@ -408,6 +450,20 @@ function LiquorRestaurantView({
       <div className="summary">
         {result.intake_summary.applicant} | {result.intake_summary.location}
       </div>
+      <ReviewSection title="Workflow Routing" defaultOpen>
+        <div className="fieldRow">
+          <span>Detected workflow</span>
+          <strong>{formatLabel(result.workflow_scope.detected_business_class)}</strong>
+        </div>
+        <div className="fieldRow">
+          <span>Supported workflows</span>
+          <strong>{result.workflow_scope.supported_business_classes.join(", ")}</strong>
+        </div>
+        <div className="fieldRow">
+          <span>Routing note</span>
+          <strong>{result.workflow_scope.routing_note}</strong>
+        </div>
+      </ReviewSection>
       {Object.entries(result.application_packet).map(([section, fields]) => (
         <ReviewSection
           title={formatLabel(section)}
@@ -447,6 +503,27 @@ function LiquorRestaurantView({
             values={result.csr_certificate_request.review_flags}
             variant="risk"
           />
+          <div className="optimizerBox">
+            <h4>Certificate Optimizer</h4>
+            <div className="fieldRow">
+              <span>Complexity score</span>
+              <strong>{result.csr_certificate_request.certificate_optimizer.complexity_score}/100</strong>
+            </div>
+            <div className="fieldRow">
+              <span>Suggested next step</span>
+              <strong>{result.csr_certificate_request.certificate_optimizer.suggested_next_step}</strong>
+            </div>
+            <ChipGroup
+              title="Quote considerations"
+              values={result.csr_certificate_request.certificate_optimizer.quote_considerations}
+              variant="risk"
+            />
+            <ChipGroup
+              title="CSR review priorities"
+              values={result.csr_certificate_request.certificate_optimizer.csr_review_priorities}
+              variant="risk"
+            />
+          </div>
           <div className="emailDraft">
             <pre>{result.csr_certificate_request.csr_email_draft}</pre>
           </div>
