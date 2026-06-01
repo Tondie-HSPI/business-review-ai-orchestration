@@ -1,169 +1,188 @@
 # PaperworkPro: Business Review AI Orchestration
 
-AI workflow prototype that takes an initial quote or application request and creates a submission-ready application draft for carrier submission review.
+AI-assisted document review and application-prep workflow that takes an initial request and creates a submission-ready packet for carrier or business review.
 
 ## Business Problem
 
-Operations, compliance, insurance, customer success, and implementation teams often review requests that arrive as emails, forms, notes, contracts, policy language, or application packets. The work is repetitive but judgment-heavy: reviewers must identify the request type, extract important details, check for missing information, flag risk, and decide the next action.
+Business, insurance, compliance, and service teams often need to turn intake notes, emails, contracts, COI requests, and application forms into accurate review packets. The work is repetitive but judgment-heavy: reviewers must identify what the request is asking for, extract important requirements, check what is missing, flag complex wording, and prepare the next action.
 
-When this process is handled manually, teams can face delays, inconsistent review quality, missed requirements, and rework.
+When this process is handled manually, teams can face delays, inconsistent review quality, missed requirements, unclear handoffs, and rework before a file is ready for submission or service follow-up.
 
 ## Solution
 
-This project demonstrates a controlled AI-assisted workflow that separates flexible text interpretation from deterministic business rules. A document or request is processed through role-aware workflow steps:
+PaperworkPro demonstrates a controlled AI-assisted workflow for document review, application preparation, requirement extraction, and decision-support workflows. It converts intake data into structured outputs while keeping deterministic business rules, source evidence, review flags, and human approval boundaries separate from AI-assisted interpretation.
 
-- Intake classification
-- Structured extraction
-- Rule-based validation
-- Risk flagging
-- Human review routing
-- Next-best-action recommendation
-- Business-friendly output formatting
-
-The project uses mock extraction logic so it can run locally without an API key. The architecture is designed so an LLM could later be added for the extraction step while keeping rules, thresholds, and human review controls deterministic.
+The project uses mock extraction logic so it can run locally without an API key. The architecture is designed so an LLM could later be added for extraction and summarization while rules, review gates, and final decisions stay controlled.
 
 ## PaperworkPro Use Case
 
-PaperworkPro includes an insurance application preparation workflow that turns an initial application request into a structured review packet. The sample uses fake data and a carrier-style application preparation scenario to demonstrate how an assistant could support paperwork completion without acting as the final submitter.
+The main demo prepares a restaurant / liquor liability insurance application review packet from fake intake data. It does not submit anything automatically. It gives the rep a structured draft, flags inferred answers for review, identifies missing information, decodes certificate or contract wording, and creates draft follow-up language.
 
 The workflow can:
 
-- organize applicant information
-- upload or paste intake data
-- attach a carrier application PDF for tracking
-- use a preprocessed form-question schema
+- upload or paste fake intake data
+- attach a carrier application PDF for reference and tracking
+- upload a preprocessed form-question schema
+- infer likely application answers from intake and account data
+- show the application draft before save/export
+- flag inferred answers that need rep review
 - identify missing application fields
-- separate completed and incomplete fields
-- prepare review notes
-- recommend follow-up before submission
+- decode COI and contract insurance requirements
+- create CSR certificate request drafts
+- create quote-prep review flags for complex wording
 - require human review before any carrier-facing action
 
-This repository does not copy or recreate any official carrier form. It shows the workflow pattern: intake, extraction, field mapping, missing-information detection, and human review.
+This repository does not copy or recreate any official carrier form. It shows the workflow pattern: intake, extraction, field mapping, missing-information detection, requirement review, and human approval.
 
 ## What This Demonstrates
 
-- AI workflow design
-- Business process automation
-- Structured extraction from unstructured text
-- Rule-based validation
-- Risk flagging and escalation logic
-- Human-in-the-loop review design
-- Clear handoffs between AI reasoning and business rules
-- Decision-support output design
+- AI workflow design for business and insurance operations
+- AI-assisted document review and application preparation
+- Structured extraction from intake notes, contracts, and COI requests
+- Rule-based validation and missing-information detection
+- Requirement extraction for additional insured, waiver of subrogation, primary/noncontributory wording, limits, and certificate holder details
+- Human-in-the-loop review gates for inferred or ambiguous answers
+- Source-aware and auditable output design
+- Business-ready summaries, checklists, draft emails, and JSON review packets
+- Clear boundaries between AI-assisted interpretation and deterministic business logic
 
 ## System Architecture
 
 ```mermaid
 flowchart TD
-    A["Business Request Text"] --> B["Intake Classifier"]
+    A["Initial request, intake data, or document text"] --> B["Document Intake"]
     B --> C["Structured Extraction"]
-    C --> D["Application / Request Mapping"]
+    C --> D["Application and Requirement Mapping"]
     D --> E["Deterministic Rules Engine"]
-    E --> F["Risk Flag Generator"]
+    E --> F["Risk and Missing-Info Flags"]
     F --> G["Human Review Gate"]
-    G --> H["Next Best Action"]
-    H --> I["Structured Review Output"]
+    G --> H["Business-Ready Outputs"]
 
-    C -. "LLM-ready boundary" .-> C1["Optional LLM Extraction"]
-    E -. "No LLM decision authority" .-> E1["Business Rules"]
+    C -. "Optional LLM boundary" .-> C1["AI-assisted extraction and summaries"]
+    E -. "No LLM decision authority" .-> E1["Rules, thresholds, and review requirements"]
+    H --> I["Application draft"]
+    H --> J["COI requirements checklist"]
+    H --> K["Draft email"]
+    H --> L["Downloadable JSON packet"]
 ```
 
 ## How It Works
 
-1. A user provides an initial business, quote, or application request.
-2. The intake step classifies the request type.
-3. The extraction step converts the text into structured fields.
-4. The mapping step organizes fields into a business review or application-prep packet.
+1. A user provides an initial business, quote, certificate, or application request.
+2. The intake step classifies the request type and normalizes available information.
+3. The extraction step converts text into structured fields.
+4. The mapping step aligns fields to application questions and review categories.
 5. The rules engine checks required information and deterministic business conditions.
-6. The risk flag step identifies review concerns.
-7. The workflow decides whether human review is required.
-8. The formatter returns JSON that can be used in a dashboard, ticket, CRM, or review queue.
+6. The risk flag step identifies complex wording, missing information, and rep review items.
+7. The human review gate requires flagged inferred answers to be checked before save/export.
+8. The formatter returns a review packet that can support a dashboard, ticket, CRM workflow, or carrier submission-prep process.
 
-## Sample Input
+## Sample Input / Sample Output
+
+### Restaurant Insurance Application Prep
+
+Sample input:
 
 ```text
-Client is requesting vendor onboarding approval for Northstar Claims Services.
-They need access by June 15 for claims intake support. Contract language mentions
-SOC 2, data handling, indemnification, and a 24-hour incident notice requirement.
-Insurance limits were not included. The request asks for expedited approval.
+Restaurant/bar account requesting GL, liquor liability, property, and business income coverage.
+Operations include dine-in service, beer/wine/liquor sales, live music twice per month, and late-night hours.
+The request includes a landlord certificate request with additional insured, waiver of subrogation,
+and primary/noncontributory wording.
 ```
 
-## Sample Output
+Sample output:
 
 ```json
 {
-  "document_type": "vendor_onboarding_request",
-  "summary": "Vendor onboarding request for claims intake support with data handling and incident notice requirements.",
-  "extracted_requirements": [
-    "SOC 2 mentioned",
-    "Data handling requirement mentioned",
-    "Indemnification mentioned",
-    "24-hour incident notice mentioned"
+  "workflow_name": "liquor_restaurant_submission_prep",
+  "document_type": "restaurant_insurance_application_prep",
+  "submission_readiness": "needs_rep_review",
+  "application_answers": [
+    {
+      "question": "Does the applicant sell alcoholic beverages?",
+      "answer": "Yes",
+      "source": "intake_notes",
+      "inferred": true,
+      "flagged_for_review": true,
+      "review_note": "Confirm liquor sales percentage before submission."
+    }
   ],
-  "missing_information": [
-    "insurance_limits",
-    "business_owner",
-    "effective_date"
-  ],
-  "risk_flags": [
-    "Expedited approval requested",
-    "Insurance limits missing",
-    "Incident notice requirement requires review"
-  ],
-  "recommended_next_action": "Route to human reviewer before approval and request missing insurance limits, business owner, and effective date.",
-  "email_draft": "Thank you for the request. Before we can complete review, please provide the missing information.",
-  "confidence_level": "medium",
   "requires_human_review": true
 }
 ```
 
-## Insurance Application Prep Example
+### COI Requirements Decoder
 
-Run the PaperworkPro application-prep demo:
+Sample input:
 
-```bash
-python -m src.demo_application
+```text
+Certificate holder requests additional insured status, waiver of subrogation,
+primary and noncontributory wording, and 30 days notice of cancellation.
 ```
 
-Sample output fields include:
+Sample output:
 
-- `workflow_name`
-- `carrier_context`
-- `official_form_status`
-- `application_sections`
-- `missing_information`
-- `field_completion_status`
-- `review_notes`
-- `recommended_next_action`
-- `requires_human_review`
+```json
+{
+  "requirement_type": "certificate_requirements",
+  "flags": [
+    "additional_insured_requested",
+    "waiver_of_subrogation_requested",
+    "primary_noncontributory_wording_requested",
+    "notice_of_cancellation_wording_requested"
+  ],
+  "recommended_review": "Route wording to rep or account manager before quoting and certificate issuance."
+}
+```
+
+### Missing-Information Checklist
+
+Sample output:
+
+```json
+{
+  "missing_information": [
+    "effective_date",
+    "full certificate holder address",
+    "liquor sales percentage",
+    "requested limits",
+    "prior carrier and loss history"
+  ],
+  "next_action": "Request missing details before preparing a carrier-ready submission packet."
+}
+```
+
+### Draft Email Output
+
+Sample output:
+
+```text
+Hi,
+
+Thank you for sending the restaurant quote request. Before we prepare the carrier submission packet,
+please confirm the requested effective date, liquor sales percentage, requested limits, prior carrier,
+loss history, and the full certificate holder address.
+
+We also noted certificate wording for additional insured, waiver of subrogation, and primary/noncontributory
+status. Those items should be reviewed before quoting and certificate issuance.
+```
 
 ## Liquor / Restaurant Quote Intake Example
 
-PaperworkPro also includes a quote-intake workflow for restaurant and bar risks. It converts generic producer or customer intake notes into:
+PaperworkPro includes fake Salesforce-style account data, fake restaurant quote intake notes, and a preprocessed form-question JSON schema. The browser demo lets the user upload intake data, upload a question schema, attach a carrier application PDF for reference, preview inferred answers, check flagged answers as reviewed, and download the generated JSON review packet.
 
-- applicant and location details
-- sales and coverage limits
-- operations and liquor-control details
-- fake Salesforce-style account and opportunity data
-- preprocessed form questions represented as JSON
-- inferred application answers with evidence, review flags, and rep review notes
-- missing information
-- underwriting review flags
-- draft PDF field mappings for an application packet
-- submission readiness status for human review
-- rep double-check checklist for inferred answers and underwriting concerns
+Current scope:
 
-The uploaded carrier form is not stored in this public repository. The workflow demonstrates how intake data can be structured against a carrier-agnostic form-question schema for review before any licensed or human submission step.
+- creates an application-prep packet
+- maps answers to target PDF field names when available
+- previews answers before save/export
+- gates save/export behind rep review of flagged answers
+- includes certificate requirements in the quote-prep flags
+- creates a CSR certificate request draft when certificate wording is included
 
-In the browser demo, the user can upload fake intake data, upload a form-question JSON schema, attach a carrier application PDF for reference, and download the generated review packet JSON. Physical PDF form filling is the next backend step.
+Next backend step:
 
-The Liquor / Restaurant workflow also includes a carrier application preview. Inferred answers are flagged for rep review, and the “save reviewed draft” action is gated until the rep checks each flagged answer.
-
-If the intake asks for a certificate, the workflow creates a CSR certificate request draft with holder details, requested wording, missing information, and review flags for additional insured, waiver of subrogation, and primary/noncontributory wording. It does not issue the certificate automatically.
-
-Certificate requirements are also included in the application packet and quote-prep flags because complex wording can affect eligibility, endorsements, quote terms, and whether the certificate can be issued later.
-
-For other application types, the same pattern can be reused by uploading a different form-question JSON schema. Deeper answer inference requires app-type rules for that carrier/product workflow.
+- physically fill PDF form fields after the form is mapped and reviewed
 
 ## Run Locally
 
@@ -233,13 +252,16 @@ business-review-ai-orchestration/
 
 ## Limitations and Human Review
 
-This is a portfolio prototype, not a production compliance system, licensed insurance tool, or official carrier application system. It does not make final approval or submission decisions. High-risk, ambiguous, incomplete, or time-sensitive requests are routed to human review.
+This is a portfolio prototype, not a production compliance system, licensed insurance tool, official carrier application system, legal advice, insurance advice, underwriting decision tool, or certificate issuance system. It does not make final approval, coverage, compliance, legal, underwriting, or submission decisions.
+
+All sample data is fake. Any high-risk, ambiguous, incomplete, inferred, or carrier-facing output should be reviewed by a qualified human before use.
 
 ## Future Improvements
 
 - Add optional OpenAI extraction behind an environment-variable API key.
+- Add physical PDF form filling after reviewed field mappings.
 - Add a Python API layer with FastAPI or AWS Lambda.
-- Store review history in SQLite.
+- Store review history in SQLite or a managed database.
 - Add reviewer feedback loops.
-- Add role-specific dashboards for operations, compliance, and account teams.
+- Add role-specific dashboards for producers, CSRs, account managers, and operations teams.
 - Add evaluation examples showing precision of missing-info and risk-flag detection.
