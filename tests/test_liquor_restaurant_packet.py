@@ -67,3 +67,13 @@ def test_liquor_packet_creates_csr_certificate_request():
     assert cert_request["requires_csr_review"] is True
     assert any("Additional insured" in flag for flag in cert_request["review_flags"])
     assert "Please review the certificate request" in cert_request["csr_email_draft"]
+
+
+def test_certificate_requirements_are_part_of_application_packet_and_quote_flags():
+    packet = build_liquor_restaurant_packet(SAMPLE_LIQUOR_RESTAURANT_QUOTE)
+
+    cert_requirements = packet["application_packet"]["certificate_requirements"]
+    assert cert_requirements["certificate_requested"] == "Yes"
+    assert cert_requirements["additional_insured_requested"] == "Yes"
+    assert any("Additional insured" in flag for flag in packet["risk_flags"])
+    assert any("quote preparation" in item for item in packet["submission_readiness"]["rep_double_checks"])

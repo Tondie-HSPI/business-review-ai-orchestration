@@ -447,6 +447,15 @@ export function buildLiquorRestaurantPacket(
         liquor_training: fields.liquor_training,
         id_scanner: fields.id_scanner,
         fire_suppression: fields.fire_suppression
+      },
+      certificate_requirements: {
+        certificate_requested: fields.certificate_requested,
+        certificate_holder: fields.certificate_holder,
+        certificate_purpose: fields.certificate_purpose,
+        additional_insured_requested: fields.additional_insured_requested,
+        waiver_of_subrogation_requested: fields.waiver_requested,
+        primary_and_noncontributory_requested: fields.primary_noncontributory_requested,
+        special_certificate_wording: fields.special_certificate_wording
       }
     },
     csr_certificate_request: buildCsrCertificateRequest(fields),
@@ -811,6 +820,15 @@ function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
   if (!["none", "no", "none in the past five years"].includes(claimsOrViolations)) {
     flags.push("Claims or liquor violations need detail before submission.");
   }
+  if ((fields.additional_insured_requested ?? "").toLowerCase() === "yes") {
+    flags.push("Additional insured wording may affect quote terms or endorsements.");
+  }
+  if ((fields.waiver_requested ?? "").toLowerCase() === "yes") {
+    flags.push("Waiver of subrogation may require endorsement availability review.");
+  }
+  if ((fields.primary_noncontributory_requested ?? "").toLowerCase() === "yes") {
+    flags.push("Primary and noncontributory wording may require carrier approval.");
+  }
 
   return flags;
 }
@@ -833,6 +851,9 @@ function repDoubleChecks(fields: Record<string, string | null | undefined>, risk
   }
   if (fields.fryers === "Yes") {
     checks.push("Confirm fire suppression system type, service status, and cleaning contract.");
+  }
+  if ((fields.certificate_requested ?? "").toLowerCase() === "yes") {
+    checks.push("Review certificate wording requirements during quote preparation, not only after binding.");
   }
 
   return checks;

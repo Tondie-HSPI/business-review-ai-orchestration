@@ -92,6 +92,15 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, s
                 "id_scanner": normalized.get("id_scanner"),
                 "fire_suppression": normalized.get("fire_suppression"),
             },
+            "certificate_requirements": {
+                "certificate_requested": normalized.get("certificate_requested"),
+                "certificate_holder": normalized.get("certificate_holder"),
+                "certificate_purpose": normalized.get("certificate_purpose"),
+                "additional_insured_requested": normalized.get("additional_insured_requested"),
+                "waiver_of_subrogation_requested": normalized.get("waiver_requested"),
+                "primary_and_noncontributory_requested": normalized.get("primary_noncontributory_requested"),
+                "special_certificate_wording": normalized.get("special_certificate_wording"),
+            },
         },
         "csr_certificate_request": _csr_certificate_request(normalized),
         "inferred_application_answers": _inferred_application_answers(normalized),
@@ -196,6 +205,12 @@ def _risk_flags(fields: dict) -> list[str]:
         flags.append("ID scanner control should be confirmed.")
     if (fields.get("fryers") or "").lower() == "yes" and not fields.get("fire_suppression"):
         flags.append("Fryer exposure requires fire suppression details.")
+    if (fields.get("additional_insured_requested") or "").lower() == "yes":
+        flags.append("Additional insured wording may affect quote terms or endorsements.")
+    if (fields.get("waiver_requested") or "").lower() == "yes":
+        flags.append("Waiver of subrogation may require endorsement availability review.")
+    if (fields.get("primary_noncontributory_requested") or "").lower() == "yes":
+        flags.append("Primary and noncontributory wording may require carrier approval.")
 
     return flags
 
@@ -320,6 +335,8 @@ def _rep_double_checks(fields: dict, risk_flags: list[str]) -> list[str]:
         checks.append("Confirm security or door staff duties and employment status.")
     if fields.get("fryers") == "Yes":
         checks.append("Confirm fire suppression system type, service status, and cleaning contract.")
+    if (fields.get("certificate_requested") or "").lower() == "yes":
+        checks.append("Review certificate wording requirements during quote preparation, not only after binding.")
 
     return checks
 

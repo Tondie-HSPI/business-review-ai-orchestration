@@ -161,6 +161,8 @@ The Liquor / Restaurant workflow also includes a carrier application preview. In
 
 If the intake asks for a certificate, the workflow creates a CSR certificate request draft with holder details, requested wording, missing information, and review flags for additional insured, waiver of subrogation, and primary/noncontributory wording. It does not issue the certificate automatically.
 
+Certificate requirements are also included in the application packet and quote-prep flags because complex wording can affect eligibility, endorsements, quote terms, and whether the certificate can be issued later.
+
 For other application types, the same pattern can be reused by uploading a different form-question JSON schema. Deeper answer inference requires app-type rules for that carrier/product workflow.
 
 ## Run Locally

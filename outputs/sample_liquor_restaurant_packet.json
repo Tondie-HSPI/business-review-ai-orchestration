@@ -13,7 +13,8 @@
       "Review underwriting flags before sending the application packet.",
       "Confirm entertainment type, frequency, and whether dancing is permitted.",
       "Confirm security or door staff duties and employment status.",
-      "Confirm fire suppression system type, service status, and cleaning contract."
+      "Confirm fire suppression system type, service status, and cleaning contract.",
+      "Review certificate wording requirements during quote preparation, not only after binding."
     ]
   },
   "intake_summary": {
@@ -49,6 +50,15 @@
       "liquor_training": "Yes",
       "id_scanner": "Yes",
       "fire_suppression": "Wet system with cleaning contract."
+    },
+    "certificate_requirements": {
+      "certificate_requested": "Yes",
+      "certificate_holder": "Triangle Events Group",
+      "certificate_purpose": "Catering event contract for July 20",
+      "additional_insured_requested": "Yes",
+      "waiver_of_subrogation_requested": "Yes",
+      "primary_and_noncontributory_requested": "Yes",
+      "special_certificate_wording": "Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms."
     }
   },
   "csr_certificate_request": {
@@ -242,7 +252,10 @@
     "Entertainment or dancing should be reviewed for underwriting eligibility.",
     "Security or door staff exposure should be reviewed.",
     "Late closing time should be reviewed.",
-    "Late alcohol service cutoff should be reviewed."
+    "Late alcohol service cutoff should be reviewed.",
+    "Additional insured wording may affect quote terms or endorsements.",
+    "Waiver of subrogation may require endorsement availability review.",
+    "Primary and noncontributory wording may require carrier approval."
   ],
   "recommended_next_action": "Prepare draft application field map and route flagged exposures to a human reviewer.",
   "requires_human_review": true
