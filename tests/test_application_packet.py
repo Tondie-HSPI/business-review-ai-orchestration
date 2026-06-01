@@ -5,7 +5,7 @@ from src.sample_data import SAMPLE_GENERIC_APPLICATION_NOTES
 def test_application_packet_is_human_review_only():
     packet = build_application_packet(SAMPLE_GENERIC_APPLICATION_NOTES)
 
-    assert packet["workflow_name"] == "PaperworkPro Application Prep"
+    assert packet["workflow_name"] == "SubmissionReady AI Application Prep"
     assert packet["requires_human_review"] is True
     assert "Not an official carrier form" in packet["official_form_status"]
 

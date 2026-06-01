@@ -56,7 +56,7 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, s
     )
 
     packet = {
-        "workflow_name": "PaperworkPro Liquor / Restaurant Quote Intake",
+        "workflow_name": "SubmissionReady AI Liquor / Restaurant Quote Intake",
         "risk_type": "restaurant_bar_liquor_liability",
         "official_form_status": "Draft intake support only; human review required before carrier submission.",
         "submission_readiness": {

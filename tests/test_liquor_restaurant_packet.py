@@ -11,7 +11,7 @@ from src.salesforce_intake import (
 def test_liquor_restaurant_packet_maps_pdf_fields():
     packet = build_liquor_restaurant_packet(SAMPLE_LIQUOR_RESTAURANT_QUOTE)
 
-    assert packet["workflow_name"] == "PaperworkPro Liquor / Restaurant Quote Intake"
+    assert packet["workflow_name"] == "SubmissionReady AI Liquor / Restaurant Quote Intake"
     assert packet["mapped_pdf_fields"]["01 Applicant name"] == "Harbor & Vine Kitchen LLC"
     assert packet["mapped_pdf_fields"]["AR Food"] == "850000"
 

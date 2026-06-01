@@ -1,6 +1,6 @@
-# PaperworkPro: Business Review AI Orchestration
+# SubmissionReady AI: Insurance Submission Review Workflow
 
-AI-assisted document review and application-prep workflow that takes an initial request and creates a submission-ready packet for carrier or business review.
+AI-assisted insurance application preparation and submission review workflow that takes an initial request and creates a submission-ready packet for human review.
 
 ## Disclaimer
 
@@ -18,11 +18,11 @@ When this process is handled manually, teams can face delays, inconsistent revie
 
 ## Solution
 
-PaperworkPro demonstrates a controlled AI-assisted workflow for document review, application preparation, requirement extraction, and decision-support workflows. It converts intake data into structured outputs while keeping deterministic business rules, source evidence, review flags, and human approval boundaries separate from AI-assisted interpretation.
+SubmissionReady AI demonstrates a controlled AI-assisted workflow for document review, application preparation, requirement extraction, and decision-support workflows. It converts intake data into structured outputs while keeping deterministic business rules, source evidence, review flags, and human approval boundaries separate from AI-assisted interpretation.
 
 The project uses mock extraction logic so it can run locally without an API key. The architecture is designed so an LLM could later be added for extraction and summarization while rules, review gates, and final decisions stay controlled.
 
-## PaperworkPro Use Case
+## SubmissionReady AI Use Case
 
 The main demo prepares a restaurant / liquor liability insurance application review packet from fake intake data. It does not submit anything automatically. It gives the rep a structured draft, flags inferred answers for review, identifies missing information, decodes certificate or contract wording, and creates draft follow-up language.
 
@@ -177,7 +177,7 @@ status. Those items should be reviewed before quoting and certificate issuance.
 
 ## Liquor / Restaurant Quote Intake Example
 
-PaperworkPro includes fake Salesforce-style account data, fake restaurant quote intake notes, and a preprocessed form-question JSON schema. The browser demo lets the user upload intake data, upload a question schema, attach a carrier application PDF for reference, preview inferred answers, check flagged answers as reviewed, and download the generated JSON review packet.
+SubmissionReady AI includes fake Salesforce-style account data, fake restaurant quote intake notes, and a preprocessed form-question JSON schema. The browser demo lets the user upload intake data, upload a question schema, attach a carrier application PDF for reference, preview inferred answers, check flagged answers as reviewed, and download the generated JSON review packet.
 
 Current scope:
 

@@ -412,7 +412,7 @@ export function reviewBusinessRequest(text: string): ReviewOutput {
   return {
     ...output,
     analytics_summary: buildAnalyticsSummary({
-      workflowName: "PaperworkPro Business Review",
+      workflowName: "SubmissionReady AI Business Review",
       documentType: output.document_type,
       missingInformation: output.missing_information,
       riskFlags: output.risk_flags,
@@ -443,7 +443,7 @@ export function buildApplicationPacket(text: string): ApplicationPacket {
   );
 
   const output = {
-    workflow_name: "PaperworkPro Application Prep",
+    workflow_name: "SubmissionReady AI Application Prep",
     carrier_context: "Generic carrier-neutral application preparation",
     official_form_status: "Not an official carrier form; human review required before use.",
     application_sections: {
@@ -565,12 +565,12 @@ export function buildLiquorRestaurantPacket(
   );
   const csrCertificateRequest = buildCsrCertificateRequest(fields);
   const output = {
-    workflow_name: "PaperworkPro Contractor / Landscaper / Restaurant Intake",
+    workflow_name: "SubmissionReady AI Contractor / Landscaper / Restaurant Intake",
     risk_type: detectedBusinessClass(fields),
     workflow_scope: {
       selected_workflow: selectedWorkflowLabel(fields),
       routing_note:
-        "Only this workflow is used for the client review packet. PaperworkPro prepares the draft and flags items for rep review."
+        "Only this workflow is used for the client review packet. SubmissionReady AI prepares the draft and flags items for rep review."
     },
     official_form_status:
       "Draft intake support only; human review required before carrier submission.",

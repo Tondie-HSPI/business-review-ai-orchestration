@@ -29,7 +29,7 @@ def build_application_packet(text: str) -> dict:
     review_notes = _review_notes(text, rule_result, missing_fields)
 
     return {
-        "workflow_name": "PaperworkPro Application Prep",
+        "workflow_name": "SubmissionReady AI Application Prep",
         "carrier_context": "Generic carrier-neutral application preparation",
         "official_form_status": "Not an official carrier form; human review required before use.",
         "application_sections": {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PaperworkPro",
+  title: "SubmissionReady AI",
   description:
     "AI-assisted paperwork review workflow for structured extraction, risk flagging, and human review routing."
 };

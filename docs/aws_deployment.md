@@ -1,6 +1,6 @@
 # AWS Deployment Notes
 
-PaperworkPro now includes a Next.js front end in `web/` and Python workflow logic in `src/`.
+SubmissionReady AI now includes a Next.js front end in `web/` and Python workflow logic in `src/`.
 
 ## Recommended AWS Demo Path
 

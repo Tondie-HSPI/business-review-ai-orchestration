@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import {
   ApplicationPacket,
   applicationSample,
@@ -31,6 +31,17 @@ export default function Home() {
   const [uploadMessage, setUploadMessage] = useState<string>("");
   const [reviewedAnswers, setReviewedAnswers] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    const requestedMode = parseWorkflowMode(new URLSearchParams(window.location.search).get("workflow"));
+
+    if (!requestedMode || requestedMode === mode) return;
+
+    setMode(requestedMode);
+    setText(sampleForMode(requestedMode));
+    setUploadMessage("");
+    setReviewedAnswers({});
+  }, [mode]);
+
   const result = useMemo<Result>(() => {
     return mode === "application-prep"
       ? buildApplicationPacket(text)
@@ -44,6 +55,15 @@ export default function Home() {
     setText(sampleForMode(nextMode));
     setUploadMessage("");
     setReviewedAnswers({});
+
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `?workflow=${nextMode}`);
+    }
+  }
+
+  function handleWorkflowClick(event: MouseEvent<HTMLAnchorElement>, nextMode: WorkflowMode) {
+    event.preventDefault();
+    switchMode(nextMode);
   }
 
   async function handleIntakeUpload(file: File | null) {
@@ -55,9 +75,9 @@ export default function Home() {
       setSourceRecord(parsed);
       setText(salesforceRecordToQuoteText(parsed));
       setMode((currentMode) => (
-        currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+        currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
           ? currentMode
-          : "liquor-restaurant"
+          : "application-prep"
       ));
       setUploadMessage(`Loaded intake data from ${file.name}`);
       setReviewedAnswers({});
@@ -67,9 +87,9 @@ export default function Home() {
     setSourceRecord(null);
     setText(content);
     setMode((currentMode) => (
-      currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+      currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
         ? currentMode
-        : "liquor-restaurant"
+        : "application-prep"
     ));
     setUploadMessage(`Loaded intake text from ${file.name}`);
     setReviewedAnswers({});
@@ -80,9 +100,9 @@ export default function Home() {
     const parsed = JSON.parse(await file.text()) as FormQuestion[];
     setFormQuestions(parsed);
     setMode((currentMode) => (
-      currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+      currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
         ? currentMode
-        : "liquor-restaurant"
+        : "application-prep"
     ));
     setUploadMessage(`Loaded ${parsed.length} form questions from ${file.name}`);
     setReviewedAnswers({});
@@ -92,9 +112,9 @@ export default function Home() {
     if (!file) return;
     setUploadedPdfName(file.name);
     setMode((currentMode) => (
-      currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+      currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
         ? currentMode
-        : "liquor-restaurant"
+        : "application-prep"
     ));
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
     setReviewedAnswers({});
@@ -111,53 +131,59 @@ export default function Home() {
   const humanReview = result.requires_human_review ? "Required" : "Not required";
   const analytics = result.analytics_summary;
   const isIntakeWorkflow = mode === "contractor" || mode === "landscaper" || mode === "liquor-restaurant";
+  const showsApplicationUploads = mode === "application-prep" || isIntakeWorkflow;
 
   return (
     <main>
       <aside className="sidebar">
         <div className="brand">
-          <span className="brandMark">P</span>
+          <span className="brandMark">SR</span>
           <div>
-            <strong>PaperworkPro</strong>
-            <small>Controlled AI workflow</small>
+            <strong>SubmissionReady AI</strong>
+            <small>Insurance submission review</small>
           </div>
         </div>
 
         <div className="controlGroup">
           <label>Workflow</label>
           <div className="segmented">
-            <button
+            <a
+              href="?workflow=business-review"
               className={mode === "business-review" ? "active" : ""}
-              onClick={() => switchMode("business-review")}
+              onClick={(event) => handleWorkflowClick(event, "business-review")}
             >
               Business Review
-            </button>
+            </a>
             <div className="workflowGroup">
-              <button
+              <a
+                href="?workflow=application-prep"
                 className={mode === "application-prep" ? "active" : ""}
-                onClick={() => switchMode("application-prep")}
+                onClick={(event) => handleWorkflowClick(event, "application-prep")}
               >
                 Application Prep
-              </button>
+              </a>
               <span>Class-specific app prep</span>
-              <button
+              <a
+                href="?workflow=contractor"
                 className={mode === "contractor" ? "active nested" : "nested"}
-                onClick={() => switchMode("contractor")}
+                onClick={(event) => handleWorkflowClick(event, "contractor")}
               >
                 Contractor
-              </button>
-              <button
+              </a>
+              <a
+                href="?workflow=landscaper"
                 className={mode === "landscaper" ? "active nested" : "nested"}
-                onClick={() => switchMode("landscaper")}
+                onClick={(event) => handleWorkflowClick(event, "landscaper")}
               >
                 Landscaper
-              </button>
-              <button
+              </a>
+              <a
+                href="?workflow=liquor-restaurant"
                 className={mode === "liquor-restaurant" ? "active nested" : "nested"}
-                onClick={() => switchMode("liquor-restaurant")}
+                onClick={(event) => handleWorkflowClick(event, "liquor-restaurant")}
               >
                 Restaurant / Liquor
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -181,16 +207,17 @@ export default function Home() {
       <section className="workspace">
         <section className="hero">
           <div>
-            <p className="eyebrow">AI-assisted paperwork review</p>
-            <h1>Turn an initial request into a submission-ready application draft.</h1>
+            <p className="eyebrow">AI-assisted insurance workflow</p>
+            <h1>Prepare cleaner insurance submissions for human review.</h1>
             <p>
-              PaperworkPro demonstrates intake, extraction, rule-based validation,
-              risk flagging, missing-information detection, and carrier submission review.
+              SubmissionReady AI turns intake details into class-specific application prep,
+              certificate wording review, missing-information checks, and submission analytics.
             </p>
           </div>
           <div className="heroPanel">
             <span>Human review boundary</span>
             <strong>{humanReview}</strong>
+            <small>No approval, binding, issuing, or submission decisions are automated.</small>
           </div>
         </section>
 
@@ -208,9 +235,10 @@ export default function Home() {
             <div className="panelHeader">
               <div>
                 <p className="eyebrow">Input</p>
-                <h2>Request intake</h2>
+                <h2>{showsApplicationUploads ? "Intake and application files" : "Business review request"}</h2>
               </div>
               <button
+                type="button"
                 className="secondaryButton"
                 onClick={() =>
               setText(sampleForMode(mode))
@@ -219,32 +247,39 @@ export default function Home() {
                 Reload sample
               </button>
             </div>
-            {isIntakeWorkflow && (
-              <div className="uploadGrid">
-                <label>
-                  <span>Upload intake data</span>
-                  <input
-                    type="file"
-                    accept=".txt,.json"
-                    onChange={(event) => handleIntakeUpload(event.target.files?.[0] ?? null)}
-                  />
-                </label>
-                <label>
-                  <span>Upload form questions</span>
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={(event) => handleQuestionUpload(event.target.files?.[0] ?? null)}
-                  />
-                </label>
-                <label>
-                  <span>Attach carrier app PDF</span>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(event) => handlePdfUpload(event.target.files?.[0] ?? null)}
-                  />
-                </label>
+            <div className={showsApplicationUploads ? "uploadGrid" : "uploadGrid singleUpload"}>
+              <label>
+                <span>{showsApplicationUploads ? "Upload intake form" : "Upload review request"}</span>
+                <input
+                  type="file"
+                  accept=".txt,.json"
+                  onChange={(event) => handleIntakeUpload(event.target.files?.[0] ?? null)}
+                />
+              </label>
+              {showsApplicationUploads && (
+                <>
+                  <label>
+                    <span>Upload app questions</span>
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={(event) => handleQuestionUpload(event.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                  <label>
+                    <span>Upload application PDF</span>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(event) => handlePdfUpload(event.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                </>
+              )}
+            </div>
+            {showsApplicationUploads && (
+              <div className="uploadHelp">
+                Upload the intake details first, then attach the application or question list that needs to be prepared for rep review.
               </div>
             )}
             {uploadMessage && <div className="uploadMessage">{uploadMessage}</div>}
@@ -288,7 +323,7 @@ export default function Home() {
           <a
             className="downloadButton"
             href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
-            download="paperworkpro-review-packet.json"
+            download="submissionready-review-packet.json"
           >
             Download review packet JSON
           </a>
@@ -305,6 +340,18 @@ function sampleForMode(mode: WorkflowMode) {
   if (mode === "landscaper") return landscaperSample;
   if (mode === "liquor-restaurant") return liquorRestaurantSample;
   return businessSample;
+}
+
+function parseWorkflowMode(value: string | null): WorkflowMode | null {
+  const modes: WorkflowMode[] = [
+    "business-review",
+    "application-prep",
+    "contractor",
+    "landscaper",
+    "liquor-restaurant"
+  ];
+
+  return modes.find((mode) => mode === value) ?? null;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
@@ -547,7 +594,7 @@ function LiquorRestaurantView({
             <a
               className="downloadButton"
               href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
-              download="paperworkpro-reviewed-application-draft.json"
+              download="submissionready-reviewed-application-draft.json"
             >
               Save reviewed draft
             </a>
