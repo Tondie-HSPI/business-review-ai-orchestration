@@ -157,6 +157,10 @@ The uploaded carrier form is not stored in this public repository. The workflow 
 
 In the browser demo, the user can upload fake intake data, upload a form-question JSON schema, attach a carrier application PDF for reference, and download the generated review packet JSON. Physical PDF form filling is the next backend step.
 
+The Liquor / Restaurant workflow also includes a carrier application preview. Inferred answers are flagged for rep review, and the “save reviewed draft” action is gated until the rep checks each flagged answer.
+
+For other application types, the same pattern can be reused by uploading a different form-question JSON schema. Deeper answer inference requires app-type rules for that carrier/product workflow.
+
 ## Run Locally
 
 Run the polished Next.js interface:

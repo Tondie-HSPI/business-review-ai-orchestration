@@ -27,6 +27,7 @@ export default function Home() {
   const [formQuestions, setFormQuestions] = useState<FormQuestion[]>(defaultLiquorRestaurantQuestions);
   const [uploadedPdfName, setUploadedPdfName] = useState<string>("");
   const [uploadMessage, setUploadMessage] = useState<string>("");
+  const [reviewedAnswers, setReviewedAnswers] = useState<Record<string, boolean>>({});
 
   const result = useMemo<Result>(() => {
     return mode === "application-prep"
@@ -40,6 +41,7 @@ export default function Home() {
     setMode(nextMode);
     setText(sampleForMode(nextMode));
     setUploadMessage("");
+    setReviewedAnswers({});
   }
 
   async function handleIntakeUpload(file: File | null) {
@@ -52,6 +54,7 @@ export default function Home() {
       setText(salesforceRecordToQuoteText(parsed));
       setMode("liquor-restaurant");
       setUploadMessage(`Loaded intake data from ${file.name}`);
+      setReviewedAnswers({});
       return;
     }
 
@@ -59,6 +62,7 @@ export default function Home() {
     setText(content);
     setMode("liquor-restaurant");
     setUploadMessage(`Loaded intake text from ${file.name}`);
+    setReviewedAnswers({});
   }
 
   async function handleQuestionUpload(file: File | null) {
@@ -67,6 +71,7 @@ export default function Home() {
     setFormQuestions(parsed);
     setMode("liquor-restaurant");
     setUploadMessage(`Loaded ${parsed.length} form questions from ${file.name}`);
+    setReviewedAnswers({});
   }
 
   function handlePdfUpload(file: File | null) {
@@ -74,6 +79,14 @@ export default function Home() {
     setUploadedPdfName(file.name);
     setMode("liquor-restaurant");
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
+    setReviewedAnswers({});
+  }
+
+  function toggleReviewed(answerId: string) {
+    setReviewedAnswers((current) => ({
+      ...current,
+      [answerId]: !current[answerId]
+    }));
   }
 
   const missingCount = result.missing_information.length;
@@ -220,6 +233,8 @@ export default function Home() {
                 result={result as LiquorRestaurantPacket}
                 uploadedPdfName={uploadedPdfName}
                 formQuestionCount={formQuestions.length}
+                reviewedAnswers={reviewedAnswers}
+                onToggleReviewed={toggleReviewed}
               />
             ) : (
               <BusinessReviewView result={result as ReviewOutput} />
@@ -288,12 +303,24 @@ function ApplicationView({ result }: { result: ApplicationPacket }) {
 function LiquorRestaurantView({
   result,
   uploadedPdfName,
-  formQuestionCount
+  formQuestionCount,
+  reviewedAnswers,
+  onToggleReviewed
 }: {
   result: LiquorRestaurantPacket;
   uploadedPdfName: string;
   formQuestionCount: number;
+  reviewedAnswers: Record<string, boolean>;
+  onToggleReviewed: (answerId: string) => void;
 }) {
+  const requiredReviewCount = result.inferred_application_answers.filter(
+    (item) => item.flagged_for_review
+  ).length;
+  const completedReviewCount = result.inferred_application_answers.filter(
+    (item) => item.flagged_for_review && reviewedAnswers[item.id]
+  ).length;
+  const allReviewed = requiredReviewCount > 0 && completedReviewCount === requiredReviewCount;
+
   return (
     <div className="outputStack">
       <div className="notice">{result.official_form_status}</div>
@@ -306,6 +333,13 @@ function LiquorRestaurantView({
           <span>Form questions</span>
           <strong>{formQuestionCount}</strong>
         </div>
+      </div>
+      <div className={allReviewed ? "saveGate ready" : "saveGate"}>
+        <span>Save / submit gate</span>
+        <strong>{allReviewed ? "Ready To Save Draft" : "Rep Review Required"}</strong>
+        <small>
+          {completedReviewCount} of {requiredReviewCount} flagged inferred answers reviewed
+        </small>
       </div>
       <div className="readinessBox">
         <span>Submission readiness</span>
@@ -335,6 +369,39 @@ function LiquorRestaurantView({
         values={result.submission_readiness.rep_double_checks}
         variant="risk"
       />
+      <div className="sectionBlock applicationPreview">
+        <h3>Carrier Application Preview Before Save</h3>
+        {result.inferred_application_answers.map((item) => (
+          <label className="previewQuestion" key={item.id}>
+            <input
+              type="checkbox"
+              checked={Boolean(reviewedAnswers[item.id])}
+              onChange={() => onToggleReviewed(item.id)}
+            />
+            <div>
+              <span>{item.question}</span>
+              <strong>{item.inferred_answer}</strong>
+              <small>Evidence: {item.evidence}</small>
+              <small>Rep must verify: {item.rep_check}</small>
+            </div>
+          </label>
+        ))}
+        <div className="saveActions">
+          {allReviewed ? (
+            <a
+              className="downloadButton"
+              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
+              download="paperworkpro-reviewed-application-draft.json"
+            >
+              Save reviewed draft
+            </a>
+          ) : (
+            <button className="disabledButton" disabled>
+              Save disabled until flagged answers are reviewed
+            </button>
+          )}
+        </div>
+      </div>
       <div className="sectionBlock">
         <h3>Inferred Application Answers For Rep Review</h3>
         {result.inferred_application_answers.map((item) => (

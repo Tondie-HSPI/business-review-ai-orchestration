@@ -359,6 +359,94 @@ textarea:focus {
   margin-bottom: 4px;
 }
 
+.saveGate {
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #9a3412;
+  padding: 13px 14px;
+}
+
+.saveGate.ready {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #064e3b;
+}
+
+.saveGate span,
+.saveGate strong,
+.saveGate small {
+  display: block;
+}
+
+.saveGate span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.saveGate strong {
+  margin-top: 4px;
+}
+
+.applicationPreview {
+  background: #fbfdff;
+}
+
+.previewQuestion {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 12px 0;
+  border-top: 1px solid #eef2f7;
+}
+
+.previewQuestion:first-of-type {
+  border-top: 0;
+}
+
+.previewQuestion input {
+  margin-top: 3px;
+  width: 17px;
+  height: 17px;
+}
+
+.previewQuestion span,
+.previewQuestion strong,
+.previewQuestion small {
+  display: block;
+}
+
+.previewQuestion span {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.previewQuestion strong {
+  color: var(--teal);
+  margin-top: 4px;
+}
+
+.previewQuestion small {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.saveActions {
+  margin-top: 12px;
+}
+
+.disabledButton {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+  font-weight: 800;
+  padding: 10px 12px;
+}
+
 .notice {
   color: #075985;
   background: #e0f2fe;
