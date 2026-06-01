@@ -7,10 +7,8 @@ import {
   buildApplicationPacket,
   buildLiquorRestaurantPacket,
   businessSample,
-  contractorSample,
   defaultLiquorRestaurantQuestions,
   FormQuestion,
-  landscaperSample,
   LiquorRestaurantPacket,
   liquorRestaurantSample,
   reviewBusinessRequest,
@@ -23,8 +21,8 @@ import {
 type Result = ReviewOutput | ApplicationPacket | LiquorRestaurantPacket;
 
 export default function Home() {
-  const [mode, setMode] = useState<WorkflowMode>("application-prep");
-  const [text, setText] = useState(applicationSample);
+  const [mode, setMode] = useState<WorkflowMode>("liquor-restaurant");
+  const [text, setText] = useState(liquorRestaurantSample);
   const [sourceRecord, setSourceRecord] = useState<SalesforceLikeRecord | null>(null);
   const [formQuestions, setFormQuestions] = useState<FormQuestion[]>(defaultLiquorRestaurantQuestions);
   const [applicationText, setApplicationText] = useState<string>(questionsToText(defaultLiquorRestaurantQuestions));
@@ -33,7 +31,7 @@ export default function Home() {
   const [reviewedAnswers, setReviewedAnswers] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    const requestedMode = parseWorkflowMode(new URLSearchParams(window.location.search).get("workflow"));
+    const requestedMode = normalizeWorkflowMode(new URLSearchParams(window.location.search).get("workflow"));
 
     if (!requestedMode || requestedMode === mode) return;
 
@@ -76,9 +74,9 @@ export default function Home() {
       setSourceRecord(parsed);
       setText(salesforceRecordToQuoteText(parsed));
       setMode((currentMode) => (
-        currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+        currentMode === "application-prep" || currentMode === "liquor-restaurant"
           ? currentMode
-          : "application-prep"
+          : "liquor-restaurant"
       ));
       setUploadMessage(`Loaded intake data from ${file.name}`);
       setReviewedAnswers({});
@@ -88,9 +86,9 @@ export default function Home() {
     setSourceRecord(null);
     setText(content);
     setMode((currentMode) => (
-      currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+      currentMode === "application-prep" || currentMode === "liquor-restaurant"
         ? currentMode
-        : "application-prep"
+        : "liquor-restaurant"
     ));
     setUploadMessage(`Loaded intake text from ${file.name}`);
     setReviewedAnswers({});
@@ -103,9 +101,9 @@ export default function Home() {
     setApplicationText(content);
     setFormQuestions(parsed);
     setMode((currentMode) => (
-      currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+      currentMode === "application-prep" || currentMode === "liquor-restaurant"
         ? currentMode
-        : "application-prep"
+        : "liquor-restaurant"
     ));
     setUploadMessage(`Loaded ${parsed.length} application questions from ${file.name}`);
     setReviewedAnswers({});
@@ -115,9 +113,9 @@ export default function Home() {
     if (!file) return;
     setUploadedPdfName(file.name);
     setMode((currentMode) => (
-      currentMode === "application-prep" || currentMode === "contractor" || currentMode === "landscaper" || currentMode === "liquor-restaurant"
+      currentMode === "application-prep" || currentMode === "liquor-restaurant"
         ? currentMode
-        : "application-prep"
+        : "liquor-restaurant"
     ));
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
     setReviewedAnswers({});
@@ -139,7 +137,7 @@ export default function Home() {
   const missingCount = result.missing_information.length;
   const humanReview = result.requires_human_review ? "Required" : "Not required";
   const analytics = result.analytics_summary;
-  const isIntakeWorkflow = mode === "contractor" || mode === "landscaper" || mode === "liquor-restaurant";
+  const isIntakeWorkflow = mode === "liquor-restaurant";
   const showsApplicationUploads = mode === "application-prep" || isIntakeWorkflow;
 
   return (
@@ -169,23 +167,9 @@ export default function Home() {
                 className={mode === "application-prep" ? "active" : ""}
                 onClick={(event) => handleWorkflowClick(event, "application-prep")}
               >
-                Application Prep
-              </a>
-              <span>Class-specific app prep</span>
-              <a
-                href="?workflow=contractor"
-                className={mode === "contractor" ? "active nested" : "nested"}
-                onClick={(event) => handleWorkflowClick(event, "contractor")}
-              >
-                Contractor
-              </a>
-              <a
-                href="?workflow=landscaper"
-                className={mode === "landscaper" ? "active nested" : "nested"}
-                onClick={(event) => handleWorkflowClick(event, "landscaper")}
-              >
-                Landscaper
-              </a>
+              Application Prep
+            </a>
+              <span>Focused demo app</span>
               <a
                 href="?workflow=liquor-restaurant"
                 className={mode === "liquor-restaurant" ? "active nested" : "nested"}
@@ -198,10 +182,11 @@ export default function Home() {
         </div>
 
         <div className="sidebarNote">
-          <strong>How the app is organized</strong>
-          <span>Business Review: general document/request review for requirements, missing information, and next action.</span>
-          <span>Application Prep: carrier-neutral application packet for human review.</span>
-          <span>Contractor, Landscaper, and Restaurant / Liquor are class-specific app prep paths. Only one is used per client.</span>
+          <strong>Demo flow</strong>
+          <span>1. Select one workflow.</span>
+          <span>2. Add quote intake details.</span>
+          <span>3. Add the restaurant app to map.</span>
+          <span>4. Review inferred answers, missing info, and flags.</span>
         </div>
 
         <div className="sidebarNote">
@@ -230,6 +215,42 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="workflowPicker panel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Start here</p>
+              <h2>Choose the review path</h2>
+            </div>
+            <span className="reviewBadge required">One workflow per client</span>
+          </div>
+          <div className="workflowCards">
+            <WorkflowCard
+              active={mode === "business-review"}
+              eyebrow="General request"
+              title="Business Review"
+              body="Review a document or request for requirements, missing information, risk flags, and next action."
+              href="?workflow=business-review"
+              onClick={(event) => handleWorkflowClick(event, "business-review")}
+            />
+            <WorkflowCard
+              active={mode === "application-prep"}
+              eyebrow="Application packet"
+              title="General App Prep"
+              body="Prepare a carrier-neutral application packet from quote intake details for human review."
+              href="?workflow=application-prep"
+              onClick={(event) => handleWorkflowClick(event, "application-prep")}
+            />
+            <WorkflowCard
+              active={mode === "liquor-restaurant"}
+              eyebrow="Flagship demo"
+              title="Restaurant / Liquor App"
+              body="Map restaurant intake into a submission-ready application draft with certificate wording and rep-review flags."
+              href="?workflow=liquor-restaurant"
+              onClick={(event) => handleWorkflowClick(event, "liquor-restaurant")}
+            />
+          </div>
+        </section>
+
         <section className="metrics">
           <Metric label="Workflow" value={workflowTitle(result)} />
           <Metric label="Readiness score" value={`${analytics.submission_readiness_score}/100`} />
@@ -243,7 +264,7 @@ export default function Home() {
           <div className="panel inputPanel">
             <div className="panelHeader">
               <div>
-                <p className="eyebrow">Input</p>
+                <p className="eyebrow">{showsApplicationUploads ? "Steps 2 and 3" : "Step 2"}</p>
                 <h2>{showsApplicationUploads ? "Quote intake and application mapping" : "Business review request"}</h2>
               </div>
               <button
@@ -258,7 +279,7 @@ export default function Home() {
             </div>
             <div className={showsApplicationUploads ? "uploadGrid" : "uploadGrid singleUpload"}>
               <label>
-                <span>{showsApplicationUploads ? "Upload intake form" : "Upload review request"}</span>
+                <span>{showsApplicationUploads ? "1. Upload intake form" : "Upload review request"}</span>
                 <input
                   type="file"
                   accept=".txt,.json"
@@ -268,7 +289,7 @@ export default function Home() {
               {showsApplicationUploads && (
                 <>
                   <label>
-                    <span>Upload application text/schema</span>
+                    <span>2. Upload app questions</span>
                     <input
                       type="file"
                       accept=".txt,.json"
@@ -276,7 +297,7 @@ export default function Home() {
                     />
                   </label>
                   <label>
-                    <span>Upload application PDF</span>
+                    <span>3. Attach app PDF</span>
                     <input
                       type="file"
                       accept=".pdf"
@@ -288,14 +309,14 @@ export default function Home() {
             </div>
             {showsApplicationUploads && (
               <div className="uploadHelp">
-                Paste or upload the quote intake, then paste or upload the application questions that need mapped and prepared for rep review.
+                Paste or upload the quote intake first. Then paste or upload the application questions that need mapped and prepared for rep review.
               </div>
             )}
             {uploadMessage && <div className="uploadMessage">{uploadMessage}</div>}
             {showsApplicationUploads ? (
               <div className="intakeAppGrid">
                 <label className="textInputBlock">
-                  <span>Quote intake form</span>
+                  <span>1. Quote intake form</span>
                   <textarea
                     value={text}
                     onChange={(event) => setText(event.target.value)}
@@ -303,7 +324,7 @@ export default function Home() {
                   />
                 </label>
                 <label className="textInputBlock">
-                  <span>Application to fill and map</span>
+                  <span>2. Application to fill and map</span>
                   <textarea
                     value={applicationText}
                     onChange={(event) => handleApplicationTextChange(event.target.value)}
@@ -329,7 +350,7 @@ export default function Home() {
             </div>
             {mode === "application-prep" ? (
               <ApplicationView result={result as ApplicationPacket} />
-            ) : mode === "liquor-restaurant" || mode === "contractor" || mode === "landscaper" ? (
+            ) : mode === "liquor-restaurant" ? (
               <LiquorRestaurantView
                 result={result as LiquorRestaurantPacket}
                 uploadedPdfName={uploadedPdfName}
@@ -366,18 +387,16 @@ export default function Home() {
 
 function sampleForMode(mode: WorkflowMode) {
   if (mode === "application-prep") return applicationSample;
-  if (mode === "contractor") return contractorSample;
-  if (mode === "landscaper") return landscaperSample;
   if (mode === "liquor-restaurant") return liquorRestaurantSample;
   return businessSample;
 }
 
-function parseWorkflowMode(value: string | null): WorkflowMode | null {
+function normalizeWorkflowMode(value: string | null): WorkflowMode | null {
+  if (value === "contractor" || value === "landscaper") return "liquor-restaurant";
+
   const modes: WorkflowMode[] = [
     "business-review",
     "application-prep",
-    "contractor",
-    "landscaper",
     "liquor-restaurant"
   ];
 
@@ -468,6 +487,30 @@ function Metric({ label, value }: { label: string; value: string }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function WorkflowCard({
+  active,
+  eyebrow,
+  title,
+  body,
+  href,
+  onClick
+}: {
+  active: boolean;
+  eyebrow: string;
+  title: string;
+  body: string;
+  href: string;
+  onClick: (event: MouseEvent<HTMLAnchorElement>) => void;
+}) {
+  return (
+    <a className={active ? "workflowCard active" : "workflowCard"} href={href} onClick={onClick}>
+      <span>{eyebrow}</span>
+      <strong>{title}</strong>
+      <small>{body}</small>
+    </a>
   );
 }
 
@@ -581,8 +624,11 @@ function LiquorRestaurantView({
           <strong>{formQuestionCount}</strong>
         </div>
       </div>
+      <div className="summary">
+        {result.intake_summary.applicant} | {result.intake_summary.location}
+      </div>
       <div className={allReviewed ? "saveGate ready" : "saveGate"}>
-          <span>Save draft gate</span>
+        <span>Review gate</span>
         <strong>{allReviewed ? "Ready To Save Draft" : "Rep Review Required"}</strong>
         <small>
           {completedReviewCount} of {requiredReviewCount} flagged inferred answers reviewed
@@ -595,37 +641,51 @@ function LiquorRestaurantView({
           Carrier agnostic draft | {result.submission_readiness.blocking_missing_information_count} blocking missing fields
         </small>
       </div>
-      <div className="summary">
-        {result.intake_summary.applicant} | {result.intake_summary.location}
-      </div>
-      <ReviewSection title="Selected Workflow" defaultOpen>
-        <div className="fieldRow">
-          <span>Client app path</span>
-          <strong>{result.workflow_scope.selected_workflow}</strong>
+      <ReviewSection title="Application Draft For Rep Review" className="applicationPreview" defaultOpen>
+        <div className="reviewHint">
+          Carrier-neutral preview. The rep reviews flagged answers before saving a draft.
         </div>
-        <div className="fieldRow">
-          <span>Review note</span>
-          <strong>{result.workflow_scope.routing_note}</strong>
+        {result.inferred_application_answers.map((item) => (
+          <label className="previewQuestion" key={item.id}>
+            <input
+              type="checkbox"
+              checked={Boolean(reviewedAnswers[item.id])}
+              onChange={() => onToggleReviewed(item.id)}
+            />
+            <div>
+              <span>{item.question}</span>
+              <strong>{item.inferred_answer}</strong>
+              <small>Target field: {item.pdf_field}</small>
+              <small>Evidence: {item.evidence}</small>
+              <small>Rep must verify: {item.rep_check}</small>
+            </div>
+          </label>
+        ))}
+        <div className="saveActions">
+          {allReviewed ? (
+            <a
+              className="downloadButton"
+              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
+              download="submissionready-reviewed-application-draft.json"
+            >
+              Save reviewed draft
+            </a>
+          ) : (
+            <button className="disabledButton" disabled>
+              Save disabled until flagged answers are reviewed
+            </button>
+          )}
         </div>
       </ReviewSection>
-      {Object.entries(result.application_packet).map(([section, fields]) => (
-        <ReviewSection
-          title={formatLabel(section)}
-          key={section}
-          defaultOpen={section === "applicant_information" || section === "certificate_requirements"}
-        >
-          {Object.entries(fields).map(([field, value]) => (
-            <div className="fieldRow" key={field}>
-              <span>{formatLabel(field)}</span>
-              <strong>{value || "Missing"}</strong>
-            </div>
-          ))}
-        </ReviewSection>
-      ))}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
       <ChipGroup title="Risk flags" values={result.risk_flags} variant="risk" />
+      <ChipGroup
+        title="Rep double-check checklist"
+        values={result.submission_readiness.rep_double_checks}
+        variant="risk"
+      />
       {result.csr_certificate_request.requested && (
-        <ReviewSection title="CSR Certificate Request Draft" className="certificateRequest" defaultOpen>
+        <ReviewSection title="Certificate Optimizer And CSR Draft" className="certificateRequest" defaultOpen>
           <div className="fieldRow">
             <span>Status</span>
             <strong>{formatLabel(result.csr_certificate_request.status)}</strong>
@@ -673,61 +733,7 @@ function LiquorRestaurantView({
           </div>
         </ReviewSection>
       )}
-      <ChipGroup
-        title="Rep double-check checklist"
-        values={result.submission_readiness.rep_double_checks}
-        variant="risk"
-      />
-      <ReviewSection title="Generic Application Draft Before Save" className="applicationPreview" defaultOpen>
-        <div className="reviewHint">
-          Carrier-neutral sample app view. It shows where answers would go without copying a carrier form.
-        </div>
-        {result.inferred_application_answers.map((item) => (
-          <label className="previewQuestion" key={item.id}>
-            <input
-              type="checkbox"
-              checked={Boolean(reviewedAnswers[item.id])}
-              onChange={() => onToggleReviewed(item.id)}
-            />
-            <div>
-              <span>{item.question}</span>
-              <strong>{item.inferred_answer}</strong>
-              <small>Evidence: {item.evidence}</small>
-              <small>Rep must verify: {item.rep_check}</small>
-            </div>
-          </label>
-        ))}
-        <div className="saveActions">
-          {allReviewed ? (
-            <a
-              className="downloadButton"
-              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
-              download="submissionready-reviewed-application-draft.json"
-            >
-              Save reviewed draft
-            </a>
-          ) : (
-            <button className="disabledButton" disabled>
-              Save disabled until flagged answers are reviewed
-            </button>
-          )}
-        </div>
-      </ReviewSection>
-      <ReviewSection title="Inferred Application Answers For Rep Review">
-        {result.inferred_application_answers.map((item) => (
-          <div className="inferenceRow" key={item.id}>
-            <span>{item.question}</span>
-            <strong>{item.inferred_answer}</strong>
-            <em className={item.review_status === "rep_review_required" ? "reviewBadge required" : "reviewBadge"}>
-              {formatLabel(item.review_status)}
-            </em>
-            <small>Evidence: {item.evidence}</small>
-            <small>Rep check: {item.rep_check}</small>
-            <small>Target field: {item.pdf_field}</small>
-          </div>
-        ))}
-      </ReviewSection>
-      <ReviewSection title="Form Questions Answered From Fake Intake Data">
+      <ReviewSection title="Mapped Application Questions">
         {result.answered_form_questions.map((item) => (
           <div className="questionRow" key={item.id}>
             <span>{item.question}</span>
@@ -735,6 +741,27 @@ function LiquorRestaurantView({
             <small>
               {item.source_field} to {item.pdf_field}
             </small>
+          </div>
+        ))}
+      </ReviewSection>
+      <ReviewSection title="Selected Workflow And Extracted Packet">
+        <div className="fieldRow">
+          <span>Client app path</span>
+          <strong>{result.workflow_scope.selected_workflow}</strong>
+        </div>
+        <div className="fieldRow">
+          <span>Review note</span>
+          <strong>{result.workflow_scope.routing_note}</strong>
+        </div>
+        {Object.entries(result.application_packet).map(([section, fields]) => (
+          <div className="subSection" key={section}>
+            <h3>{formatLabel(section)}</h3>
+            {Object.entries(fields).map(([field, value]) => (
+              <div className="fieldRow" key={field}>
+                <span>{formatLabel(field)}</span>
+                <strong>{value || "Missing"}</strong>
+              </div>
+            ))}
           </div>
         ))}
       </ReviewSection>

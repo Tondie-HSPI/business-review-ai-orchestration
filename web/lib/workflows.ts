@@ -179,8 +179,6 @@ Building owner: No
 Fryers: Yes
 Fire suppression: Wet system with cleaning contract.
 Food truck operations: Seasonal food truck used for off-premises catering and festivals.
-Contractor operations:
-Landscaping operations:
 Certificate requested: Yes
 Certificate holder: Triangle Events Group
 Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
@@ -565,7 +563,7 @@ export function buildLiquorRestaurantPacket(
   );
   const csrCertificateRequest = buildCsrCertificateRequest(fields);
   const output = {
-    workflow_name: "SubmissionReady AI Contractor / Landscaper / Restaurant Intake",
+    workflow_name: "SubmissionReady AI Restaurant / Liquor App Prep",
     risk_type: detectedBusinessClass(fields),
     workflow_scope: {
       selected_workflow: selectedWorkflowLabel(fields),
