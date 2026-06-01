@@ -159,7 +159,7 @@ export default function Home() {
               className={mode === "business-review" ? "active" : ""}
               onClick={(event) => handleWorkflowClick(event, "business-review")}
             >
-              Business Review
+              Small Business GL Review
             </a>
             <div className="workflowGroup">
               <a
@@ -204,14 +204,46 @@ export default function Home() {
             <p className="eyebrow">AI-assisted insurance workflow</p>
             <h1>Prepare cleaner insurance submissions for human review.</h1>
             <p>
-              SubmissionReady AI turns intake details into class-specific application prep,
-              certificate wording review, missing-information checks, and submission analytics.
+              SubmissionReady AI turns quote intake into a structured application-prep workflow,
+              making rep judgment calls visible through mapped fields, missing-information checks,
+              certificate wording review, and decision-support analytics.
             </p>
           </div>
           <div className="heroPanel">
             <span>Human review boundary</span>
             <strong>{humanReview}</strong>
             <small>No approval, binding, issuing, or submission decisions are automated.</small>
+          </div>
+        </section>
+
+        <section className="decisionPath panel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Presentation flow</p>
+              <h2>Quote intake to submission-ready review</h2>
+            </div>
+          </div>
+          <div className="pathSteps">
+            <div>
+              <span>1</span>
+              <strong>Read the intake</strong>
+              <small>Capture operations, limits, locations, sales, certificates, and special wording.</small>
+            </div>
+            <div>
+              <span>2</span>
+              <strong>Map the app</strong>
+              <small>Match application questions to available intake data and flag unsupported answers.</small>
+            </div>
+            <div>
+              <span>3</span>
+              <strong>Surface judgment calls</strong>
+              <small>Show underwriting flags, missing information, and rep double-check items.</small>
+            </div>
+            <div>
+              <span>4</span>
+              <strong>Prepare for review</strong>
+              <small>Create a draft packet for human review, not automated approval or binding.</small>
+            </div>
           </div>
         </section>
 
@@ -226,9 +258,9 @@ export default function Home() {
           <div className="workflowCards">
             <WorkflowCard
               active={mode === "business-review"}
-              eyebrow="General request"
-              title="Business Review"
-              body="Review a document or request for requirements, missing information, risk flags, and next action."
+              eyebrow="GL quote review"
+              title="Small Business GL Review"
+              body="Review a small-business GL request for operations, limits, certificates, missing information, and next action."
               href="?workflow=business-review"
               onClick={(event) => handleWorkflowClick(event, "business-review")}
             />
@@ -257,8 +289,6 @@ export default function Home() {
           <Metric label="Needs review" value={`${analytics.percent_fields_needing_review}%`} />
           <Metric label="Missing fields" value={String(missingCount)} />
         </section>
-
-        <AnalyticsPanel result={result} />
 
         <section className="grid">
           <div className="panel inputPanel">
@@ -363,6 +393,8 @@ export default function Home() {
             )}
           </div>
         </section>
+
+        <AnalyticsPanel result={result} />
 
         <section className="panel jsonPanel">
           <div className="panelHeader">
@@ -522,8 +554,8 @@ function AnalyticsPanel({ result }: { result: Result }) {
     <section className="panel analyticsPanel">
       <div className="panelHeader">
         <div>
-          <p className="eyebrow">Operations analytics</p>
-          <h2>Review summary metrics</h2>
+          <p className="eyebrow">Decision-support analytics</p>
+          <h2>Submission review metrics</h2>
         </div>
         <span className="reviewBadge required">Human review only</span>
       </div>

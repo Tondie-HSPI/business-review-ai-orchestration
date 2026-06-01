@@ -130,10 +130,18 @@ export type SalesforceLikeRecord = {
   risk_profile?: Record<string, unknown>;
 };
 
-export const businessSample = `Client is requesting vendor onboarding approval for Northstar Claims Services.
-They need access by June 15 for claims intake support. Contract language mentions
-SOC 2, data handling, indemnification, and a 24-hour incident notice requirement.
-Insurance limits were not included. The request asks for expedited approval.`;
+export const businessSample = `Small business GL quote review request for Bright Bean Cafe LLC.
+Operations: Neighborhood coffee shop with light food service, sidewalk seating, and one leased storefront.
+Business owner: Maya Carter
+Requested effective date: June 15
+Insurance limits were not included.
+Certificate requested: Yes
+Certificate holder: Oak Street Properties
+Additional insured requested: Yes
+Waiver of subrogation requested: Yes
+Primary and noncontributory requested: Yes
+Special wording: Lease requires additional insured status and primary/noncontributory wording if available by policy terms.
+Next action requested: prepare the quote submission packet for rep review.`;
 
 export const applicationSample = `Generic carrier-neutral application prep notes for a sample professional services applicant.
 Applicant: Northstar Risk Advisory LLC
@@ -353,12 +361,13 @@ const requiredLandscaperFields = [
 export function reviewBusinessRequest(text: string): ReviewOutput {
   const lowered = text.toLowerCase();
   const requirements = [
-    ["soc 2", "SOC 2 mentioned"],
-    ["data handling", "Data handling requirement mentioned"],
-    ["indemnification", "Indemnification mentioned"],
-    ["incident notice", "Incident notice requirement mentioned"],
-    ["approval", "Approval requested"],
-    ["expedited", "Expedited review requested"]
+    ["general liability", "General liability request mentioned"],
+    ["gl", "GL request mentioned"],
+    ["certificate requested", "Certificate request mentioned"],
+    ["additional insured", "Additional insured wording requested"],
+    ["waiver of subrogation", "Waiver of subrogation requested"],
+    ["primary", "Primary and noncontributory wording mentioned"],
+    ["operations", "Operations description included"]
   ]
     .filter(([keyword]) => lowered.includes(keyword))
     .map(([, label]) => label);
@@ -376,20 +385,25 @@ export function reviewBusinessRequest(text: string): ReviewOutput {
   );
 
   const riskFlags = [
-    lowered.includes("soc 2") ? "SOC 2 requirement requires security review" : null,
-    lowered.includes("data handling") ? "Data handling language requires review" : null,
-    lowered.includes("indemnification") ? "Indemnification language requires legal review" : null,
-    lowered.includes("incident notice") ? "Incident notice requirement requires review" : null,
-    lowered.includes("expedited") || lowered.includes("urgent")
-      ? "Expedited approval requested"
+    lowered.includes("additional insured")
+      ? "Additional insured request needs policy/endorsement review"
+      : null,
+    lowered.includes("waiver of subrogation")
+      ? "Waiver of subrogation request needs endorsement review"
+      : null,
+    lowered.includes("primary") || lowered.includes("noncontributory")
+      ? "Primary and noncontributory wording needs policy review"
+      : null,
+    lowered.includes("sidewalk seating") || lowered.includes("food service")
+      ? "Premises and operations details should be reviewed for class eligibility"
       : null,
     ...missing.map((field) => `${titleize(field)} missing`)
   ].filter(Boolean) as string[];
 
   const output = {
-    document_type: lowered.includes("vendor") ? "vendor_onboarding_request" : "business_review_request",
+    document_type: "small_business_gl_quote_review",
     summary:
-      "Business request reviewed for structured requirements, missing information, risk flags, and next action.",
+      "Small business GL request reviewed for operations, certificate requirements, missing information, risk flags, and next action.",
     extracted_requirements: requirements,
     missing_information: missing,
     risk_flags: riskFlags,
@@ -397,12 +411,12 @@ export function reviewBusinessRequest(text: string): ReviewOutput {
       ? `Route to human reviewer and request missing ${missing
           .map((field) => field.replaceAll("_", " "))
           .join(", ")}.`
-      : "Route to human reviewer for final validation before approval.",
+      : "Route to rep for final validation before quote submission.",
     email_draft: missing.length
       ? `Thank you for the request. Before we can complete review, please provide: ${missing
           .map((field) => field.replaceAll("_", " "))
           .join(", ")}.`
-      : "Thank you for the request. We have enough information to continue standard review.",
+      : "Thank you for the request. We have enough information to continue quote submission review.",
     confidence_level: missing.length > 1 || riskFlags.length > 3 ? "medium" : "medium-high",
     requires_human_review: missing.length > 0 || riskFlags.length > 0
   };
@@ -410,7 +424,7 @@ export function reviewBusinessRequest(text: string): ReviewOutput {
   return {
     ...output,
     analytics_summary: buildAnalyticsSummary({
-      workflowName: "SubmissionReady AI Business Review",
+      workflowName: "SubmissionReady AI Small Business GL Review",
       documentType: output.document_type,
       missingInformation: output.missing_information,
       riskFlags: output.risk_flags,
