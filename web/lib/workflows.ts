@@ -62,6 +62,20 @@ export type LiquorRestaurantPacket = {
   requires_human_review: boolean;
 };
 
+export type FormQuestion = {
+  id: string;
+  question: string;
+  source_field: string;
+  pdf_field: string;
+};
+
+export type SalesforceLikeRecord = {
+  account?: Record<string, unknown>;
+  location?: Record<string, unknown>;
+  opportunity?: Record<string, unknown>;
+  risk_profile?: Record<string, unknown>;
+};
+
 export const businessSample = `Client is requesting vendor onboarding approval for Northstar Claims Services.
 They need access by June 15 for claims intake support. Contract language mentions
 SOC 2, data handling, indemnification, and a 24-hour incident notice requirement.
@@ -109,6 +123,57 @@ Lowest wine/liquor price: 7.00
 Building owner: No
 Fryers: Yes
 Fire suppression: Wet system with cleaning contract.`;
+
+export const defaultLiquorRestaurantQuestions: FormQuestion[] = [
+  {
+    id: "applicant_name",
+    question: "Applicant's name, including DBA name",
+    source_field: "account.name",
+    pdf_field: "01 Applicant name"
+  },
+  {
+    id: "location_address",
+    question: "Location address",
+    source_field: "location.street",
+    pdf_field: "02 Location address"
+  },
+  {
+    id: "coverage_requested",
+    question: "Coverage desired",
+    source_field: "opportunity.requested_coverages",
+    pdf_field: "01 Coverage 1 / 2 / 3"
+  },
+  {
+    id: "description_of_operations",
+    question: "Description of operations",
+    source_field: "risk_profile.operations",
+    pdf_field: "014 Description"
+  },
+  {
+    id: "annual_food_sales",
+    question: "Annual food sales",
+    source_field: "risk_profile.food_sales",
+    pdf_field: "AR Food"
+  },
+  {
+    id: "annual_alcohol_sales",
+    question: "Annual alcohol sales",
+    source_field: "risk_profile.alcohol_sales",
+    pdf_field: "AR Alc"
+  },
+  {
+    id: "entertainment",
+    question: "Does the establishment feature entertainment?",
+    source_field: "risk_profile.entertainment",
+    pdf_field: "7 if yes"
+  },
+  {
+    id: "liquor_training",
+    question: "Are alcohol-serving employees certified in formal alcohol training?",
+    source_field: "risk_profile.liquor_training",
+    pdf_field: "44 R56"
+  }
+];
 
 const requiredBusinessFields = ["insurance_limits", "business_owner", "effective_date"];
 const requiredApplicationFields = [
@@ -259,7 +324,10 @@ export function buildApplicationPacket(text: string): ApplicationPacket {
   };
 }
 
-export function buildLiquorRestaurantPacket(text: string): LiquorRestaurantPacket {
+export function buildLiquorRestaurantPacket(
+  text: string,
+  options: { sourceRecord?: SalesforceLikeRecord | null; formQuestions?: FormQuestion[] } = {}
+): LiquorRestaurantPacket {
   const raw = parseKeyValues(text);
   const fields = {
     applicant: raw.applicant,
@@ -350,7 +418,11 @@ export function buildLiquorRestaurantPacket(text: string): LiquorRestaurantPacke
     },
     inferred_application_answers: inferLiquorApplicationAnswers(fields),
     mapped_pdf_fields: mapLiquorPdfFields(fields),
-    answered_form_questions: answerLiquorFormQuestions(fields),
+    answered_form_questions: answerLiquorFormQuestions(
+      fields,
+      options.formQuestions ?? defaultLiquorRestaurantQuestions,
+      options.sourceRecord
+    ),
     missing_information: missing,
     risk_flags: riskFlags,
     recommended_next_action: missing.length
@@ -454,71 +526,98 @@ function containsAny(value: string, keywords: string[]) {
   return keywords.some((keyword) => lowered.includes(keyword));
 }
 
-function answerLiquorFormQuestions(fields: Record<string, string | null | undefined>) {
-  const questions = [
-    {
-      id: "applicant_name",
-      question: "Applicant's name, including DBA name",
-      answer: fields.applicant,
-      source_field: "account.name",
-      pdf_field: "01 Applicant name"
-    },
-    {
-      id: "location_address",
-      question: "Location address",
-      answer: fields.location_address,
-      source_field: "location.street",
-      pdf_field: "02 Location address"
-    },
-    {
-      id: "coverage_requested",
-      question: "Coverage desired",
-      answer: fields.coverage_requested,
-      source_field: "opportunity.requested_coverages",
-      pdf_field: "01 Coverage 1 / 2 / 3"
-    },
-    {
-      id: "description_of_operations",
-      question: "Description of operations",
-      answer: fields.operations,
-      source_field: "risk_profile.operations",
-      pdf_field: "014 Description"
-    },
-    {
-      id: "annual_food_sales",
-      question: "Annual food sales",
-      answer: fields.food_sales,
-      source_field: "risk_profile.food_sales",
-      pdf_field: "AR Food"
-    },
-    {
-      id: "annual_alcohol_sales",
-      question: "Annual alcohol sales",
-      answer: fields.alcohol_sales,
-      source_field: "risk_profile.alcohol_sales",
-      pdf_field: "AR Alc"
-    },
-    {
-      id: "entertainment",
-      question: "Does the establishment feature entertainment?",
-      answer: fields.entertainment,
-      source_field: "risk_profile.entertainment",
-      pdf_field: "7 if yes"
-    },
-    {
-      id: "liquor_training",
-      question: "Are alcohol-serving employees certified in formal alcohol training?",
-      answer: fields.liquor_training,
-      source_field: "risk_profile.liquor_training",
-      pdf_field: "44 R56"
-    }
-  ];
-
+function answerLiquorFormQuestions(
+  fields: Record<string, string | null | undefined>,
+  questions: FormQuestion[],
+  sourceRecord?: SalesforceLikeRecord | null
+) {
   return questions.map((question) => ({
-    ...question,
-    answer: question.answer ?? null,
-    confidence: question.answer ? "high" as const : "missing" as const
+    id: question.id,
+    question: question.question,
+    answer: answerQuestion(question, fields, sourceRecord),
+    source_field: question.source_field,
+    pdf_field: question.pdf_field,
+    confidence: answerQuestion(question, fields, sourceRecord) ? "high" as const : "missing" as const
   }));
+}
+
+export function salesforceRecordToQuoteText(record: SalesforceLikeRecord) {
+  const account = record.account ?? {};
+  const location = record.location ?? {};
+  const opportunity = record.opportunity ?? {};
+  const risk = record.risk_profile ?? {};
+  const coverages = Array.isArray(opportunity.requested_coverages)
+    ? opportunity.requested_coverages.join(", ")
+    : stringValue(opportunity.requested_coverages);
+
+  return `Quote request generated from uploaded intake data.
+Applicant: ${stringValue(account.name)}
+DBA: ${stringValue(account.dba)}
+Location address: ${stringValue(location.street)}
+City: ${stringValue(location.city)}
+State: ${stringValue(location.state)}
+Zip: ${stringValue(location.zip)}
+Email: ${stringValue(account.email)}
+Phone: ${stringValue(account.phone)}
+Coverage requested: ${coverages}
+Operations: ${stringValue(risk.operations)}
+Years experience: ${stringValue(risk.years_experience)}
+Business start year: ${stringValue(risk.business_start_year)}
+Food sales: ${stringValue(risk.food_sales)}
+Alcohol sales: ${stringValue(risk.alcohol_sales)}
+Catering sales: ${stringValue(risk.catering_sales)}
+GL limit: ${stringValue(opportunity.general_liability_limit)}
+Liquor limit: ${stringValue(opportunity.liquor_liability_limit)}
+Close time: ${stringValue(risk.close_time)}
+Alcohol sales cease: ${stringValue(risk.alcohol_sales_cease)}
+Entertainment: ${stringValue(risk.entertainment)}
+Security: ${stringValue(risk.security)}
+BYOB: ${stringValue(risk.byob)}
+Claims or violations: ${stringValue(risk.claims_or_violations)}
+Liquor training: ${stringValue(risk.liquor_training)}
+ID scanner: ${stringValue(risk.id_scanner)}
+Happy hour after 9pm: ${stringValue(risk.happy_hour_after_9pm)}
+Lowest beer price: ${stringValue(risk.lowest_beer_price)}
+Lowest wine/liquor price: ${stringValue(risk.lowest_wine_liquor_price)}
+Building owner: ${stringValue(risk.building_owner)}
+Fryers: ${stringValue(risk.fryers)}
+Fire suppression: ${stringValue(risk.fire_suppression)}`;
+}
+
+function answerQuestion(
+  question: FormQuestion,
+  fields: Record<string, string | null | undefined>,
+  sourceRecord?: SalesforceLikeRecord | null
+) {
+  const sourceAnswer = sourceRecord ? lookupPath(sourceRecord, question.source_field) : null;
+  if (sourceAnswer !== null && sourceAnswer !== undefined && sourceAnswer !== "") {
+    return Array.isArray(sourceAnswer) ? sourceAnswer.join(", ") : String(sourceAnswer);
+  }
+
+  const fallbackMap: Record<string, string | null | undefined> = {
+    applicant_name: fields.applicant,
+    location_address: fields.location_address,
+    coverage_requested: fields.coverage_requested,
+    description_of_operations: fields.operations,
+    annual_food_sales: fields.food_sales,
+    annual_alcohol_sales: fields.alcohol_sales,
+    entertainment: fields.entertainment,
+    liquor_training: fields.liquor_training
+  };
+
+  return fallbackMap[question.id] ?? null;
+}
+
+function lookupPath(record: SalesforceLikeRecord, dottedPath: string): unknown {
+  return dottedPath.split(".").reduce<unknown>((current, part) => {
+    if (!current || typeof current !== "object") return null;
+    return (current as Record<string, unknown>)[part];
+  }, record);
+}
+
+function stringValue(value: unknown) {
+  if (value === null || value === undefined) return "";
+  return String(value);
 }
 
 function lineValue(text: string, label: string): string | null {

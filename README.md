@@ -29,6 +29,9 @@ PaperworkPro includes an insurance application preparation workflow that turns a
 The workflow can:
 
 - organize applicant information
+- upload or paste intake data
+- attach a carrier application PDF for tracking
+- use a preprocessed form-question schema
 - identify missing application fields
 - separate completed and incomplete fields
 - prepare review notes
@@ -151,6 +154,8 @@ PaperworkPro also includes a quote-intake workflow for restaurant and bar risks.
 - rep double-check checklist for inferred answers and underwriting concerns
 
 The uploaded carrier form is not stored in this public repository. The workflow demonstrates how intake data can be structured against a carrier-agnostic form-question schema for review before any licensed or human submission step.
+
+In the browser demo, the user can upload fake intake data, upload a form-question JSON schema, attach a carrier application PDF for reference, and download the generated review packet JSON. Physical PDF form filling is the next backend step.
 
 ## Run Locally
 

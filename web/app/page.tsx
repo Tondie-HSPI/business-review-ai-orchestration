@@ -7,10 +7,14 @@ import {
   buildApplicationPacket,
   buildLiquorRestaurantPacket,
   businessSample,
+  defaultLiquorRestaurantQuestions,
+  FormQuestion,
   LiquorRestaurantPacket,
   liquorRestaurantSample,
   reviewBusinessRequest,
   ReviewOutput,
+  SalesforceLikeRecord,
+  salesforceRecordToQuoteText,
   WorkflowMode
 } from "../lib/workflows";
 
@@ -19,18 +23,57 @@ type Result = ReviewOutput | ApplicationPacket | LiquorRestaurantPacket;
 export default function Home() {
   const [mode, setMode] = useState<WorkflowMode>("application-prep");
   const [text, setText] = useState(applicationSample);
+  const [sourceRecord, setSourceRecord] = useState<SalesforceLikeRecord | null>(null);
+  const [formQuestions, setFormQuestions] = useState<FormQuestion[]>(defaultLiquorRestaurantQuestions);
+  const [uploadedPdfName, setUploadedPdfName] = useState<string>("");
+  const [uploadMessage, setUploadMessage] = useState<string>("");
 
   const result = useMemo<Result>(() => {
     return mode === "application-prep"
       ? buildApplicationPacket(text)
       : mode === "liquor-restaurant"
-        ? buildLiquorRestaurantPacket(text)
+        ? buildLiquorRestaurantPacket(text, { sourceRecord, formQuestions })
       : reviewBusinessRequest(text);
-  }, [mode, text]);
+  }, [mode, text, sourceRecord, formQuestions]);
 
   function switchMode(nextMode: WorkflowMode) {
     setMode(nextMode);
     setText(sampleForMode(nextMode));
+    setUploadMessage("");
+  }
+
+  async function handleIntakeUpload(file: File | null) {
+    if (!file) return;
+    const content = await file.text();
+
+    if (file.name.toLowerCase().endsWith(".json")) {
+      const parsed = JSON.parse(content) as SalesforceLikeRecord;
+      setSourceRecord(parsed);
+      setText(salesforceRecordToQuoteText(parsed));
+      setMode("liquor-restaurant");
+      setUploadMessage(`Loaded intake data from ${file.name}`);
+      return;
+    }
+
+    setSourceRecord(null);
+    setText(content);
+    setMode("liquor-restaurant");
+    setUploadMessage(`Loaded intake text from ${file.name}`);
+  }
+
+  async function handleQuestionUpload(file: File | null) {
+    if (!file) return;
+    const parsed = JSON.parse(await file.text()) as FormQuestion[];
+    setFormQuestions(parsed);
+    setMode("liquor-restaurant");
+    setUploadMessage(`Loaded ${parsed.length} form questions from ${file.name}`);
+  }
+
+  function handlePdfUpload(file: File | null) {
+    if (!file) return;
+    setUploadedPdfName(file.name);
+    setMode("liquor-restaurant");
+    setUploadMessage(`Attached carrier app PDF: ${file.name}`);
   }
 
   const missingCount = result.missing_information.length;
@@ -78,6 +121,14 @@ export default function Home() {
             missing-field checks, and human review controls.
           </span>
         </div>
+
+        <div className="sidebarNote">
+          <strong>Upload flow</strong>
+          <span>1. Upload intake data or use the sample.</span>
+          <span>2. Upload form-question JSON or use the default schema.</span>
+          <span>3. Attach a carrier PDF for tracking.</span>
+          <span>4. Download the review packet JSON.</span>
+        </div>
       </aside>
 
       <section className="workspace">
@@ -119,6 +170,35 @@ export default function Home() {
                 Reload sample
               </button>
             </div>
+            {mode === "liquor-restaurant" && (
+              <div className="uploadGrid">
+                <label>
+                  <span>Upload intake data</span>
+                  <input
+                    type="file"
+                    accept=".txt,.json"
+                    onChange={(event) => handleIntakeUpload(event.target.files?.[0] ?? null)}
+                  />
+                </label>
+                <label>
+                  <span>Upload form questions</span>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={(event) => handleQuestionUpload(event.target.files?.[0] ?? null)}
+                  />
+                </label>
+                <label>
+                  <span>Attach carrier app PDF</span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(event) => handlePdfUpload(event.target.files?.[0] ?? null)}
+                  />
+                </label>
+              </div>
+            )}
+            {uploadMessage && <div className="uploadMessage">{uploadMessage}</div>}
             <textarea
               value={text}
               onChange={(event) => setText(event.target.value)}
@@ -136,7 +216,11 @@ export default function Home() {
             {mode === "application-prep" ? (
               <ApplicationView result={result as ApplicationPacket} />
             ) : mode === "liquor-restaurant" ? (
-              <LiquorRestaurantView result={result as LiquorRestaurantPacket} />
+              <LiquorRestaurantView
+                result={result as LiquorRestaurantPacket}
+                uploadedPdfName={uploadedPdfName}
+                formQuestionCount={formQuestions.length}
+              />
             ) : (
               <BusinessReviewView result={result as ReviewOutput} />
             )}
@@ -150,6 +234,13 @@ export default function Home() {
               <h2>Review JSON</h2>
             </div>
           </div>
+          <a
+            className="downloadButton"
+            href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
+            download="paperworkpro-review-packet.json"
+          >
+            Download review packet JSON
+          </a>
           <pre>{JSON.stringify(result, null, 2)}</pre>
         </section>
       </section>
@@ -194,10 +285,28 @@ function ApplicationView({ result }: { result: ApplicationPacket }) {
   );
 }
 
-function LiquorRestaurantView({ result }: { result: LiquorRestaurantPacket }) {
+function LiquorRestaurantView({
+  result,
+  uploadedPdfName,
+  formQuestionCount
+}: {
+  result: LiquorRestaurantPacket;
+  uploadedPdfName: string;
+  formQuestionCount: number;
+}) {
   return (
     <div className="outputStack">
       <div className="notice">{result.official_form_status}</div>
+      <div className="uploadStatus">
+        <div>
+          <span>Carrier app</span>
+          <strong>{uploadedPdfName || "Default preprocessed form schema"}</strong>
+        </div>
+        <div>
+          <span>Form questions</span>
+          <strong>{formQuestionCount}</strong>
+        </div>
+      </div>
       <div className="readinessBox">
         <span>Submission readiness</span>
         <strong>{formatLabel(result.submission_readiness.status)}</strong>
