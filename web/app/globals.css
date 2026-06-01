@@ -498,6 +498,18 @@ textarea:focus {
   border: 1px solid var(--line);
 }
 
+.certificateRequest {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+}
+
+.certificateRequest pre {
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid var(--line);
+  white-space: pre-wrap;
+}
+
 .sectionBlock {
   border: 1px solid var(--line);
   border-radius: 8px;

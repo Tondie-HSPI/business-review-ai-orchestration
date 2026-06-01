@@ -20,6 +20,7 @@ def salesforce_record_to_quote_text(record: dict) -> str:
     location = record["location"]
     opportunity = record["opportunity"]
     risk = record["risk_profile"]
+    certificate = record.get("certificate_request", {})
 
     coverages = ", ".join(opportunity["requested_coverages"])
 
@@ -55,6 +56,15 @@ Lowest wine/liquor price: {risk["lowest_wine_liquor_price"]}
 Building owner: {risk["building_owner"]}
 Fryers: {risk["fryers"]}
 Fire suppression: {risk["fire_suppression"]}
+Certificate requested: {certificate.get("certificate_requested", "")}
+Certificate holder: {certificate.get("certificate_holder", "")}
+Certificate holder address: {certificate.get("certificate_holder_address", "")}
+Certificate holder email: {certificate.get("certificate_holder_email", "")}
+Certificate purpose: {certificate.get("certificate_purpose", "")}
+Additional insured requested: {certificate.get("additional_insured_requested", "")}
+Waiver of subrogation requested: {certificate.get("waiver_of_subrogation_requested", "")}
+Primary and noncontributory requested: {certificate.get("primary_and_noncontributory_requested", "")}
+Special certificate wording: {certificate.get("special_certificate_wording", "")}
 """
 
 

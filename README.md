@@ -159,6 +159,8 @@ In the browser demo, the user can upload fake intake data, upload a form-questio
 
 The Liquor / Restaurant workflow also includes a carrier application preview. Inferred answers are flagged for rep review, and the “save reviewed draft” action is gated until the rep checks each flagged answer.
 
+If the intake asks for a certificate, the workflow creates a CSR certificate request draft with holder details, requested wording, missing information, and review flags for additional insured, waiver of subrogation, and primary/noncontributory wording. It does not issue the certificate automatically.
+
 For other application types, the same pattern can be reused by uploading a different form-question JSON schema. Deeper answer inference requires app-type rules for that carrier/product workflow.
 
 ## Run Locally

@@ -49,4 +49,13 @@ Lowest wine/liquor price: 7.00
 Building owner: No
 Fryers: Yes
 Fire suppression: Wet system with cleaning contract.
+Certificate requested: Yes
+Certificate holder: Triangle Events Group
+Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
+Certificate holder email: certificates@example.com
+Certificate purpose: Catering event contract for July 20
+Additional insured requested: Yes
+Waiver of subrogation requested: Yes
+Primary and noncontributory requested: Yes
+Special certificate wording: Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms.
 """

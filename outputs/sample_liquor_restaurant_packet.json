@@ -51,6 +51,31 @@
       "fire_suppression": "Wet system with cleaning contract."
     }
   },
+  "csr_certificate_request": {
+    "requested": true,
+    "status": "ready_for_csr_review",
+    "certificate_holder": {
+      "name": "Triangle Events Group",
+      "address": "500 Convention Center Drive, Raleigh, NC 27601",
+      "email": "certificates@example.com"
+    },
+    "purpose": "Catering event contract for July 20",
+    "requested_wording": {
+      "additional_insured": "Yes",
+      "waiver_of_subrogation": "Yes",
+      "primary_and_noncontributory": "Yes",
+      "special_wording": "Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms."
+    },
+    "missing_information": [],
+    "review_flags": [
+      "Additional insured request needs policy/endorsement review.",
+      "Waiver of subrogation request needs endorsement review.",
+      "Primary and noncontributory wording needs policy review.",
+      "Special certificate wording should be reviewed before issuance."
+    ],
+    "csr_email_draft": "Please review the certificate request below before issuance.\n\nInsured: Harbor & Vine Kitchen LLC\nCertificate holder: Triangle Events Group\nHolder address: 500 Convention Center Drive, Raleigh, NC 27601\nDelivery email: certificates@example.com\nPurpose: Catering event contract for July 20\n\nRequested wording / review flags:\n- Additional insured request needs policy/endorsement review.\n- Waiver of subrogation request needs endorsement review.\n- Primary and noncontributory wording needs policy review.\n- Special certificate wording should be reviewed before issuance.\n\nPlease confirm policy permissions and endorsements before issuing.",
+    "requires_csr_review": true
+  },
   "inferred_application_answers": [
     {
       "id": "entertainment_featured",

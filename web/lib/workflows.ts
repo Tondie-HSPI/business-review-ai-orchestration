@@ -36,6 +36,21 @@ export type LiquorRestaurantPacket = {
   };
   intake_summary: Record<string, string | null>;
   application_packet: Record<string, Record<string, string | null>>;
+  csr_certificate_request: {
+    requested: boolean;
+    status: "ready_for_csr_review" | "missing_information" | "not_requested";
+    certificate_holder: {
+      name: string | null;
+      address: string | null;
+      email: string | null;
+    };
+    purpose: string | null;
+    requested_wording: Record<string, string | null | undefined>;
+    missing_information: string[];
+    review_flags: string[];
+    csr_email_draft: string;
+    requires_csr_review: boolean;
+  };
   inferred_application_answers: Array<{
     id: string;
     question: string;
@@ -122,7 +137,16 @@ Lowest beer price: 4.00
 Lowest wine/liquor price: 7.00
 Building owner: No
 Fryers: Yes
-Fire suppression: Wet system with cleaning contract.`;
+Fire suppression: Wet system with cleaning contract.
+Certificate requested: Yes
+Certificate holder: Triangle Events Group
+Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
+Certificate holder email: certificates@example.com
+Certificate purpose: Catering event contract for July 20
+Additional insured requested: Yes
+Waiver of subrogation requested: Yes
+Primary and noncontributory requested: Yes
+Special certificate wording: Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms.`;
 
 export const defaultLiquorRestaurantQuestions: FormQuestion[] = [
   {
@@ -360,7 +384,16 @@ export function buildLiquorRestaurantPacket(
     lowest_wine_liquor_price: raw["lowest wine/liquor price"],
     building_owner: raw["building owner"],
     fryers: raw.fryers,
-    fire_suppression: raw["fire suppression"]
+    fire_suppression: raw["fire suppression"],
+    certificate_requested: raw["certificate requested"],
+    certificate_holder: raw["certificate holder"],
+    certificate_holder_address: raw["certificate holder address"],
+    certificate_holder_email: raw["certificate holder email"],
+    certificate_purpose: raw["certificate purpose"],
+    additional_insured_requested: raw["additional insured requested"],
+    waiver_requested: raw["waiver of subrogation requested"],
+    primary_noncontributory_requested: raw["primary and noncontributory requested"],
+    special_certificate_wording: raw["special certificate wording"]
   };
 
   const missing = requiredLiquorRestaurantFields.filter(
@@ -416,6 +449,7 @@ export function buildLiquorRestaurantPacket(
         fire_suppression: fields.fire_suppression
       }
     },
+    csr_certificate_request: buildCsrCertificateRequest(fields),
     inferred_application_answers: inferLiquorApplicationAnswers(fields),
     mapped_pdf_fields: mapLiquorPdfFields(fields),
     answered_form_questions: answerLiquorFormQuestions(
@@ -499,6 +533,80 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
   ];
 }
 
+function buildCsrCertificateRequest(fields: Record<string, string | null | undefined>) {
+  const requested = (fields.certificate_requested ?? "").toLowerCase() === "yes";
+  const missing = requested
+    ? ["certificate_holder", "certificate_holder_address", "certificate_holder_email"].filter(
+        (field) => !fields[field]
+      )
+    : [];
+
+  const reviewFlags = [
+    (fields.additional_insured_requested ?? "").toLowerCase() === "yes"
+      ? "Additional insured request needs policy/endorsement review."
+      : null,
+    (fields.waiver_requested ?? "").toLowerCase() === "yes"
+      ? "Waiver of subrogation request needs endorsement review."
+      : null,
+    (fields.primary_noncontributory_requested ?? "").toLowerCase() === "yes"
+      ? "Primary and noncontributory wording needs policy review."
+      : null,
+    fields.special_certificate_wording
+      ? "Special certificate wording should be reviewed before issuance."
+      : null
+  ].filter(Boolean) as string[];
+
+  return {
+    requested,
+    status: !requested ? "not_requested" as const : missing.length ? "missing_information" as const : "ready_for_csr_review" as const,
+    certificate_holder: {
+      name: fields.certificate_holder ?? null,
+      address: fields.certificate_holder_address ?? null,
+      email: fields.certificate_holder_email ?? null
+    },
+    purpose: fields.certificate_purpose ?? null,
+    requested_wording: {
+      additional_insured: fields.additional_insured_requested,
+      waiver_of_subrogation: fields.waiver_requested,
+      primary_and_noncontributory: fields.primary_noncontributory_requested,
+      special_wording: fields.special_certificate_wording
+    },
+    missing_information: missing,
+    review_flags: reviewFlags,
+    csr_email_draft: requested
+      ? csrEmailDraft(fields, missing, reviewFlags)
+      : "",
+    requires_csr_review: requested
+  };
+}
+
+function csrEmailDraft(
+  fields: Record<string, string | null | undefined>,
+  missing: string[],
+  reviewFlags: string[]
+) {
+  if (missing.length) {
+    return "Certificate request is missing required holder information before CSR processing.";
+  }
+
+  const flags = reviewFlags.length
+    ? reviewFlags.map((flag) => `- ${flag}`).join("\n")
+    : "- No complex certificate wording detected.";
+
+  return `Please review the certificate request below before issuance.
+
+Insured: ${fields.applicant ?? ""}
+Certificate holder: ${fields.certificate_holder ?? ""}
+Holder address: ${fields.certificate_holder_address ?? ""}
+Delivery email: ${fields.certificate_holder_email ?? ""}
+Purpose: ${fields.certificate_purpose ?? ""}
+
+Requested wording / review flags:
+${flags}
+
+Please confirm policy permissions and endorsements before issuing.`;
+}
+
 function inferredAnswer(
   id: string,
   question: string,
@@ -546,6 +654,7 @@ export function salesforceRecordToQuoteText(record: SalesforceLikeRecord) {
   const location = record.location ?? {};
   const opportunity = record.opportunity ?? {};
   const risk = record.risk_profile ?? {};
+  const certificate = (record as SalesforceLikeRecord & { certificate_request?: Record<string, unknown> }).certificate_request ?? {};
   const coverages = Array.isArray(opportunity.requested_coverages)
     ? opportunity.requested_coverages.join(", ")
     : stringValue(opportunity.requested_coverages);
@@ -581,7 +690,16 @@ Lowest beer price: ${stringValue(risk.lowest_beer_price)}
 Lowest wine/liquor price: ${stringValue(risk.lowest_wine_liquor_price)}
 Building owner: ${stringValue(risk.building_owner)}
 Fryers: ${stringValue(risk.fryers)}
-Fire suppression: ${stringValue(risk.fire_suppression)}`;
+Fire suppression: ${stringValue(risk.fire_suppression)}
+Certificate requested: ${stringValue(certificate.certificate_requested)}
+Certificate holder: ${stringValue(certificate.certificate_holder)}
+Certificate holder address: ${stringValue(certificate.certificate_holder_address)}
+Certificate holder email: ${stringValue(certificate.certificate_holder_email)}
+Certificate purpose: ${stringValue(certificate.certificate_purpose)}
+Additional insured requested: ${stringValue(certificate.additional_insured_requested)}
+Waiver of subrogation requested: ${stringValue(certificate.waiver_of_subrogation_requested)}
+Primary and noncontributory requested: ${stringValue(certificate.primary_and_noncontributory_requested)}
+Special certificate wording: ${stringValue(certificate.special_certificate_wording)}`;
 }
 
 function answerQuestion(

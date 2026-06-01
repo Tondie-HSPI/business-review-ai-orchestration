@@ -40,5 +40,16 @@
     "building_owner": "No",
     "fryers": "Yes",
     "fire_suppression": "Wet system with cleaning contract."
+  },
+  "certificate_request": {
+    "certificate_requested": "Yes",
+    "certificate_holder": "Triangle Events Group",
+    "certificate_holder_address": "500 Convention Center Drive, Raleigh, NC 27601",
+    "certificate_holder_email": "certificates@example.com",
+    "certificate_purpose": "Catering event contract for July 20",
+    "additional_insured_requested": "Yes",
+    "waiver_of_subrogation_requested": "Yes",
+    "primary_and_noncontributory_requested": "Yes",
+    "special_certificate_wording": "Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms."
   }
 }

@@ -93,6 +93,7 @@ def build_liquor_restaurant_packet(text: str = SAMPLE_LIQUOR_RESTAURANT_QUOTE, s
                 "fire_suppression": normalized.get("fire_suppression"),
             },
         },
+        "csr_certificate_request": _csr_certificate_request(normalized),
         "inferred_application_answers": _inferred_application_answers(normalized),
         "mapped_pdf_fields": _mapped_pdf_fields(normalized),
         "answered_form_questions": (
@@ -150,6 +151,15 @@ def _normalize_fields(fields: dict) -> dict:
         "building owner": "building_owner",
         "fryers": "fryers",
         "fire suppression": "fire_suppression",
+        "certificate requested": "certificate_requested",
+        "certificate holder": "certificate_holder",
+        "certificate holder address": "certificate_holder_address",
+        "certificate holder email": "certificate_holder_email",
+        "certificate purpose": "certificate_purpose",
+        "additional insured requested": "additional_insured_requested",
+        "waiver of subrogation requested": "waiver_requested",
+        "primary and noncontributory requested": "primary_noncontributory_requested",
+        "special certificate wording": "special_certificate_wording",
     }
     return {target: fields.get(source) for source, target in aliases.items()}
 
@@ -312,3 +322,61 @@ def _rep_double_checks(fields: dict, risk_flags: list[str]) -> list[str]:
         checks.append("Confirm fire suppression system type, service status, and cleaning contract.")
 
     return checks
+
+
+def _csr_certificate_request(fields: dict) -> dict:
+    requested = (fields.get("certificate_requested") or "").lower() == "yes"
+    missing = []
+    if requested:
+        for field in ["certificate_holder", "certificate_holder_address", "certificate_holder_email"]:
+            if not fields.get(field):
+                missing.append(field)
+
+    review_flags = []
+    if (fields.get("additional_insured_requested") or "").lower() == "yes":
+        review_flags.append("Additional insured request needs policy/endorsement review.")
+    if (fields.get("waiver_requested") or "").lower() == "yes":
+        review_flags.append("Waiver of subrogation request needs endorsement review.")
+    if (fields.get("primary_noncontributory_requested") or "").lower() == "yes":
+        review_flags.append("Primary and noncontributory wording needs policy review.")
+    if fields.get("special_certificate_wording"):
+        review_flags.append("Special certificate wording should be reviewed before issuance.")
+
+    return {
+        "requested": requested,
+        "status": "ready_for_csr_review" if requested and not missing else "not_requested" if not requested else "missing_information",
+        "certificate_holder": {
+            "name": fields.get("certificate_holder"),
+            "address": fields.get("certificate_holder_address"),
+            "email": fields.get("certificate_holder_email"),
+        },
+        "purpose": fields.get("certificate_purpose"),
+        "requested_wording": {
+            "additional_insured": fields.get("additional_insured_requested"),
+            "waiver_of_subrogation": fields.get("waiver_requested"),
+            "primary_and_noncontributory": fields.get("primary_noncontributory_requested"),
+            "special_wording": fields.get("special_certificate_wording"),
+        },
+        "missing_information": missing,
+        "review_flags": review_flags,
+        "csr_email_draft": _csr_email_draft(fields, missing, review_flags) if requested else "",
+        "requires_csr_review": requested,
+    }
+
+
+def _csr_email_draft(fields: dict, missing: list[str], review_flags: list[str]) -> str:
+    if missing:
+        return "Certificate request is missing required holder information before CSR processing."
+
+    flags = "\n".join(f"- {flag}" for flag in review_flags) or "- No complex certificate wording detected."
+    return (
+        "Please review the certificate request below before issuance.\n\n"
+        f"Insured: {fields.get('applicant')}\n"
+        f"Certificate holder: {fields.get('certificate_holder')}\n"
+        f"Holder address: {fields.get('certificate_holder_address')}\n"
+        f"Delivery email: {fields.get('certificate_holder_email')}\n"
+        f"Purpose: {fields.get('certificate_purpose')}\n\n"
+        "Requested wording / review flags:\n"
+        f"{flags}\n\n"
+        "Please confirm policy permissions and endorsements before issuing."
+    )

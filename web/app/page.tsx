@@ -364,6 +364,35 @@ function LiquorRestaurantView({
       ))}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
       <ChipGroup title="Risk flags" values={result.risk_flags} variant="risk" />
+      {result.csr_certificate_request.requested && (
+        <div className="sectionBlock certificateRequest">
+          <h3>CSR Certificate Request Draft</h3>
+          <div className="fieldRow">
+            <span>Status</span>
+            <strong>{formatLabel(result.csr_certificate_request.status)}</strong>
+          </div>
+          <div className="fieldRow">
+            <span>Certificate Holder</span>
+            <strong>{result.csr_certificate_request.certificate_holder.name || "Missing"}</strong>
+          </div>
+          <div className="fieldRow">
+            <span>Holder Address</span>
+            <strong>{result.csr_certificate_request.certificate_holder.address || "Missing"}</strong>
+          </div>
+          <div className="fieldRow">
+            <span>Delivery Email</span>
+            <strong>{result.csr_certificate_request.certificate_holder.email || "Missing"}</strong>
+          </div>
+          <ChipGroup
+            title="CSR review flags"
+            values={result.csr_certificate_request.review_flags}
+            variant="risk"
+          />
+          <div className="emailDraft">
+            <pre>{result.csr_certificate_request.csr_email_draft}</pre>
+          </div>
+        </div>
+      )}
       <ChipGroup
         title="Rep double-check checklist"
         values={result.submission_readiness.rep_double_checks}

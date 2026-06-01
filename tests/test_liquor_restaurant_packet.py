@@ -56,3 +56,14 @@ def test_liquor_packet_infers_application_answers_with_evidence():
     assert inferred["losses_or_violations"]["inferred_answer"] == "No"
     assert inferred["entertainment_featured"]["flagged_for_review"] is True
     assert inferred["entertainment_featured"]["review_status"] == "verify_before_submission"
+
+
+def test_liquor_packet_creates_csr_certificate_request():
+    packet = build_liquor_restaurant_packet(SAMPLE_LIQUOR_RESTAURANT_QUOTE)
+    cert_request = packet["csr_certificate_request"]
+
+    assert cert_request["requested"] is True
+    assert cert_request["status"] == "ready_for_csr_review"
+    assert cert_request["requires_csr_review"] is True
+    assert any("Additional insured" in flag for flag in cert_request["review_flags"])
+    assert "Please review the certificate request" in cert_request["csr_email_draft"]
