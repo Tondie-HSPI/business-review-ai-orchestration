@@ -59,7 +59,9 @@
       "evidence": "DJ with dancing on Friday and Saturday.",
       "rep_check": "Confirm entertainment type, frequency, and whether dancing is permitted.",
       "pdf_field": "7 if yes",
-      "confidence": "high"
+      "confidence": "high",
+      "review_status": "verify_before_submission",
+      "flagged_for_review": true
     },
     {
       "id": "security_or_door_staff",
@@ -68,7 +70,9 @@
       "evidence": "Door person on weekends.",
       "rep_check": "Confirm whether security is employee, contractor, or third-party service.",
       "pdf_field": "12 R14",
-      "confidence": "high"
+      "confidence": "high",
+      "review_status": "verify_before_submission",
+      "flagged_for_review": true
     },
     {
       "id": "losses_or_violations",
@@ -77,7 +81,9 @@
       "evidence": "None in the past five years.",
       "rep_check": "Confirm loss runs and liquor violation history before submission.",
       "pdf_field": "4 R1 / 21 / 22",
-      "confidence": "high"
+      "confidence": "high",
+      "review_status": "verify_before_submission",
+      "flagged_for_review": true
     },
     {
       "id": "bar_with_seating",
@@ -86,7 +92,9 @@
       "evidence": "Full-service restaurant with bar seating and weekend DJ.",
       "rep_check": "Confirm seating layout and whether bar seating is available to patrons.",
       "pdf_field": "48 R60",
-      "confidence": "high"
+      "confidence": "high",
+      "review_status": "verify_before_submission",
+      "flagged_for_review": true
     },
     {
       "id": "happy_hour_after_9pm",
@@ -95,7 +103,9 @@
       "evidence": "No",
       "rep_check": "Confirm all drink specials, happy hours, and promotional pricing.",
       "pdf_field": "46 R58",
-      "confidence": "high"
+      "confidence": "high",
+      "review_status": "verify_before_submission",
+      "flagged_for_review": true
     },
     {
       "id": "applicant_building_owner",
@@ -104,7 +114,9 @@
       "evidence": "No",
       "rep_check": "Confirm ownership, lease terms, and maintenance responsibilities.",
       "pdf_field": "16 R18",
-      "confidence": "high"
+      "confidence": "high",
+      "review_status": "verify_before_submission",
+      "flagged_for_review": true
     },
     {
       "id": "fire_suppression",
@@ -113,7 +125,9 @@
       "evidence": "Wet system with cleaning contract.",
       "rep_check": "Confirm system type, cleaning contract, and service status.",
       "pdf_field": "20a R23 / 28 R39",
-      "confidence": "high"
+      "confidence": "high",
+      "review_status": "verify_before_submission",
+      "flagged_for_review": true
     }
   ],
   "mapped_pdf_fields": {

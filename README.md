@@ -143,7 +143,7 @@ PaperworkPro also includes a quote-intake workflow for restaurant and bar risks.
 - operations and liquor-control details
 - fake Salesforce-style account and opportunity data
 - preprocessed form questions represented as JSON
-- inferred application answers with evidence and rep review notes
+- inferred application answers with evidence, review flags, and rep review notes
 - missing information
 - underwriting review flags
 - draft PDF field mappings for an application packet

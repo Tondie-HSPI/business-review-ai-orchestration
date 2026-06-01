@@ -276,6 +276,7 @@ def _inferred_application_answers(fields: dict) -> list[dict]:
 
 
 def _answer(answer_id: str, question: str, inferred_answer: str, evidence: str, rep_check: str, pdf_field: str) -> dict:
+    confidence = "high" if evidence and inferred_answer != "Review Required" else "needs_review"
     return {
         "id": answer_id,
         "question": question,
@@ -283,7 +284,9 @@ def _answer(answer_id: str, question: str, inferred_answer: str, evidence: str, 
         "evidence": evidence or "No direct evidence found in intake.",
         "rep_check": rep_check,
         "pdf_field": pdf_field,
-        "confidence": "high" if evidence and inferred_answer != "Review Required" else "needs_review",
+        "confidence": confidence,
+        "review_status": "verify_before_submission" if confidence == "high" else "rep_review_required",
+        "flagged_for_review": True,
     }
 
 

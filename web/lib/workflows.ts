@@ -44,6 +44,8 @@ export type LiquorRestaurantPacket = {
     rep_check: string;
     pdf_field: string;
     confidence: "high" | "needs_review";
+    review_status: "verify_before_submission" | "rep_review_required";
+    flagged_for_review: boolean;
   }>;
   mapped_pdf_fields: Record<string, string>;
   answered_form_questions: Array<{
@@ -433,6 +435,7 @@ function inferredAnswer(
   rep_check: string,
   pdf_field: string
 ) {
+  const confidence = evidence && inferred_answer !== "Review Required" ? "high" as const : "needs_review" as const;
   return {
     id,
     question,
@@ -440,7 +443,9 @@ function inferredAnswer(
     evidence: evidence || "No direct evidence found in intake.",
     rep_check,
     pdf_field,
-    confidence: evidence && inferred_answer !== "Review Required" ? "high" as const : "needs_review" as const
+    confidence,
+    review_status: confidence === "high" ? "verify_before_submission" as const : "rep_review_required" as const,
+    flagged_for_review: true
   };
 }
 

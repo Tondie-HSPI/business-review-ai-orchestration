@@ -232,6 +232,9 @@ function LiquorRestaurantView({ result }: { result: LiquorRestaurantPacket }) {
           <div className="inferenceRow" key={item.id}>
             <span>{item.question}</span>
             <strong>{item.inferred_answer}</strong>
+            <em className={item.review_status === "rep_review_required" ? "reviewBadge required" : "reviewBadge"}>
+              {formatLabel(item.review_status)}
+            </em>
             <small>Evidence: {item.evidence}</small>
             <small>Rep check: {item.rep_check}</small>
             <small>Target field: {item.pdf_field}</small>

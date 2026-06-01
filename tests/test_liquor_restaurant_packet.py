@@ -54,3 +54,5 @@ def test_liquor_packet_infers_application_answers_with_evidence():
     assert "DJ" in inferred["entertainment_featured"]["evidence"]
     assert inferred["security_or_door_staff"]["inferred_answer"] == "Yes"
     assert inferred["losses_or_violations"]["inferred_answer"] == "No"
+    assert inferred["entertainment_featured"]["flagged_for_review"] is True
+    assert inferred["entertainment_featured"]["review_status"] == "verify_before_submission"

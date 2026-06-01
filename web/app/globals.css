@@ -381,7 +381,7 @@ textarea:focus {
 
 .inferenceRow {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 110px;
+  grid-template-columns: minmax(220px, 1fr) 90px 190px;
   gap: 8px 14px;
   padding: 12px 0;
   border-top: 1px solid #eef2f7;
@@ -398,6 +398,24 @@ textarea:focus {
 
 .inferenceRow strong {
   color: var(--teal);
+}
+
+.reviewBadge {
+  justify-self: start;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.reviewBadge.required {
+  color: var(--orange);
+  background: #fff7ed;
+  border-color: #fed7aa;
 }
 
 .inferenceRow small {
