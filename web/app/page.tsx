@@ -159,6 +159,14 @@ export default function Home() {
           </div>
         </div>
 
+        <div className="sidebarNote">
+          <strong>Demo flow</strong>
+          <span>1. Show the quote intake.</span>
+          <span>2. Generate the review packet.</span>
+          <span>3. Verify flagged inferences.</span>
+          <span>4. Save a human-reviewed draft.</span>
+        </div>
+
         <div className="controlGroup">
           <label>Workflow</label>
           <div className="segmented">
@@ -170,13 +178,6 @@ export default function Home() {
               Small Business GL Review
             </a>
             <div className="workflowGroup">
-              <a
-                href="?workflow=application-prep"
-                className={mode === "application-prep" ? "active" : ""}
-                onClick={(event) => handleWorkflowClick(event, "liquor-restaurant")}
-              >
-              Restaurant App Prep
-            </a>
               <span>Restaurant workflow</span>
               <a
                 href="?workflow=liquor-restaurant"
@@ -187,14 +188,6 @@ export default function Home() {
               </a>
             </div>
           </div>
-        </div>
-
-        <div className="sidebarNote">
-          <strong>Demo flow</strong>
-          <span>1. Show the quote intake.</span>
-          <span>2. Generate the review packet.</span>
-          <span>3. Verify flagged inferences.</span>
-          <span>4. Save a human-reviewed draft.</span>
         </div>
 
         <div className="sidebarNote">
