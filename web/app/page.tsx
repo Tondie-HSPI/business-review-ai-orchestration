@@ -671,13 +671,6 @@ function LiquorRestaurantView({
               variant="risk"
             />
           </div>
-          <ChipGroup
-            title="Quote-impacting certificate flags"
-            values={result.csr_certificate_request.review_flags
-              .filter((flag) => !flag.toLowerCase().includes("delivery") && !flag.toLowerCase().includes("holder"))
-              .slice(0, 3)}
-            variant="risk"
-          />
         </ReviewSection>
       )}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
