@@ -19,6 +19,7 @@ import {
 } from "../lib/workflows";
 
 type Result = ReviewOutput | ApplicationPacket | LiquorRestaurantPacket;
+type AnswerDecision = "accepted" | "rejected";
 
 export default function Home() {
   const [mode, setMode] = useState<WorkflowMode>("liquor-restaurant");
@@ -28,7 +29,7 @@ export default function Home() {
   const [applicationText, setApplicationText] = useState<string>(questionsToText(defaultLiquorRestaurantQuestions));
   const [uploadedPdfName, setUploadedPdfName] = useState<string>("");
   const [uploadMessage, setUploadMessage] = useState<string>("");
-  const [reviewedAnswers, setReviewedAnswers] = useState<Record<string, boolean>>({});
+  const [answerDecisions, setAnswerDecisions] = useState<Record<string, AnswerDecision>>({});
 
   useEffect(() => {
     const requestedMode = normalizeWorkflowMode(new URLSearchParams(window.location.search).get("workflow"));
@@ -38,7 +39,7 @@ export default function Home() {
     setMode(requestedMode);
     setText(sampleForMode(requestedMode));
     setUploadMessage("");
-    setReviewedAnswers({});
+    setAnswerDecisions({});
   }, [mode]);
 
   const result = useMemo<Result>(() => {
@@ -54,7 +55,7 @@ export default function Home() {
     setMode(normalizedMode);
     setText(sampleForMode(normalizedMode));
     setUploadMessage("");
-    setReviewedAnswers({});
+    setAnswerDecisions({});
 
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", `?workflow=${normalizedMode}`);
@@ -80,7 +81,7 @@ export default function Home() {
           : "liquor-restaurant"
       ));
       setUploadMessage(`Loaded intake data from ${file.name}`);
-      setReviewedAnswers({});
+      setAnswerDecisions({});
       return;
     }
 
@@ -92,7 +93,7 @@ export default function Home() {
         : "liquor-restaurant"
     ));
     setUploadMessage(`Loaded intake text from ${file.name}`);
-    setReviewedAnswers({});
+    setAnswerDecisions({});
   }
 
   async function handleQuestionUpload(file: File | null) {
@@ -107,7 +108,7 @@ export default function Home() {
         : "liquor-restaurant"
     ));
     setUploadMessage(`Loaded ${parsed.length} application questions from ${file.name}`);
-    setReviewedAnswers({});
+    setAnswerDecisions({});
   }
 
   function handlePdfUpload(file: File | null) {
@@ -119,20 +120,28 @@ export default function Home() {
         : "liquor-restaurant"
     ));
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
-    setReviewedAnswers({});
+    setAnswerDecisions({});
   }
 
   function handleApplicationTextChange(value: string) {
     setApplicationText(value);
     setFormQuestions(parseApplicationQuestions(value));
-    setReviewedAnswers({});
+    setAnswerDecisions({});
   }
 
-  function toggleReviewed(answerId: string) {
-    setReviewedAnswers((current) => ({
-      ...current,
-      [answerId]: !current[answerId]
-    }));
+  function setAnswerDecision(answerId: string, decision: AnswerDecision) {
+    setAnswerDecisions((current) => {
+      if (current[answerId] === decision) {
+        const next = { ...current };
+        delete next[answerId];
+        return next;
+      }
+
+      return {
+        ...current,
+        [answerId]: decision
+      };
+    });
   }
 
   const humanReview = result.requires_human_review ? "Required" : "Not required";
@@ -315,8 +324,8 @@ export default function Home() {
                 result={result as LiquorRestaurantPacket}
                 uploadedPdfName={uploadedPdfName}
                 formQuestionCount={formQuestions.length}
-                reviewedAnswers={reviewedAnswers}
-                onToggleReviewed={toggleReviewed}
+                answerDecisions={answerDecisions}
+                onSetAnswerDecision={setAnswerDecision}
               />
             ) : (
               <BusinessReviewView result={result as ReviewOutput} />
@@ -539,22 +548,25 @@ function LiquorRestaurantView({
   result,
   uploadedPdfName,
   formQuestionCount,
-  reviewedAnswers,
-  onToggleReviewed
+  answerDecisions,
+  onSetAnswerDecision
 }: {
   result: LiquorRestaurantPacket;
   uploadedPdfName: string;
   formQuestionCount: number;
-  reviewedAnswers: Record<string, boolean>;
-  onToggleReviewed: (answerId: string) => void;
+  answerDecisions: Record<string, AnswerDecision>;
+  onSetAnswerDecision: (answerId: string, decision: AnswerDecision) => void;
 }) {
   const requiredReviewCount = result.inferred_application_answers.filter(
     (item) => item.flagged_for_review
   ).length;
-  const completedReviewCount = result.inferred_application_answers.filter(
-    (item) => item.flagged_for_review && reviewedAnswers[item.id]
+  const acceptedReviewCount = result.inferred_application_answers.filter(
+    (item) => item.flagged_for_review && answerDecisions[item.id] === "accepted"
   ).length;
-  const allReviewed = requiredReviewCount > 0 && completedReviewCount === requiredReviewCount;
+  const rejectedReviewCount = result.inferred_application_answers.filter(
+    (item) => item.flagged_for_review && answerDecisions[item.id] === "rejected"
+  ).length;
+  const allReviewed = requiredReviewCount > 0 && acceptedReviewCount === requiredReviewCount && rejectedReviewCount === 0;
   const visibleRiskFlags = result.risk_flags.slice(0, 3);
   const visibleDoubleChecks = result.submission_readiness.rep_double_checks.slice(0, 4);
   const certificateOptimizer = result.csr_certificate_request.certificate_optimizer;
@@ -582,7 +594,7 @@ function LiquorRestaurantView({
         <span>Review gate</span>
         <strong>{allReviewed ? "Ready To Save Draft" : "Rep Review Required"}</strong>
         <small>
-          {completedReviewCount} of {requiredReviewCount} flagged inferred answers reviewed
+          {acceptedReviewCount} accepted, {rejectedReviewCount} rejected, {requiredReviewCount} requiring review
         </small>
       </div>
       <div className="readinessBox">
@@ -603,20 +615,34 @@ function LiquorRestaurantView({
           Answers are derived from the quote intake against restaurant application requirements. The rep reviews each answer, evidence, and what needs verification before saving a draft.
         </div>
         {result.inferred_application_answers.map((item) => (
-          <label className="previewQuestion" key={item.id}>
-            <input
-              type="checkbox"
-              checked={Boolean(reviewedAnswers[item.id])}
-              onChange={() => onToggleReviewed(item.id)}
-            />
+          <div className={`previewQuestion ${answerDecisions[item.id] ?? ""}`} key={item.id}>
+            <div className="decisionStatus">
+              {answerDecisions[item.id] === "accepted" ? "Accepted" : answerDecisions[item.id] === "rejected" ? "Rejected" : "Review"}
+            </div>
             <div>
               <span>{item.question}</span>
               <strong>{item.inferred_answer}</strong>
               <small>Target field: {item.pdf_field}</small>
               <small>Evidence: {item.evidence}</small>
               <small>Rep must verify: {item.rep_check}</small>
+              <div className="answerDecisionButtons">
+                <button
+                  type="button"
+                  className={answerDecisions[item.id] === "accepted" ? "acceptButton active" : "acceptButton"}
+                  onClick={() => onSetAnswerDecision(item.id, "accepted")}
+                >
+                  Accept answer
+                </button>
+                <button
+                  type="button"
+                  className={answerDecisions[item.id] === "rejected" ? "rejectButton active" : "rejectButton"}
+                  onClick={() => onSetAnswerDecision(item.id, "rejected")}
+                >
+                  Reject / needs correction
+                </button>
+              </div>
             </div>
-          </label>
+          </div>
         ))}
         <div className="saveActions">
           {allReviewed ? (
@@ -629,13 +655,13 @@ function LiquorRestaurantView({
             </a>
           ) : (
             <button className="disabledButton" disabled>
-              Save disabled until flagged answers are reviewed
+              Save disabled until flagged answers are accepted and rejected answers are corrected
             </button>
           )}
         </div>
       </ReviewSection>
       {result.csr_certificate_request.requested && (
-        <ReviewSection title="Quoting Certificate Optimizer" className="certificateRequest" defaultOpen>
+        <ReviewSection title="Certificate Wording Quote Review" className="certificateRequest" defaultOpen>
           <div className="optimizerBox primaryOptimizer">
             <h4>Quote impact summary</h4>
             <div className="fieldRow">
@@ -652,30 +678,13 @@ function LiquorRestaurantView({
               variant="risk"
             />
           </div>
-          <div className="fieldRow">
-            <span>Status</span>
-            <strong>{formatLabel(result.csr_certificate_request.status)}</strong>
-          </div>
-          <div className="fieldRow">
-            <span>Certificate Holder</span>
-            <strong>{result.csr_certificate_request.certificate_holder.name || "Missing"}</strong>
-          </div>
-          <div className="fieldRow">
-            <span>Holder Address</span>
-            <strong>{result.csr_certificate_request.certificate_holder.address || "Missing"}</strong>
-          </div>
-          <div className="fieldRow">
-            <span>Delivery Email</span>
-            <strong>{result.csr_certificate_request.certificate_holder.email || "Missing"}</strong>
-          </div>
           <ChipGroup
-            title="CSR review flags"
-            values={result.csr_certificate_request.review_flags.slice(0, 3)}
+            title="Quote-impacting certificate flags"
+            values={result.csr_certificate_request.review_flags
+              .filter((flag) => !flag.toLowerCase().includes("delivery") && !flag.toLowerCase().includes("holder"))
+              .slice(0, 3)}
             variant="risk"
           />
-          <div className="emailDraft">
-            <pre>{result.csr_certificate_request.csr_email_draft}</pre>
-          </div>
         </ReviewSection>
       )}
       <ChipGroup title="Missing information" values={result.missing_information} variant="missing" />
