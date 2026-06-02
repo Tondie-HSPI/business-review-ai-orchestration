@@ -603,9 +603,9 @@ function LiquorRestaurantView({
         variant="risk"
         overflowCount={result.submission_readiness.rep_double_checks.length - visibleDoubleChecks.length}
       />
-      <ReviewSection title="Inferred Answers From Quote Intake" className="applicationPreview" defaultOpen>
+      <ReviewSection title="Grouped Confirmation Areas From Quote Intake" className="applicationPreview" defaultOpen>
         <div className="reviewHint">
-          Answers are derived from the quote intake against restaurant application requirements. The rep reviews each answer, evidence, and what needs verification before saving a draft.
+          Related application questions are grouped into review areas. The system prepares draft summaries from the intake; the rep accepts or rejects each group before saving a draft.
         </div>
         {result.inferred_application_answers.map((item) => (
           <div className={`previewQuestion ${answerDecisions[item.id] ?? ""}`} key={item.id}>

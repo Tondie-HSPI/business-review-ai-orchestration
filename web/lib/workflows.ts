@@ -175,18 +175,34 @@ Liquor limit: 1000000/1000000
 Close time: 1:00 a.m.
 Alcohol sales cease: 12:30 a.m.
 Entertainment: DJ with dancing on Friday and Saturday.
+Dancing permitted: Yes
+Tables: Yes
+Table service: Yes
+Food court seating only: No
 Security: Door person on weekends.
 BYOB: No
+Mechanical bulls or riding devices: No
+Gaming machines: No
 Claims or violations: None in the past five years.
 Liquor training: Yes
 ID scanner: Yes
 Happy hour after 9pm: No
+Happy hour after 11pm: No
 Lowest beer price: 4.00
 Lowest wine/liquor price: 7.00
 Building owner: No
 Fryers: Yes
 Fire suppression: Wet system with cleaning contract.
 Food truck operations: Seasonal food truck used for off-premises catering and festivals.
+Alcohol sold away from premises: Yes
+Liquor license maintained: Yes
+Employees consume alcohol while serving: No
+Complimentary drinks over two: No
+Bottomless or open bar specials: No
+Underage patrons permitted: Yes, family dining before 9 p.m.
+Underage patrons after 11pm: No
+Bottle service: No
+Drinking games: No
 Certificate requested: Yes
 Certificate holder: Triangle Events Group
 Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
@@ -307,6 +323,72 @@ export const defaultLiquorRestaurantQuestions: FormQuestion[] = [
     question: "Are alcohol-serving employees certified in formal alcohol training?",
     source_field: "risk_profile.liquor_training",
     pdf_field: "44 R56"
+  },
+  {
+    id: "dancing_permitted",
+    question: "Is dancing permitted?",
+    source_field: "risk_profile.dancing_permitted",
+    pdf_field: "8"
+  },
+  {
+    id: "close_time",
+    question: "What is the latest time the establishment will close?",
+    source_field: "risk_profile.close_time",
+    pdf_field: "11"
+  },
+  {
+    id: "security_or_door_staff",
+    question: "Are bouncers, security, or door persons ever employed?",
+    source_field: "risk_profile.security",
+    pdf_field: "12 R14"
+  },
+  {
+    id: "byob",
+    question: "Does the establishment permit BYOB?",
+    source_field: "risk_profile.byob",
+    pdf_field: "13 / 50"
+  },
+  {
+    id: "happy_hour_after_11pm",
+    question: "Are drink specials or happy hours offered after 11 p.m.?",
+    source_field: "risk_profile.happy_hour_after_11pm",
+    pdf_field: "47"
+  },
+  {
+    id: "bar_with_seating",
+    question: "Is there a bar with seating?",
+    source_field: "risk_profile.operations",
+    pdf_field: "48 R60"
+  },
+  {
+    id: "alcohol_sold_away_from_premises",
+    question: "Is alcohol ever sold or served away from the premises?",
+    source_field: "risk_profile.alcohol_sold_away_from_premises",
+    pdf_field: "52"
+  },
+  {
+    id: "liquor_license_maintained",
+    question: "Is a valid liquor license maintained if required by ordinance or law?",
+    source_field: "risk_profile.liquor_license_maintained",
+    pdf_field: "58"
+  },
+  {
+    id: "bottomless_or_open_bar",
+    question: "Are all-you-can-drink, bottomless drinks, or open bar specials offered?",
+    source_field: "risk_profile.bottomless_or_open_bar_specials",
+    pdf_field: "63"
+  },
+  {
+    id: "bottle_service",
+    question: "Are whole bottles of liquor sold for bottle service or set-ups offered?",
+    source_field: "risk_profile.bottle_service",
+    pdf_field: "66"
+  },
+  {
+    id: "drinking_games",
+    question: "Are drinking games offered or permitted?",
+    source_field: "risk_profile.drinking_games",
+    pdf_field: "67"
   }
 ];
 
@@ -540,17 +622,33 @@ export function buildLiquorRestaurantPacket(
     close_time: raw["close time"],
     alcohol_sales_cease: raw["alcohol sales cease"],
     entertainment: raw.entertainment,
+    dancing_permitted: raw["dancing permitted"],
+    tables: raw.tables,
+    table_service: raw["table service"],
+    food_court_seating_only: raw["food court seating only"],
     security: raw.security,
     byob: raw.byob,
+    mechanical_bulls_or_riding_devices: raw["mechanical bulls or riding devices"],
+    gaming_machines: raw["gaming machines"],
     claims_or_violations: raw["claims or violations"],
     liquor_training: raw["liquor training"],
     id_scanner: raw["id scanner"],
     happy_hour_after_9pm: raw["happy hour after 9pm"],
+    happy_hour_after_11pm: raw["happy hour after 11pm"],
     lowest_beer_price: raw["lowest beer price"],
     lowest_wine_liquor_price: raw["lowest wine/liquor price"],
     building_owner: raw["building owner"],
     fryers: raw.fryers,
     fire_suppression: raw["fire suppression"],
+    alcohol_sold_away_from_premises: raw["alcohol sold away from premises"],
+    liquor_license_maintained: raw["liquor license maintained"],
+    employees_consume_alcohol_while_serving: raw["employees consume alcohol while serving"],
+    complimentary_drinks_over_two: raw["complimentary drinks over two"],
+    bottomless_or_open_bar_specials: raw["bottomless or open bar specials"],
+    underage_patrons_permitted: raw["underage patrons permitted"],
+    underage_patrons_after_11pm: raw["underage patrons after 11pm"],
+    bottle_service: raw["bottle service"],
+    drinking_games: raw["drinking games"],
     certificate_requested: raw["certificate requested"],
     certificate_holder: raw["certificate holder"],
     certificate_holder_address: raw["certificate holder address"],
@@ -705,64 +803,113 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
   const operations = fields.operations ?? "";
   const claimsDefault = defaultClaimsAnswer(fields.claims_or_violations);
   const fireSuppression = fields.fire_suppression ?? "";
+  const foodTruckOperations = fields.food_truck_operations ?? "";
 
   return [
     inferredAnswer(
-      "entertainment_featured",
-      "Does the establishment feature entertainment?",
-      containsAny(entertainment, ["dj", "dancing", "band", "entertainment"]) ? "Yes" : "No",
-      entertainment,
-      "Confirm entertainment type, frequency, and whether dancing is permitted.",
-      "7 if yes"
+      "operations_and_class",
+      "Operations, class, receipts, and requested limits",
+      [
+        fields.business_class ? `Class: ${fields.business_class}` : null,
+        fields.food_sales ? `Food sales: ${fields.food_sales}` : null,
+        fields.alcohol_sales ? `Alcohol sales: ${fields.alcohol_sales}` : null,
+        fields.catering_sales ? `Catering sales: ${fields.catering_sales}` : null,
+        fields.gl_limit ? `GL limit: ${fields.gl_limit}` : null,
+        fields.liquor_limit ? `Liquor limit: ${fields.liquor_limit}` : null
+      ].filter(Boolean).join("; ") || "Review Required",
+      evidenceFromField(operations, fields.business_class, fields.food_sales, fields.alcohol_sales, fields.gl_limit, fields.liquor_limit),
+      "Confirm business class, receipts, requested limits, and whether food truck or catering operations change the application path.",
+      "Operations / annual receipts / limits"
     ),
     inferredAnswer(
-      "security_or_door_staff",
-      "Are bouncers, security, or door persons ever employed?",
-      containsAny(security, ["door", "security", "bouncer"]) ? "Yes" : "No",
-      security,
-      "Confirm whether security is employee, contractor, or third-party service.",
-      "12 R14"
+      "entertainment_security",
+      "Entertainment, dancing, and door/security exposure",
+      [
+        `Entertainment: ${entertainment || "Review Required"}`,
+        `Dancing permitted: ${answerFromField(fields.dancing_permitted)}`,
+        `Security/door staff: ${security || "No direct evidence"}`
+      ].join("; "),
+      evidenceFromField(entertainment, fields.dancing_permitted, security),
+      "Confirm entertainment type, frequency, dancing permission, and whether security is employee, contractor, or third-party.",
+      "7 / 8 / 12"
     ),
     inferredAnswer(
-      "losses_or_violations",
-      "Any losses, claims, liquor citations, violations, charges, or enforcement actions in the past five years?",
+      "seating_hours_access",
+      "Seating, table service, food court responsibility, and hours",
+      [
+        `Tables/table service: ${combineYesNo(fields.tables, fields.table_service)}`,
+        `Food court seating only: ${answerFromField(fields.food_court_seating_only)}`,
+        `Latest close: ${fields.close_time ?? "Review Required"}`
+      ].join("; "),
+      evidenceFromField(fields.tables, fields.table_service, fields.food_court_seating_only, fields.close_time, operations),
+      "Confirm seating control, table service, common-area responsibility, and close-time exceptions.",
+      "9 / 10 / 11"
+    ),
+    inferredAnswer(
+      "liquor_controls",
+      "Liquor controls, BYOB, license, ID scanner, and employee alcohol rules",
+      [
+        `BYOB: ${answerFromField(fields.byob)}`,
+        `Training: ${answerFromField(fields.liquor_training)}`,
+        `ID scanner: ${answerFromField(fields.id_scanner)}`,
+        `License maintained: ${answerFromField(fields.liquor_license_maintained)}`,
+        `Employee consumption: ${answerFromField(fields.employees_consume_alcohol_while_serving)}`
+      ].join("; "),
+      evidenceFromField(fields.byob, fields.liquor_training, fields.id_scanner, fields.liquor_license_maintained, fields.employees_consume_alcohol_while_serving),
+      "Confirm liquor license details, age-verification controls, employee alcohol rules, and BYOB procedures.",
+      "13 / 44 / 45 / 50 / 58 / 59"
+    ),
+    inferredAnswer(
+      "drink_promotions_pricing",
+      "Drink specials, lowest pricing, open bar, bottle service, and games",
+      [
+        `Happy hour after 9 p.m.: ${answerFromField(fields.happy_hour_after_9pm)}`,
+        `Happy hour after 11 p.m.: ${answerFromField(fields.happy_hour_after_11pm)}`,
+        `Lowest beer: ${fields.lowest_beer_price ?? "Review Required"}`,
+        `Lowest wine/liquor: ${fields.lowest_wine_liquor_price ?? "Review Required"}`,
+        `Open bar/bottomless: ${answerFromField(fields.bottomless_or_open_bar_specials)}`,
+        `Bottle service: ${answerFromField(fields.bottle_service)}`,
+        `Drinking games: ${answerFromField(fields.drinking_games)}`
+      ].join("; "),
+      evidenceFromField(fields.happy_hour_after_9pm, fields.happy_hour_after_11pm, fields.lowest_beer_price, fields.lowest_wine_liquor_price, fields.bottomless_or_open_bar_specials, fields.bottle_service, fields.drinking_games),
+      "Confirm promotions, lowest drink pricing, open bar/bottomless offers, bottle service, and drinking-game rules.",
+      "46 / 47 / 54 / 55 / 62 / 63 / 66 / 67"
+    ),
+    inferredAnswer(
+      "losses_and_violations",
+      "Losses, claims, liquor citations, violations, or enforcement actions",
       claimsDefault.answer,
       claimsDefault.evidence,
       claimsDefault.repCheck,
-      "4 R1 / 21 / 22",
+      "4 / 21 / 22",
       claimsDefault.confidence
     ),
     inferredAnswer(
-      "bar_with_seating",
-      "Is there a bar with seating?",
-      operations.toLowerCase().includes("bar seating") ? "Yes" : "Review Required",
-      operations,
-      "Confirm seating layout and whether bar seating is available to patrons.",
-      "48 R60"
+      "property_fire_life_safety",
+      "Building responsibility, fryers, fire suppression, and unusual premises exposures",
+      [
+        `Building owner: ${answerFromField(fields.building_owner)}`,
+        `Fryers: ${answerFromField(fields.fryers)}`,
+        `Fire suppression: ${fireSuppression || "Review Required"}`,
+        `Mechanical rides: ${answerFromField(fields.mechanical_bulls_or_riding_devices)}`,
+        `Gaming machines: ${answerFromField(fields.gaming_machines)}`
+      ].join("; "),
+      evidenceFromField(fields.building_owner, fields.fryers, fireSuppression, fields.mechanical_bulls_or_riding_devices, fields.gaming_machines),
+      "Confirm building maintenance responsibility, fire suppression type/service, fryer controls, and unusual premises exposures.",
+      "14 / 15 / 16 / 20 / 28-30 / 34"
     ),
     inferredAnswer(
-      "happy_hour_after_9pm",
-      "Are drink specials or happy hours offered after 9 p.m.?",
-      fields.happy_hour_after_9pm ?? "Review Required",
-      fields.happy_hour_after_9pm ?? "",
-      "Confirm all drink specials, happy hours, and promotional pricing.",
-      "46 R58"
-    ),
-    inferredAnswer(
-      "applicant_building_owner",
-      "Is the applicant the building owner?",
-      fields.building_owner ?? "Review Required",
-      fields.building_owner ?? "",
-      "Confirm ownership, lease terms, and maintenance responsibilities.",
-      "16 R18"
-    ),
-    inferredAnswer(
-      "fire_suppression",
-      "If fryers are present, is a functioning fire extinguishing system in place?",
-      fireSuppression ? "Yes" : "Review Required",
-      fireSuppression,
-      "Confirm system type, cleaning contract, and service status.",
-      "20a R23 / 28 R39"
+      "off_premises_catering_food_truck",
+      "Off-premises alcohol, catering, food truck, and underage patron controls",
+      [
+        `Alcohol away from premises: ${inferOffPremisesAlcohol(fields.alcohol_sold_away_from_premises, foodTruckOperations)}`,
+        `Food truck/catering: ${foodTruckOperations || fields.catering_sales || "No direct evidence"}`,
+        `Underage patrons: ${answerFromField(fields.underage_patrons_permitted)}`,
+        `Underage after 11 p.m.: ${answerFromField(fields.underage_patrons_after_11pm)}`
+      ].join("; "),
+      evidenceFromField(fields.alcohol_sold_away_from_premises, foodTruckOperations, fields.catering_sales, fields.underage_patrons_permitted, fields.underage_patrons_after_11pm),
+      "Confirm off-premises liquor, catering/food truck exposure, event controls, and minor access restrictions.",
+      "52 / 64 / 65 / IV-A"
     )
   ];
 }
@@ -1001,6 +1148,27 @@ function containsAny(value: string, keywords: string[]) {
   return keywords.some((keyword) => lowered.includes(keyword));
 }
 
+function answerFromField(value: string | null | undefined) {
+  return value ? value : "Review Required";
+}
+
+function evidenceFromField(...values: Array<string | null | undefined>) {
+  return values.filter(Boolean).join(" | ");
+}
+
+function combineYesNo(first: string | null | undefined, second: string | null | undefined) {
+  if (!first && !second) return "Review Required";
+  if (first && second) return `Tables: ${first}; table service: ${second}`;
+  return first ?? second ?? "Review Required";
+}
+
+function inferOffPremisesAlcohol(value: string | null | undefined, operations: string) {
+  if (value) return value;
+  return containsAny(operations, ["catering", "festival", "food truck", "off-premises", "off premises"])
+    ? "Review Required"
+    : "No";
+}
+
 function answerLiquorFormQuestions(
   fields: Record<string, string | null | undefined>,
   questions: FormQuestion[],
@@ -1087,7 +1255,18 @@ function answerQuestion(
     annual_food_sales: fields.food_sales,
     annual_alcohol_sales: fields.alcohol_sales,
     entertainment: fields.entertainment,
-    liquor_training: fields.liquor_training
+    liquor_training: fields.liquor_training,
+    dancing_permitted: fields.dancing_permitted,
+    close_time: fields.close_time,
+    security_or_door_staff: fields.security,
+    byob: fields.byob,
+    happy_hour_after_11pm: fields.happy_hour_after_11pm,
+    bar_with_seating: fields.operations?.toLowerCase().includes("bar seating") ? "Yes" : null,
+    alcohol_sold_away_from_premises: fields.alcohol_sold_away_from_premises,
+    liquor_license_maintained: fields.liquor_license_maintained,
+    bottomless_or_open_bar: fields.bottomless_or_open_bar_specials,
+    bottle_service: fields.bottle_service,
+    drinking_games: fields.drinking_games
   };
 
   const sourceFieldFallback: Record<string, string | null | undefined> = {
@@ -1107,8 +1286,17 @@ function answerQuestion(
     "risk_profile.alcohol_sales": fields.alcohol_sales,
     "risk_profile.catering_sales": fields.catering_sales,
     "risk_profile.entertainment": fields.entertainment,
+    "risk_profile.dancing_permitted": fields.dancing_permitted,
+    "risk_profile.close_time": fields.close_time,
     "risk_profile.security": fields.security,
+    "risk_profile.byob": fields.byob,
     "risk_profile.liquor_training": fields.liquor_training,
+    "risk_profile.happy_hour_after_11pm": fields.happy_hour_after_11pm,
+    "risk_profile.alcohol_sold_away_from_premises": fields.alcohol_sold_away_from_premises,
+    "risk_profile.liquor_license_maintained": fields.liquor_license_maintained,
+    "risk_profile.bottomless_or_open_bar_specials": fields.bottomless_or_open_bar_specials,
+    "risk_profile.bottle_service": fields.bottle_service,
+    "risk_profile.drinking_games": fields.drinking_games,
     "risk_profile.claims_or_violations": defaultClaimsAnswer(fields.claims_or_violations).answer,
     "risk_profile.years_experience": fields.years_experience,
     "risk_profile.contractor_operations": fields.contractor_operations,
