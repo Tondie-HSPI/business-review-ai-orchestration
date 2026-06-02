@@ -135,9 +135,7 @@ export default function Home() {
     }));
   }
 
-  const missingCount = result.missing_information.length;
   const humanReview = result.requires_human_review ? "Required" : "Not required";
-  const analytics = result.analytics_summary;
   const isIntakeWorkflow = mode === "liquor-restaurant";
   const showsApplicationUploads = mode === "application-prep" || isIntakeWorkflow;
 
@@ -170,7 +168,7 @@ export default function Home() {
               >
               Restaurant App Prep
             </a>
-              <span>Pre-mapped app demo</span>
+              <span>Restaurant workflow</span>
               <a
                 href="?workflow=liquor-restaurant"
                 className={mode === "liquor-restaurant" ? "active nested" : "nested"}
@@ -184,10 +182,10 @@ export default function Home() {
 
         <div className="sidebarNote">
           <strong>Demo flow</strong>
-          <span>1. Select one workflow.</span>
-          <span>2. Add quote intake details.</span>
-          <span>3. Add the restaurant app to map.</span>
-          <span>4. Review inferred answers, missing info, and flags.</span>
+          <span>1. Show the quote intake.</span>
+          <span>2. Generate the review packet.</span>
+          <span>3. Verify flagged inferences.</span>
+          <span>4. Save a human-reviewed draft.</span>
         </div>
 
         <div className="sidebarNote">
@@ -206,7 +204,7 @@ export default function Home() {
             <h1>Prepare cleaner insurance submissions for human review.</h1>
             <p>
               SubmissionReady AI turns quote intake into a structured application-prep workflow,
-              making rep judgment calls visible through mapped fields, missing-information checks,
+              making rep judgment calls visible through inferred answers, missing-information checks,
               certificate wording review, and decision-support analytics.
             </p>
           </div>
@@ -217,78 +215,37 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="workflowPicker panel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Start here</p>
-              <h2>Choose the review path</h2>
-            </div>
-            <span className="reviewBadge required">One workflow per client</span>
-          </div>
-          <div className="workflowCards">
-            <WorkflowCard
-              active={mode === "business-review"}
-              eyebrow="GL quote review"
-              title="Small Business GL Review"
-              body="Review a small-business GL request for operations, limits, certificates, missing information, and next action."
-              href="?workflow=business-review"
-              onClick={(event) => handleWorkflowClick(event, "business-review")}
-            />
-            <WorkflowCard
-              active={mode === "liquor-restaurant"}
-              eyebrow="Flagship demo"
-              title="Restaurant / Liquor App"
-              body="Use a pre-mapped restaurant application schema to infer answers from quote intake for rep review."
-              href="?workflow=liquor-restaurant"
-              onClick={(event) => handleWorkflowClick(event, "liquor-restaurant")}
-            />
-          </div>
-        </section>
-
-        <section className="decisionPath panel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Presentation flow</p>
-              <h2>Quote intake to submission-ready review</h2>
-            </div>
+        <section className="demoStrip panel">
+          <div className="demoStripHeader">
+            <p className="eyebrow">Live demo</p>
+            <h2>Quote intake to submission-ready review</h2>
+            <span className="reviewBadge required">Human-reviewed draft only</span>
           </div>
           <div className="pathSteps">
             <div>
               <span>1</span>
               <strong>Read the intake</strong>
-              <small>Capture operations, limits, locations, sales, certificates, and special wording.</small>
+              <small>Capture operations, sales, limits, certificates, and special wording.</small>
             </div>
             <div>
               <span>2</span>
-              <strong>Use the mapped app</strong>
-              <small>Apply a pre-mapped restaurant application schema to the intake.</small>
+              <strong>Infer answers</strong>
+              <small>Draft restaurant application answers from the intake.</small>
             </div>
             <div>
               <span>3</span>
-              <strong>Infer draft answers</strong>
-              <small>Show answer, target field, evidence, and what the rep must verify.</small>
-            </div>
-            <div>
-              <span>4</span>
-              <strong>Prepare for review</strong>
-              <small>Create a draft packet for human review, not automated approval or binding.</small>
+              <strong>Rep reviews</strong>
+              <small>Flag uncertain answers and require confirmation before saving.</small>
             </div>
           </div>
-        </section>
-
-        <section className="metrics">
-          <Metric label="Workflow" value={workflowTitle(result)} />
-          <Metric label="Readiness score" value={`${analytics.submission_readiness_score}/100`} />
-          <Metric label="Needs review" value={`${analytics.percent_fields_needing_review}%`} />
-          <Metric label="Missing fields" value={String(missingCount)} />
         </section>
 
         <section className="grid">
           <div className="panel inputPanel">
             <div className="panelHeader">
               <div>
-                <p className="eyebrow">{showsApplicationUploads ? "Steps 2 and 3" : "Step 2"}</p>
-                <h2>{showsApplicationUploads ? "Quote intake and pre-mapped app" : "Small business GL request"}</h2>
+                <p className="eyebrow">Step 2</p>
+                <h2>{showsApplicationUploads ? "Quote intake" : "Small business GL request"}</h2>
               </div>
               <button
                 type="button"
@@ -300,9 +257,9 @@ export default function Home() {
                 Reload sample
               </button>
             </div>
-            <div className={showsApplicationUploads ? "uploadGrid" : "uploadGrid singleUpload"}>
+            <div className={showsApplicationUploads ? "uploadGrid twoUpload" : "uploadGrid singleUpload"}>
               <label>
-                <span>{showsApplicationUploads ? "1. Upload intake form" : "Upload review request"}</span>
+                <span>{showsApplicationUploads ? "Upload quote intake" : "Upload review request"}</span>
                 <input
                   type="file"
                   accept=".txt,.json"
@@ -310,51 +267,31 @@ export default function Home() {
                 />
               </label>
               {showsApplicationUploads && (
-                <>
-                  <label>
-                    <span>2. Upload mapped app schema</span>
-                    <input
-                      type="file"
-                      accept=".txt,.json"
-                      onChange={(event) => handleQuestionUpload(event.target.files?.[0] ?? null)}
-                    />
-                  </label>
-                  <label>
-                    <span>3. Attach app PDF</span>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={(event) => handlePdfUpload(event.target.files?.[0] ?? null)}
-                    />
-                  </label>
-                </>
+                <label>
+                  <span>Attach app PDF</span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(event) => handlePdfUpload(event.target.files?.[0] ?? null)}
+                  />
+                </label>
               )}
             </div>
             {showsApplicationUploads && (
               <div className="uploadHelp">
-                The demo uses a pre-mapped restaurant app schema. Paste or upload the quote intake, then review how the mapped app fields derive inferred answers for the rep.
+                The restaurant app requirements are built into this demo. Paste or upload the quote intake, then review inferred answers, missing items, and rep double-checks before saving a draft.
               </div>
             )}
             {uploadMessage && <div className="uploadMessage">{uploadMessage}</div>}
             {showsApplicationUploads ? (
-              <div className="intakeAppGrid">
-                <label className="textInputBlock">
-                  <span>1. Quote intake form</span>
-                  <textarea
-                    value={text}
-                    onChange={(event) => setText(event.target.value)}
-                    aria-label="Quote intake form"
-                  />
-                </label>
-                <label className="textInputBlock">
-                  <span>2. Pre-mapped restaurant app schema</span>
-                  <textarea
-                    value={applicationText}
-                    onChange={(event) => handleApplicationTextChange(event.target.value)}
-                    aria-label="Application to fill and map"
-                  />
-                </label>
-              </div>
+              <label className="textInputBlock">
+                <span>Quote intake form</span>
+                <textarea
+                  value={text}
+                  onChange={(event) => setText(event.target.value)}
+                  aria-label="Quote intake form"
+                />
+              </label>
             ) : (
               <textarea
                 value={text}
@@ -388,23 +325,6 @@ export default function Home() {
         </section>
 
         <AnalyticsPanel result={result} />
-
-        <section className="panel jsonPanel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">System output</p>
-              <h2>Review JSON</h2>
-            </div>
-          </div>
-          <a
-            className="downloadButton"
-            href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
-            download="submissionready-review-packet.json"
-          >
-            Download review packet JSON
-          </a>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-        </section>
       </section>
     </main>
   );
@@ -644,16 +564,19 @@ function LiquorRestaurantView({
       <div className="notice">{result.official_form_status}</div>
       <div className="uploadStatus">
         <div>
-          <span>Carrier app</span>
-          <strong>{uploadedPdfName || "Pre-mapped restaurant app schema"}</strong>
+          <span>Restaurant app</span>
+          <strong>{uploadedPdfName || "Restaurant app logic applied"}</strong>
         </div>
         <div>
-          <span>Form questions</span>
+          <span>App questions</span>
           <strong>{formQuestionCount}</strong>
         </div>
       </div>
-      <div className="summary">
-        {result.intake_summary.applicant} | {result.intake_summary.location}
+      <div className="summary intakeOutput">
+        <span>Quote intake output</span>
+        <strong>{result.intake_summary.applicant}</strong>
+        <small>{result.intake_summary.location}</small>
+        <small>{result.intake_summary.operations}</small>
       </div>
       <div className={allReviewed ? "saveGate ready" : "saveGate"}>
         <span>Review gate</span>
@@ -669,9 +592,15 @@ function LiquorRestaurantView({
           Carrier agnostic draft | {result.submission_readiness.blocking_missing_information_count} blocking missing fields
         </small>
       </div>
-      <ReviewSection title="Inferred Application Answers For Rep Review" className="applicationPreview" defaultOpen>
+      <ChipGroup
+        title="Rep double-check checklist"
+        values={visibleDoubleChecks}
+        variant="risk"
+        overflowCount={result.submission_readiness.rep_double_checks.length - visibleDoubleChecks.length}
+      />
+      <ReviewSection title="Inferred Answers From Quote Intake" className="applicationPreview" defaultOpen>
         <div className="reviewHint">
-          Answers are derived from the quote intake using a USLI-style pre-mapped restaurant app schema. The rep reviews each answer, evidence, and target field before saving a draft.
+          Answers are derived from the quote intake against restaurant application requirements. The rep reviews each answer, evidence, and what needs verification before saving a draft.
         </div>
         {result.inferred_application_answers.map((item) => (
           <label className="previewQuestion" key={item.id}>
@@ -756,52 +685,6 @@ function LiquorRestaurantView({
         variant="risk"
         overflowCount={result.risk_flags.length - visibleRiskFlags.length}
       />
-      <ChipGroup
-        title="Rep double-check checklist"
-        values={visibleDoubleChecks}
-        variant="risk"
-        overflowCount={result.submission_readiness.rep_double_checks.length - visibleDoubleChecks.length}
-      />
-      <ReviewSection title="Mapped Application Questions">
-        {result.answered_form_questions.map((item) => (
-          <div className="questionRow" key={item.id}>
-            <span>{item.question}</span>
-            <strong>{item.answer || "Missing"}</strong>
-            <small>
-              {item.source_field} to {item.pdf_field}
-            </small>
-          </div>
-        ))}
-      </ReviewSection>
-      <ReviewSection title="Selected Workflow And Extracted Packet">
-        <div className="fieldRow">
-          <span>Client app path</span>
-          <strong>{result.workflow_scope.selected_workflow}</strong>
-        </div>
-        <div className="fieldRow">
-          <span>Review note</span>
-          <strong>{result.workflow_scope.routing_note}</strong>
-        </div>
-        {Object.entries(result.application_packet).map(([section, fields]) => (
-          <div className="subSection" key={section}>
-            <h3>{formatLabel(section)}</h3>
-            {Object.entries(fields).map(([field, value]) => (
-              <div className="fieldRow" key={field}>
-                <span>{formatLabel(field)}</span>
-                <strong>{value || "Missing"}</strong>
-              </div>
-            ))}
-          </div>
-        ))}
-      </ReviewSection>
-      <ReviewSection title="Draft PDF Field Map">
-        {Object.entries(result.mapped_pdf_fields).map(([field, value]) => (
-          <div className="fieldRow" key={field}>
-            <span>{field}</span>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </ReviewSection>
       <div className="nextAction">{result.recommended_next_action}</div>
     </div>
   );

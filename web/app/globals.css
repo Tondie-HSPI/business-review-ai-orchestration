@@ -42,7 +42,7 @@ a {
 main {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 280px minmax(0, 1fr);
   overflow-x: hidden;
 }
 
@@ -61,7 +61,7 @@ main {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 34px;
+  margin-bottom: 28px;
 }
 
 .brandMark {
@@ -172,8 +172,8 @@ main {
 }
 
 .workspace {
-  padding: 28px;
-  max-width: 1480px;
+  padding: 24px 28px 32px;
+  max-width: 1380px;
   min-width: 0;
   overflow-x: hidden;
   width: 100%;
@@ -185,18 +185,18 @@ main {
   gap: 22px;
   align-items: end;
   border-radius: 8px;
-  padding: 36px;
+  padding: 28px 32px;
   background:
     radial-gradient(circle at 18% 10%, rgba(254, 243, 199, 0.24), transparent 28%),
     linear-gradient(135deg, #111827 0%, #1f4fd8 52%, #0f766e 100%);
   color: #ffffff;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
   min-width: 0;
 }
 
 .hero h1 {
-  font-size: 2.55rem;
+  font-size: 2.25rem;
   line-height: 1.04;
   margin: 0 0 12px;
   letter-spacing: 0;
@@ -262,13 +262,27 @@ main {
   margin-bottom: 18px;
 }
 
-.decisionPath {
-  margin-bottom: 18px;
+.demoStrip {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.55fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+.demoStrip::before {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.demoStripHeader h2 {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
 }
 
 .pathSteps {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -276,8 +290,8 @@ main {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #f8fafc;
-  min-height: 138px;
-  padding: 14px;
+  min-height: 112px;
+  padding: 12px;
 }
 
 .pathSteps span {
@@ -459,7 +473,7 @@ main {
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(340px, 0.88fr) minmax(420px, 1.12fr);
+  grid-template-columns: minmax(340px, 0.78fr) minmax(460px, 1.22fr);
   gap: 18px;
   align-items: start;
   min-width: 0;
@@ -536,7 +550,7 @@ textarea {
 }
 
 .textInputBlock textarea {
-  min-height: 320px;
+  min-height: 420px;
 }
 
 .uploadGrid {
@@ -544,6 +558,10 @@ textarea {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 12px;
+}
+
+.uploadGrid.twoUpload {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .uploadGrid.singleUpload {
@@ -738,6 +756,30 @@ textarea:focus {
   background: #f8fafc;
   border: 1px solid var(--line);
   border-left: 5px solid var(--teal);
+}
+
+.intakeOutput span,
+.intakeOutput strong,
+.intakeOutput small {
+  display: block;
+}
+
+.intakeOutput span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.intakeOutput strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.intakeOutput small {
+  color: #334155;
+  margin-top: 4px;
 }
 
 .readinessBox {
