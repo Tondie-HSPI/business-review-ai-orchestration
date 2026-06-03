@@ -254,6 +254,11 @@ export default function Home() {
               <strong>Rep reviews</strong>
               <small>Flag uncertain answers and require confirmation before saving.</small>
             </div>
+            <div>
+              <span>4</span>
+              <strong>Filled form produced</strong>
+              <small>Create a reviewed draft form packet for human handoff.</small>
+            </div>
           </div>
         </section>
 
@@ -690,6 +695,37 @@ function LiquorRestaurantView({
           )}
         </div>
       </ReviewSection>
+      <ReviewSection title="Filled Form Draft Produced" className="filledFormPreview" defaultOpen={allReviewed}>
+        {allReviewed ? (
+          <>
+            <div className="reviewHint">
+              This is a carrier-neutral draft form packet produced after rep review. It is ready for human handoff, not automated submission.
+            </div>
+            {reviewedDraft.filled_form_draft.sections.map((section) => (
+              <div className="filledFormSection" key={section.title}>
+                <h4>{section.title}</h4>
+                {section.fields.map((field) => (
+                  <div className="filledFormRow" key={`${section.title}-${field.label}`}>
+                    <span>{field.label}</span>
+                    <strong>{field.value || "Blank"}</strong>
+                  </div>
+                ))}
+              </div>
+            ))}
+            <a
+              className="downloadButton"
+              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(reviewedDraft.filled_form_draft, null, 2))}`}
+              download="submissionready-filled-form-draft.json"
+            >
+              Download filled form draft
+            </a>
+          </>
+        ) : (
+          <div className="lockedFormNotice">
+            Accept each grouped confirmation area, or reject it and add a correction, to produce the filled form draft.
+          </div>
+        )}
+      </ReviewSection>
       {result.csr_certificate_request.requested && (
         <ReviewSection title="Certificate Wording Quote Review" className="certificateRequest" defaultOpen>
           <div className="optimizerBox primaryOptimizer">
@@ -749,23 +785,71 @@ function buildReviewedDraft(
   answerDecisions: Record<string, AnswerDecision>,
   answerCorrections: Record<string, string>
 ) {
+  const groupedDecisions = result.inferred_application_answers.map((item) => ({
+    id: item.id,
+    question: item.question,
+    original_draft_answer: item.inferred_answer,
+    decision: answerDecisions[item.id] ?? "not_reviewed",
+    corrected_answer: answerCorrections[item.id]?.trim() || null,
+    final_reviewed_answer: answerCorrections[item.id]?.trim() || item.inferred_answer,
+    evidence: item.evidence,
+    rep_check: item.rep_check,
+    target_field: item.pdf_field
+  }));
+
   return {
     ...result,
+    filled_form_draft: buildFilledFormDraft(result, groupedDecisions),
     human_review: {
       status: "reviewed_draft_prepared",
       note: "Human review decisions and corrections are captured for audit. This does not approve, bind, issue, or submit coverage.",
       reviewed_at: new Date().toISOString(),
-      grouped_confirmation_decisions: result.inferred_application_answers.map((item) => ({
-        id: item.id,
-        question: item.question,
-        original_draft_answer: item.inferred_answer,
-        decision: answerDecisions[item.id] ?? "not_reviewed",
-        corrected_answer: answerCorrections[item.id]?.trim() || null,
-        evidence: item.evidence,
-        rep_check: item.rep_check,
-        target_field: item.pdf_field
-      }))
+      grouped_confirmation_decisions: groupedDecisions
     }
+  };
+}
+
+function buildFilledFormDraft(
+  result: LiquorRestaurantPacket,
+  groupedDecisions: Array<{
+    id: string;
+    question: string;
+    final_reviewed_answer: string;
+    target_field: string;
+  }>
+) {
+  return {
+    form_name: "Restaurant / Liquor Application Draft",
+    status: "filled_draft_for_human_review",
+    disclaimer: "Draft form output only. Human review is required before carrier submission.",
+    applicant: result.intake_summary.applicant,
+    sections: [
+      {
+        title: "Applicant And Location",
+        fields: [
+          { label: "Applicant", value: result.intake_summary.applicant },
+          { label: "Location", value: result.intake_summary.location },
+          { label: "Operations", value: result.intake_summary.operations },
+          { label: "Coverage Requested", value: result.intake_summary.coverage_requested }
+        ]
+      },
+      {
+        title: "Grouped Application Confirmations",
+        fields: groupedDecisions.map((item) => ({
+          label: `${item.question} (${item.target_field})`,
+          value: item.final_reviewed_answer
+        }))
+      },
+      {
+        title: "Review Controls",
+        fields: [
+          { label: "Human Review Required", value: result.requires_human_review ? "Yes" : "No" },
+          { label: "Submission Readiness", value: formatLabel(result.submission_readiness.status) },
+          { label: "Blocking Missing Information", value: String(result.submission_readiness.blocking_missing_information_count) },
+          { label: "Next Action", value: result.recommended_next_action }
+        ]
+      }
+    ]
   };
 }
 

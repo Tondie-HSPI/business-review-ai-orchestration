@@ -286,8 +286,8 @@ main {
 
 .pathSteps {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .pathSteps div {
@@ -295,7 +295,7 @@ main {
   border-radius: 8px;
   background: #f8fafc;
   min-height: 112px;
-  padding: 12px;
+  padding: 11px;
 }
 
 .pathSteps span {
@@ -817,6 +817,62 @@ textarea:focus {
   border-color: #fed7aa;
   min-height: 86px;
   padding: 10px 12px;
+}
+
+.filledFormPreview {
+  border-color: #a7f3d0;
+  background: linear-gradient(180deg, #f7fffb 0%, #ffffff 100%);
+}
+
+.filledFormSection {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.filledFormSection h4 {
+  background: #ecfdf5;
+  border-bottom: 1px solid #a7f3d0;
+  color: #064e3b;
+  font-size: 0.82rem;
+  margin: 0;
+  padding: 10px 12px;
+  text-transform: uppercase;
+}
+
+.filledFormRow {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.45fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid #eef2f7;
+}
+
+.filledFormRow:first-of-type {
+  border-top: 0;
+}
+
+.filledFormRow span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.filledFormRow strong {
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.lockedFormNotice {
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-weight: 800;
+  line-height: 1.4;
+  padding: 12px;
 }
 
 .saveActions {
