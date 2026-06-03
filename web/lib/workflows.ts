@@ -838,7 +838,7 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
       "Seating, table service, food court responsibility, and hours",
       [
         `Tables/table service: ${combineYesNo(fields.tables, fields.table_service)}`,
-        `Food court seating only: ${answerFromField(fields.food_court_seating_only)}`,
+        `Food court seating only: ${defaultNo(fields.food_court_seating_only)}`,
         `Latest close: ${fields.close_time ?? "Review Required"}`
       ].join("; "),
       evidenceFromField(fields.tables, fields.table_service, fields.food_court_seating_only, fields.close_time, operations),
@@ -849,11 +849,11 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
       "liquor_controls",
       "Liquor controls, BYOB, license, ID scanner, and employee alcohol rules",
       [
-        `BYOB: ${answerFromField(fields.byob)}`,
+        `BYOB: ${defaultNo(fields.byob)}`,
         `Training: ${answerFromField(fields.liquor_training)}`,
         `ID scanner: ${answerFromField(fields.id_scanner)}`,
         `License maintained: ${answerFromField(fields.liquor_license_maintained)}`,
-        `Employee consumption: ${answerFromField(fields.employees_consume_alcohol_while_serving)}`
+        `Employee consumption: ${defaultNo(fields.employees_consume_alcohol_while_serving)}`
       ].join("; "),
       evidenceFromField(fields.byob, fields.liquor_training, fields.id_scanner, fields.liquor_license_maintained, fields.employees_consume_alcohol_while_serving),
       "Confirm liquor license details, age-verification controls, employee alcohol rules, and BYOB procedures.",
@@ -863,15 +863,16 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
       "drink_promotions_pricing",
       "Drink specials, lowest pricing, open bar, bottle service, and games",
       [
-        `Happy hour after 9 p.m.: ${answerFromField(fields.happy_hour_after_9pm)}`,
-        `Happy hour after 11 p.m.: ${answerFromField(fields.happy_hour_after_11pm)}`,
+        `Happy hour after 9 p.m.: ${defaultNo(fields.happy_hour_after_9pm)}`,
+        `Happy hour after 11 p.m.: ${defaultNo(fields.happy_hour_after_11pm)}`,
         `Lowest beer: ${fields.lowest_beer_price ?? "Review Required"}`,
         `Lowest wine/liquor: ${fields.lowest_wine_liquor_price ?? "Review Required"}`,
-        `Open bar/bottomless: ${answerFromField(fields.bottomless_or_open_bar_specials)}`,
-        `Bottle service: ${answerFromField(fields.bottle_service)}`,
-        `Drinking games: ${answerFromField(fields.drinking_games)}`
+        `Comp drinks over two: ${defaultNo(fields.complimentary_drinks_over_two)}`,
+        `Open bar/bottomless: ${defaultNo(fields.bottomless_or_open_bar_specials)}`,
+        `Bottle service: ${defaultNo(fields.bottle_service)}`,
+        `Drinking games: ${defaultNo(fields.drinking_games)}`
       ].join("; "),
-      evidenceFromField(fields.happy_hour_after_9pm, fields.happy_hour_after_11pm, fields.lowest_beer_price, fields.lowest_wine_liquor_price, fields.bottomless_or_open_bar_specials, fields.bottle_service, fields.drinking_games),
+      evidenceFromField(fields.happy_hour_after_9pm, fields.happy_hour_after_11pm, fields.lowest_beer_price, fields.lowest_wine_liquor_price, fields.complimentary_drinks_over_two, fields.bottomless_or_open_bar_specials, fields.bottle_service, fields.drinking_games),
       "Confirm promotions, lowest drink pricing, open bar/bottomless offers, bottle service, and drinking-game rules.",
       "46 / 47 / 54 / 55 / 62 / 63 / 66 / 67"
     ),
@@ -889,10 +890,10 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
       "Building responsibility, fryers, fire suppression, and unusual premises exposures",
       [
         `Building owner: ${answerFromField(fields.building_owner)}`,
-        `Fryers: ${answerFromField(fields.fryers)}`,
-        `Fire suppression: ${fireSuppression || "Review Required"}`,
-        `Mechanical rides: ${answerFromField(fields.mechanical_bulls_or_riding_devices)}`,
-        `Gaming machines: ${answerFromField(fields.gaming_machines)}`
+        `Fryers: ${defaultNo(fields.fryers)}`,
+        `Fire suppression: ${fireSuppression || (fields.fryers ? "Review Required" : "Not applicable unless fryers are present")}`,
+        `Mechanical rides: ${defaultNo(fields.mechanical_bulls_or_riding_devices)}`,
+        `Gaming machines: ${defaultNo(fields.gaming_machines)}`
       ].join("; "),
       evidenceFromField(fields.building_owner, fields.fryers, fireSuppression, fields.mechanical_bulls_or_riding_devices, fields.gaming_machines),
       "Confirm building maintenance responsibility, fire suppression type/service, fryer controls, and unusual premises exposures.",
@@ -905,7 +906,7 @@ function inferLiquorApplicationAnswers(fields: Record<string, string | null | un
         `Alcohol away from premises: ${inferOffPremisesAlcohol(fields.alcohol_sold_away_from_premises, foodTruckOperations)}`,
         `Food truck/catering: ${foodTruckOperations || fields.catering_sales || "No direct evidence"}`,
         `Underage patrons: ${answerFromField(fields.underage_patrons_permitted)}`,
-        `Underage after 11 p.m.: ${answerFromField(fields.underage_patrons_after_11pm)}`
+        `Underage after 11 p.m.: ${defaultNo(fields.underage_patrons_after_11pm)}`
       ].join("; "),
       evidenceFromField(fields.alcohol_sold_away_from_premises, foodTruckOperations, fields.catering_sales, fields.underage_patrons_permitted, fields.underage_patrons_after_11pm),
       "Confirm off-premises liquor, catering/food truck exposure, event controls, and minor access restrictions.",
@@ -1150,6 +1151,10 @@ function containsAny(value: string, keywords: string[]) {
 
 function answerFromField(value: string | null | undefined) {
   return value ? value : "Review Required";
+}
+
+function defaultNo(value: string | null | undefined) {
+  return value ? value : "No (draft default; rep can change)";
 }
 
 function evidenceFromField(...values: Array<string | null | undefined>) {
