@@ -31,6 +31,7 @@ export default function Home() {
   const [uploadMessage, setUploadMessage] = useState<string>("");
   const [answerDecisions, setAnswerDecisions] = useState<Record<string, AnswerDecision>>({});
   const [answerCorrections, setAnswerCorrections] = useState<Record<string, string>>({});
+  const [downloadMessage, setDownloadMessage] = useState<string>("");
 
   useEffect(() => {
     const requestedMode = normalizeWorkflowMode(new URLSearchParams(window.location.search).get("workflow"));
@@ -40,6 +41,7 @@ export default function Home() {
     setMode(requestedMode);
     setText(sampleForMode(requestedMode));
     setUploadMessage("");
+    setDownloadMessage("");
     setAnswerDecisions({});
     setAnswerCorrections({});
   }, [mode]);
@@ -57,6 +59,7 @@ export default function Home() {
     setMode(normalizedMode);
     setText(sampleForMode(normalizedMode));
     setUploadMessage("");
+    setDownloadMessage("");
     setAnswerDecisions({});
     setAnswerCorrections({});
 
@@ -84,6 +87,7 @@ export default function Home() {
           : "liquor-restaurant"
       ));
       setUploadMessage(`Loaded intake data from ${file.name}`);
+      setDownloadMessage("");
       setAnswerDecisions({});
       setAnswerCorrections({});
       return;
@@ -97,6 +101,7 @@ export default function Home() {
         : "liquor-restaurant"
     ));
     setUploadMessage(`Loaded intake text from ${file.name}`);
+    setDownloadMessage("");
     setAnswerDecisions({});
     setAnswerCorrections({});
   }
@@ -113,6 +118,7 @@ export default function Home() {
         : "liquor-restaurant"
     ));
     setUploadMessage(`Loaded ${parsed.length} application questions from ${file.name}`);
+    setDownloadMessage("");
     setAnswerDecisions({});
     setAnswerCorrections({});
   }
@@ -126,6 +132,7 @@ export default function Home() {
         : "liquor-restaurant"
     ));
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
+    setDownloadMessage("");
     setAnswerDecisions({});
     setAnswerCorrections({});
   }
@@ -133,6 +140,7 @@ export default function Home() {
   function handleApplicationTextChange(value: string) {
     setApplicationText(value);
     setFormQuestions(parseApplicationQuestions(value));
+    setDownloadMessage("");
     setAnswerDecisions({});
     setAnswerCorrections({});
   }
@@ -215,6 +223,7 @@ export default function Home() {
       </aside>
 
       <section className="workspace">
+        {downloadMessage && <div className="downloadMessage">{downloadMessage}</div>}
         <section className="hero">
           <div>
             <p className="eyebrow">AI-assisted insurance workflow</p>
@@ -341,6 +350,7 @@ export default function Home() {
                 answerCorrections={answerCorrections}
                 onSetAnswerDecision={setAnswerDecision}
                 onSetAnswerCorrection={setAnswerCorrection}
+                onDownloadPrepared={setDownloadMessage}
               />
             ) : (
               <BusinessReviewView result={result as ReviewOutput} />
@@ -566,7 +576,8 @@ function LiquorRestaurantView({
   answerDecisions,
   answerCorrections,
   onSetAnswerDecision,
-  onSetAnswerCorrection
+  onSetAnswerCorrection,
+  onDownloadPrepared
 }: {
   result: LiquorRestaurantPacket;
   uploadedPdfName: string;
@@ -575,6 +586,7 @@ function LiquorRestaurantView({
   answerCorrections: Record<string, string>;
   onSetAnswerDecision: (answerId: string, decision: AnswerDecision) => void;
   onSetAnswerCorrection: (answerId: string, correction: string) => void;
+  onDownloadPrepared: (message: string) => void;
 }) {
   const requiredReviewCount = result.inferred_application_answers.filter(
     (item) => item.flagged_for_review
@@ -681,13 +693,16 @@ function LiquorRestaurantView({
         ))}
         <div className="saveActions">
           {allReviewed ? (
-            <a
+            <button
+              type="button"
               className="downloadButton"
-              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(reviewedDraft, null, 2))}`}
-              download="submissionready-reviewed-application-draft.json"
+              onClick={() => {
+                downloadJsonFile("submissionready-reviewed-application-draft.json", reviewedDraft);
+                onDownloadPrepared("Reviewed application draft download started.");
+              }}
             >
               Save reviewed draft
-            </a>
+            </button>
           ) : (
             <button className="disabledButton" disabled>
               Save disabled until flagged answers are accepted and rejected answers are corrected
@@ -712,13 +727,16 @@ function LiquorRestaurantView({
                 ))}
               </div>
             ))}
-            <a
+            <button
+              type="button"
               className="downloadButton"
-              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(reviewedDraft.filled_form_draft, null, 2))}`}
-              download="submissionready-filled-form-draft.json"
+              onClick={() => {
+                downloadJsonFile("submissionready-filled-form-draft.json", reviewedDraft.filled_form_draft);
+                onDownloadPrepared("Filled form draft download started.");
+              }}
             >
               Download filled form draft
-            </a>
+            </button>
           </>
         ) : (
           <div className="lockedFormNotice">
@@ -778,6 +796,18 @@ function ReviewSection({
       <div className="reviewSectionBody">{children}</div>
     </details>
   );
+}
+
+function downloadJsonFile(filename: string, data: unknown) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function buildReviewedDraft(
