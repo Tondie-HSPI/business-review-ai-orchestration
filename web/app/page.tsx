@@ -30,6 +30,7 @@ export default function Home() {
   const [uploadedPdfName, setUploadedPdfName] = useState<string>("");
   const [uploadMessage, setUploadMessage] = useState<string>("");
   const [answerDecisions, setAnswerDecisions] = useState<Record<string, AnswerDecision>>({});
+  const [answerCorrections, setAnswerCorrections] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const requestedMode = normalizeWorkflowMode(new URLSearchParams(window.location.search).get("workflow"));
@@ -40,6 +41,7 @@ export default function Home() {
     setText(sampleForMode(requestedMode));
     setUploadMessage("");
     setAnswerDecisions({});
+    setAnswerCorrections({});
   }, [mode]);
 
   const result = useMemo<Result>(() => {
@@ -56,6 +58,7 @@ export default function Home() {
     setText(sampleForMode(normalizedMode));
     setUploadMessage("");
     setAnswerDecisions({});
+    setAnswerCorrections({});
 
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", `?workflow=${normalizedMode}`);
@@ -82,6 +85,7 @@ export default function Home() {
       ));
       setUploadMessage(`Loaded intake data from ${file.name}`);
       setAnswerDecisions({});
+      setAnswerCorrections({});
       return;
     }
 
@@ -94,6 +98,7 @@ export default function Home() {
     ));
     setUploadMessage(`Loaded intake text from ${file.name}`);
     setAnswerDecisions({});
+    setAnswerCorrections({});
   }
 
   async function handleQuestionUpload(file: File | null) {
@@ -109,6 +114,7 @@ export default function Home() {
     ));
     setUploadMessage(`Loaded ${parsed.length} application questions from ${file.name}`);
     setAnswerDecisions({});
+    setAnswerCorrections({});
   }
 
   function handlePdfUpload(file: File | null) {
@@ -121,12 +127,14 @@ export default function Home() {
     ));
     setUploadMessage(`Attached carrier app PDF: ${file.name}`);
     setAnswerDecisions({});
+    setAnswerCorrections({});
   }
 
   function handleApplicationTextChange(value: string) {
     setApplicationText(value);
     setFormQuestions(parseApplicationQuestions(value));
     setAnswerDecisions({});
+    setAnswerCorrections({});
   }
 
   function setAnswerDecision(answerId: string, decision: AnswerDecision) {
@@ -142,6 +150,13 @@ export default function Home() {
         [answerId]: decision
       };
     });
+  }
+
+  function setAnswerCorrection(answerId: string, correction: string) {
+    setAnswerCorrections((current) => ({
+      ...current,
+      [answerId]: correction
+    }));
   }
 
   const humanReview = result.requires_human_review ? "Required" : "Not required";
@@ -318,7 +333,9 @@ export default function Home() {
                 uploadedPdfName={uploadedPdfName}
                 formQuestionCount={formQuestions.length}
                 answerDecisions={answerDecisions}
+                answerCorrections={answerCorrections}
                 onSetAnswerDecision={setAnswerDecision}
+                onSetAnswerCorrection={setAnswerCorrection}
               />
             ) : (
               <BusinessReviewView result={result as ReviewOutput} />
@@ -542,13 +559,17 @@ function LiquorRestaurantView({
   uploadedPdfName,
   formQuestionCount,
   answerDecisions,
-  onSetAnswerDecision
+  answerCorrections,
+  onSetAnswerDecision,
+  onSetAnswerCorrection
 }: {
   result: LiquorRestaurantPacket;
   uploadedPdfName: string;
   formQuestionCount: number;
   answerDecisions: Record<string, AnswerDecision>;
+  answerCorrections: Record<string, string>;
   onSetAnswerDecision: (answerId: string, decision: AnswerDecision) => void;
+  onSetAnswerCorrection: (answerId: string, correction: string) => void;
 }) {
   const requiredReviewCount = result.inferred_application_answers.filter(
     (item) => item.flagged_for_review
@@ -559,7 +580,12 @@ function LiquorRestaurantView({
   const rejectedReviewCount = result.inferred_application_answers.filter(
     (item) => item.flagged_for_review && answerDecisions[item.id] === "rejected"
   ).length;
-  const allReviewed = requiredReviewCount > 0 && acceptedReviewCount === requiredReviewCount && rejectedReviewCount === 0;
+  const correctedRejectedCount = result.inferred_application_answers.filter(
+    (item) => item.flagged_for_review && answerDecisions[item.id] === "rejected" && answerCorrections[item.id]?.trim()
+  ).length;
+  const completedReviewCount = acceptedReviewCount + correctedRejectedCount;
+  const allReviewed = requiredReviewCount > 0 && completedReviewCount === requiredReviewCount;
+  const reviewedDraft = buildReviewedDraft(result, answerDecisions, answerCorrections);
   const visibleRiskFlags = result.risk_flags.slice(0, 3);
   const visibleDoubleChecks = result.submission_readiness.rep_double_checks.slice(0, 4);
   const certificateOptimizer = result.csr_certificate_request.certificate_optimizer;
@@ -587,7 +613,7 @@ function LiquorRestaurantView({
         <span>Review gate</span>
         <strong>{allReviewed ? "Ready To Save Draft" : "Rep Review Required"}</strong>
         <small>
-          {acceptedReviewCount} accepted, {rejectedReviewCount} rejected, {requiredReviewCount} requiring review
+          {acceptedReviewCount} accepted, {rejectedReviewCount} rejected, {correctedRejectedCount} corrected, {requiredReviewCount} requiring review
         </small>
       </div>
       <div className="readinessBox">
@@ -634,6 +660,17 @@ function LiquorRestaurantView({
                   Reject / needs correction
                 </button>
               </div>
+              {answerDecisions[item.id] === "rejected" && (
+                <label className="correctionBox">
+                  <span>Corrected answer / rep note</span>
+                  <textarea
+                    value={answerCorrections[item.id] ?? ""}
+                    onChange={(event) => onSetAnswerCorrection(item.id, event.target.value)}
+                    placeholder="Enter the corrected answer or note what needs to change before saving the draft."
+                    aria-label={`Corrected answer for ${item.question}`}
+                  />
+                </label>
+              )}
             </div>
           </div>
         ))}
@@ -641,7 +678,7 @@ function LiquorRestaurantView({
           {allReviewed ? (
             <a
               className="downloadButton"
-              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`}
+              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(reviewedDraft, null, 2))}`}
               download="submissionready-reviewed-application-draft.json"
             >
               Save reviewed draft
@@ -705,6 +742,31 @@ function ReviewSection({
       <div className="reviewSectionBody">{children}</div>
     </details>
   );
+}
+
+function buildReviewedDraft(
+  result: LiquorRestaurantPacket,
+  answerDecisions: Record<string, AnswerDecision>,
+  answerCorrections: Record<string, string>
+) {
+  return {
+    ...result,
+    human_review: {
+      status: "reviewed_draft_prepared",
+      note: "Human review decisions and corrections are captured for audit. This does not approve, bind, issue, or submit coverage.",
+      reviewed_at: new Date().toISOString(),
+      grouped_confirmation_decisions: result.inferred_application_answers.map((item) => ({
+        id: item.id,
+        question: item.question,
+        original_draft_answer: item.inferred_answer,
+        decision: answerDecisions[item.id] ?? "not_reviewed",
+        corrected_answer: answerCorrections[item.id]?.trim() || null,
+        evidence: item.evidence,
+        rep_check: item.rep_check,
+        target_field: item.pdf_field
+      }))
+    }
+  };
 }
 
 function BusinessReviewView({ result }: { result: ReviewOutput }) {
