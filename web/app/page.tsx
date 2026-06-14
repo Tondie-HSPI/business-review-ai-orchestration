@@ -28,6 +28,8 @@ export default function Home() {
   const [formQuestions, setFormQuestions] = useState<FormQuestion[]>(defaultLiquorRestaurantQuestions);
   const [applicationText, setApplicationText] = useState<string>(questionsToText(defaultLiquorRestaurantQuestions));
   const [uploadedPdfName, setUploadedPdfName] = useState<string>("");
+  const [uploadedPdfBytes, setUploadedPdfBytes] = useState<ArrayBuffer | null>(null);
+  const [uploadedPdfFields, setUploadedPdfFields] = useState<string[]>([]);
   const [uploadMessage, setUploadMessage] = useState<string>("");
   const [answerDecisions, setAnswerDecisions] = useState<Record<string, AnswerDecision>>({});
   const [answerCorrections, setAnswerCorrections] = useState<Record<string, string>>({});
@@ -123,15 +125,26 @@ export default function Home() {
     setAnswerCorrections({});
   }
 
-  function handlePdfUpload(file: File | null) {
+  async function handlePdfUpload(file: File | null) {
     if (!file) return;
+    const bytes = await file.arrayBuffer();
     setUploadedPdfName(file.name);
+    setUploadedPdfBytes(bytes);
     setMode((currentMode) => (
       currentMode === "application-prep" || currentMode === "liquor-restaurant"
         ? currentMode
         : "liquor-restaurant"
     ));
-    setUploadMessage(`Attached carrier app PDF: ${file.name}`);
+    try {
+      const { PDFDocument } = await import("pdf-lib");
+      const pdf = await PDFDocument.load(bytes);
+      const fields = pdf.getForm().getFields().map((field) => field.getName());
+      setUploadedPdfFields(fields);
+      setUploadMessage(`Attached fillable app PDF: ${file.name}. Detected ${fields.length} fields.`);
+    } catch {
+      setUploadedPdfFields([]);
+      setUploadMessage(`Attached app PDF: ${file.name}. No fillable fields detected.`);
+    }
     setDownloadMessage("");
     setAnswerDecisions({});
     setAnswerCorrections({});
@@ -345,6 +358,8 @@ export default function Home() {
               <LiquorRestaurantView
                 result={result as LiquorRestaurantPacket}
                 uploadedPdfName={uploadedPdfName}
+                uploadedPdfBytes={uploadedPdfBytes}
+                uploadedPdfFields={uploadedPdfFields}
                 formQuestionCount={formQuestions.length}
                 answerDecisions={answerDecisions}
                 answerCorrections={answerCorrections}
@@ -572,6 +587,8 @@ function ApplicationView({ result }: { result: ApplicationPacket }) {
 function LiquorRestaurantView({
   result,
   uploadedPdfName,
+  uploadedPdfBytes,
+  uploadedPdfFields,
   formQuestionCount,
   answerDecisions,
   answerCorrections,
@@ -581,6 +598,8 @@ function LiquorRestaurantView({
 }: {
   result: LiquorRestaurantPacket;
   uploadedPdfName: string;
+  uploadedPdfBytes: ArrayBuffer | null;
+  uploadedPdfFields: string[];
   formQuestionCount: number;
   answerDecisions: Record<string, AnswerDecision>;
   answerCorrections: Record<string, string>;
@@ -616,8 +635,8 @@ function LiquorRestaurantView({
           <strong>{uploadedPdfName || "Restaurant app logic applied"}</strong>
         </div>
         <div>
-          <span>App questions</span>
-          <strong>{formQuestionCount}</strong>
+          <span>{uploadedPdfFields.length ? "PDF fields detected" : "App questions"}</span>
+          <strong>{uploadedPdfFields.length || formQuestionCount}</strong>
         </div>
       </div>
       <div className="summary intakeOutput">
@@ -737,6 +756,23 @@ function LiquorRestaurantView({
             >
               Download filled form draft
             </button>
+            {uploadedPdfBytes && uploadedPdfFields.length > 0 && (
+              <button
+                type="button"
+                className="downloadButton"
+                onClick={async () => {
+                  try {
+                    const filled = await fillUploadedPdf(uploadedPdfBytes, reviewedDraft);
+                    downloadPdfFile("submissionready-filled-uploaded-app.pdf", filled.bytes);
+                    onDownloadPrepared(`Filled uploaded PDF download started. Matched ${filled.matchedFields} of ${filled.totalFields} fillable fields.`);
+                  } catch {
+                    onDownloadPrepared("The uploaded PDF could not be filled. Confirm that it is an unlocked fillable PDF.");
+                  }
+                }}
+              >
+                Download filled uploaded PDF
+              </button>
+            )}
           </>
         ) : (
           <div className="lockedFormNotice">
@@ -808,6 +844,147 @@ function downloadJsonFile(filename: string, data: unknown) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function downloadPdfFile(filename: string, bytes: Uint8Array) {
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function fillUploadedPdf(uploadedPdfBytes: ArrayBuffer, reviewedDraft: ReturnType<typeof buildReviewedDraft>) {
+  const { PDFDocument } = await import("pdf-lib");
+  const pdf = await PDFDocument.load(uploadedPdfBytes);
+  const form = pdf.getForm();
+  const fields = form.getFields();
+  const values = buildPdfValueMap(reviewedDraft);
+  let matchedFields = 0;
+
+  fields.forEach((field) => {
+    const value = findPdfFieldValue(field.getName(), values);
+    if (!value) return;
+
+    const writableField = field as unknown as {
+      setText?: (text: string) => void;
+      check?: () => void;
+      uncheck?: () => void;
+      select?: (option: string) => void;
+      getOptions?: () => string[];
+    };
+
+    try {
+      if (writableField.setText) {
+        writableField.setText(value);
+        matchedFields += 1;
+        return;
+      }
+
+      if (writableField.check && writableField.uncheck) {
+        if (isTruthyAnswer(value)) writableField.check();
+        else writableField.uncheck();
+        matchedFields += 1;
+        return;
+      }
+
+      if (writableField.select) {
+        const options = writableField.getOptions?.() ?? [];
+        const yesNoOption = radioOptionForAnswer(value, options);
+        writableField.select(yesNoOption ?? value);
+        matchedFields += 1;
+      }
+    } catch {
+      // Some PDFs contain fields with constrained options. Leave those for manual review.
+    }
+  });
+
+  form.updateFieldAppearances();
+  return {
+    bytes: await pdf.save(),
+    matchedFields,
+    totalFields: fields.length
+  };
+}
+
+function buildPdfValueMap(reviewedDraft: ReturnType<typeof buildReviewedDraft>) {
+  const values = new Map<string, string>();
+  const add = (key: string, value: unknown) => {
+    if (value === null || value === undefined || value === "") return;
+    values.set(normalizePdfKey(key), String(value));
+  };
+
+  Object.entries(reviewedDraft.mapped_pdf_fields).forEach(([key, value]) => add(key, value));
+  reviewedDraft.filled_form_draft.sections.forEach((section) => {
+    section.fields.forEach((field) => add(field.label, field.value));
+  });
+  reviewedDraft.human_review.grouped_confirmation_decisions.forEach((item) => {
+    add(item.question, item.final_reviewed_answer);
+    add(item.target_field, item.final_reviewed_answer);
+  });
+
+  add("Applicant name", reviewedDraft.intake_summary.applicant);
+  add("Location address", reviewedDraft.intake_summary.location);
+  add("Description of operations", reviewedDraft.intake_summary.operations);
+  add("Coverage requested", reviewedDraft.intake_summary.coverage_requested);
+
+  return values;
+}
+
+function findPdfFieldValue(fieldName: string, values: Map<string, string>) {
+  const normalizedName = normalizePdfKey(fieldName);
+  const exact = values.get(normalizedName);
+  if (exact) return exact;
+
+  for (const [key, value] of values.entries()) {
+    if (key.length >= 5 && (normalizedName.includes(key) || key.includes(normalizedName))) {
+      return value;
+    }
+  }
+
+  const aliases: Array<[string[], string]> = [
+    [["applicant", "name"], "Applicant name"],
+    [["location", "address"], "Location address"],
+    [["description"], "Description of operations"],
+    [["operation"], "Description of operations"],
+    [["food", "sales"], "AR Food"],
+    [["alcohol", "sales"], "AR Alc"],
+    [["catering"], "AR Catering"],
+    [["email"], "Applicant And Location"],
+    [["phone"], "Applicant And Location"],
+    [["close"], "11"],
+    [["entertainment"], "7 / 8 / 12"],
+    [["security"], "7 / 8 / 12"],
+    [["byob"], "13 / 44 / 45 / 50 / 58 / 59"],
+    [["license"], "13 / 44 / 45 / 50 / 58 / 59"],
+    [["happy"], "46 / 47 / 54 / 55 / 62 / 63 / 66 / 67"],
+    [["fire"], "14 / 15 / 16 / 20 / 28-30 / 34"],
+    [["fryer"], "14 / 15 / 16 / 20 / 28-30 / 34"]
+  ];
+
+  const match = aliases.find(([needles]) => needles.every((needle) => normalizedName.includes(needle)));
+  return match ? values.get(normalizePdfKey(match[1])) : null;
+}
+
+function normalizePdfKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function isTruthyAnswer(value: string) {
+  return /(^|\b)(yes|true|x|checked)(\b|$)/i.test(value);
+}
+
+function radioOptionForAnswer(value: string, options: string[]) {
+  if (options.includes("Choice1") && options.includes("Choice2")) {
+    if (isTruthyAnswer(value)) return "Choice1";
+    if (/(^|\b)(no|false|unchecked)(\b|$)/i.test(value)) return "Choice2";
+  }
+
+  return options.find((option) => normalizePdfKey(option) === normalizePdfKey(value)) ?? null;
 }
 
 function buildReviewedDraft(

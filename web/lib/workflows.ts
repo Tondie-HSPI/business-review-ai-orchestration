@@ -1430,17 +1430,50 @@ function mapLiquorPdfFields(fields: Record<string, string | null | undefined>) {
     "07 email": fields.email,
     "08 phone": fields.phone,
     "014 Description": fields.operations,
+    "01 Coverage 1": containsAny(fields.coverage_requested ?? "", ["property"]) ? "Yes" : null,
+    "01 Coverage 2": containsAny(fields.coverage_requested ?? "", ["general liability"]) ? "Yes" : null,
+    "01 Coverage 3": containsAny(fields.coverage_requested ?? "", ["liquor liability"]) ? "Yes" : null,
     "AR Food": fields.food_sales,
     "AR Alc": fields.alcohol_sales,
     "AR Catering": fields.catering_sales,
     "11 hours": fields.close_time,
     "59 lowest price": fields.lowest_beer_price,
-    "60 lowest price": fields.lowest_wine_liquor_price
+    "60 lowest price": fields.lowest_wine_liquor_price,
+    "7 R8": yesNoFromEvidence(fields.entertainment),
+    "8 R9": fields.dancing_permitted,
+    "9 R10": fields.tables,
+    "9 R11": fields.table_service,
+    "10 R12": fields.food_court_seating_only,
+    "12 R14": yesNoFromEvidence(fields.security),
+    "13 R15": fields.byob,
+    "14 R16": fields.mechanical_bulls_or_riding_devices,
+    "15 R17": fields.gaming_machines,
+    "16 R18": fields.building_owner,
+    "20a R23": yesNoFromEvidence(fields.fire_suppression),
+    "44 R56": fields.liquor_training,
+    "45 R57": fields.id_scanner,
+    "46 R58": fields.happy_hour_after_9pm,
+    "47 R59": fields.happy_hour_after_11pm,
+    "48 R60": yesNoFromEvidence(fields.operations?.toLowerCase().includes("bar seating") ? "Yes" : null),
+    "50 R62": fields.byob,
+    "52 R64": fields.alcohol_sold_away_from_premises,
+    "58 R70": fields.liquor_license_maintained,
+    "62 R72": fields.complimentary_drinks_over_two,
+    "63 R73": fields.bottomless_or_open_bar_specials,
+    "64 R74": fields.underage_patrons_permitted,
+    "65 R75": fields.underage_patrons_after_11pm,
+    "66 R76": fields.bottle_service,
+    "67 R77": fields.drinking_games
   };
 
   return Object.fromEntries(
     Object.entries(mapping).filter(([, value]) => Boolean(value))
   ) as Record<string, string>;
+}
+
+function yesNoFromEvidence(value: string | null | undefined) {
+  if (!value) return null;
+  return containsAny(value, ["none", "no"]) ? "No" : "Yes";
 }
 
 function liquorRiskFlags(fields: Record<string, string | null | undefined>) {
