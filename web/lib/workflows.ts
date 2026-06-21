@@ -679,7 +679,7 @@ export function buildLiquorRestaurantPacket(
     workflow_scope: {
       selected_workflow: selectedWorkflowLabel(fields),
       routing_note:
-        "Only this workflow is used for the client review packet. SubmissionReady AI prepares the draft and flags items for rep review."
+        "Only this workflow is used for the human review packet. SubmissionReady AI prepares the draft and flags items for rep review."
     },
     official_form_status:
       "Draft intake support only; human review required before carrier submission.",

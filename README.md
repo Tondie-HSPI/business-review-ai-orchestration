@@ -8,11 +8,13 @@ This is an independent portfolio project built for learning and demonstration pu
 
 It uses mock data, sample business scenarios, and synthetic insurance/application examples. It does not include employer data, client data, proprietary workflows, carrier-specific confidential information, or internal company tools.
 
+It is not affiliated with, endorsed by, or based on any employer, insurer, carrier, client, or internal workplace system.
+
 The project is designed to demonstrate applied AI, business analytics, document review, and human-in-the-loop workflow design.
 
 ## Related Projects
 
-This is the active, flagship version of an idea that started as [Compliance Explained](https://github.com/Tondie-HSPI/compliance-explained-ai), an earlier prototype now retired. That project's COI/contract decoding logic carried forward into the intake → extraction → application prep → review packet workflow here.
+This is the active, flagship version of an idea that started as [Compliance Explained](https://github.com/Tondie-HSPI/compliance-explained-ai), an earlier prototype now retired. That project's COI/contract decoding logic carried forward into the intake, extraction, application prep, and review packet workflow here.
 
 ## Business Problem
 
