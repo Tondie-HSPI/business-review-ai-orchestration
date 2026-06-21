@@ -153,7 +153,7 @@ Prior carrier:
 Loss history:
 Notes: Applicant needs help preparing the application packet. Do not submit without human review.`;
 
-export const liquorRestaurantSample = `Quote request generated from fake Salesforce intake data.
+export const liquorRestaurantSample = `Quote request generated from mock Salesforce intake data.
 Applicant: Harbor & Vine Kitchen LLC
 DBA: Harbor & Vine
 Location address: 1420 Market Street
@@ -213,7 +213,7 @@ Waiver of subrogation requested: Yes
 Primary and noncontributory requested: Yes
 Special certificate wording: Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms.`;
 
-export const contractorSample = `Quote request generated from fake intake data.
+export const contractorSample = `Quote request generated from mock intake data.
 Applicant: Apex Build & Repair LLC
 DBA: Apex Build
 Location address: 2250 Trade Center Way
@@ -244,7 +244,7 @@ Waiver of subrogation requested: Yes
 Primary and noncontributory requested: Yes
 Special certificate wording: Include project name, additional insured, waiver of subrogation, and primary/noncontributory wording if allowed by policy terms.`;
 
-export const landscaperSample = `Quote request generated from fake intake data.
+export const landscaperSample = `Quote request generated from mock intake data.
 Applicant: Greenline Grounds LLC
 DBA: Greenline Grounds
 Location address: 810 Garden Ridge Road

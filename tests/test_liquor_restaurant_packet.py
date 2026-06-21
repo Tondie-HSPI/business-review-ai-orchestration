@@ -2,7 +2,7 @@ from src.liquor_restaurant_packet import build_liquor_restaurant_packet
 from src.sample_data import SAMPLE_LIQUOR_RESTAURANT_QUOTE
 from src.salesforce_intake import (
     answer_form_questions,
-    load_fake_salesforce_record,
+    load_mock_salesforce_record,
     load_liquor_restaurant_questions,
     salesforce_record_to_quote_text,
 )
@@ -26,8 +26,8 @@ def test_liquor_restaurant_packet_flags_underwriting_review_items():
     assert packet["submission_readiness"]["rep_double_checks"]
 
 
-def test_fake_salesforce_record_answers_form_questions():
-    record = load_fake_salesforce_record()
+def test_mock_salesforce_record_answers_form_questions():
+    record = load_mock_salesforce_record()
     questions = load_liquor_restaurant_questions()
     answers = answer_form_questions(record, questions)
 
@@ -37,8 +37,8 @@ def test_fake_salesforce_record_answers_form_questions():
     assert all(answer["confidence"] == "high" for answer in answers)
 
 
-def test_liquor_packet_accepts_fake_salesforce_source_record():
-    record = load_fake_salesforce_record()
+def test_liquor_packet_accepts_mock_salesforce_source_record():
+    record = load_mock_salesforce_record()
     quote_text = salesforce_record_to_quote_text(record)
     packet = build_liquor_restaurant_packet(quote_text, source_record=record)
 

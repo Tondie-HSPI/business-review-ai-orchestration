@@ -30,11 +30,11 @@ The project uses mock extraction logic so it can run locally without an API key.
 
 ## SubmissionReady AI Use Case
 
-The main demo prepares a restaurant / liquor liability insurance application review packet from fake intake data. It does not submit anything automatically. It gives the rep a structured draft, flags inferred answers for review, identifies missing information, decodes certificate or contract wording, and creates draft follow-up language.
+The main demo prepares a restaurant / liquor liability insurance application review packet from mock intake data. It does not submit anything automatically. It gives the rep a structured draft, flags inferred answers for review, identifies missing information, decodes certificate or contract wording, and creates draft follow-up language.
 
 The workflow can:
 
-- upload or paste fake intake data
+- upload or paste mock intake data
 - attach a carrier application PDF for reference and tracking
 - upload a preprocessed form-question schema
 - infer likely application answers from intake and account data
@@ -183,7 +183,7 @@ status. Those items should be reviewed before quoting and certificate issuance.
 
 ## Liquor / Restaurant Quote Intake Example
 
-SubmissionReady AI includes fake Salesforce-style account data, fake restaurant quote intake notes, and a preprocessed form-question JSON schema. The browser demo lets the user upload intake data, upload a question schema, attach a carrier application PDF for reference, preview inferred answers, check flagged answers as reviewed, and download the generated JSON review packet.
+SubmissionReady AI includes mock Salesforce-style account data, mock restaurant quote intake notes, and a preprocessed form-question JSON schema. The browser demo lets the user upload intake data, upload a question schema, attach a carrier application PDF for reference, preview inferred answers, check flagged answers as reviewed, and download the generated JSON review packet.
 
 Current scope:
 
@@ -244,7 +244,7 @@ business-review-ai-orchestration/
     rules_engine.py
     sample_data.py
   data/
-    fake_salesforce_liquor_restaurant_account.json
+    mock_salesforce_liquor_restaurant_account.json
     liquor_restaurant_form_questions.json
     sample_business_request.txt
     sample_liquor_restaurant_quote_request.txt
@@ -268,7 +268,7 @@ business-review-ai-orchestration/
 
 This is a portfolio prototype, not a production compliance system, licensed insurance tool, official carrier application system, legal advice, insurance advice, underwriting decision tool, or certificate issuance system. It does not make final approval, coverage, compliance, legal, underwriting, or submission decisions.
 
-All sample data is fake. Any high-risk, ambiguous, incomplete, inferred, or carrier-facing output should be reviewed by a qualified human before use.
+All sample data is mock. Any high-risk, ambiguous, incomplete, inferred, or carrier-facing output should be reviewed by a qualified human before use.
 
 ## Future Improvements
 
