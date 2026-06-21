@@ -1,4 +1,8 @@
 __pycache__/
 .pytest_cache/
+pytest-cache-files-*/
 .venv/
 *.pyc
+node_modules/
+.next/
+out/
