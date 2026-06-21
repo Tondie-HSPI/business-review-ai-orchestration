@@ -2,6 +2,8 @@
 
 AI-assisted insurance application preparation and submission review workflow that takes an initial request and creates a submission-ready packet for human review.
 
+This project is framed around an operational pain point: commercial insurance and service workflows often depend on fragmented intake notes, manual interpretation, missing information checks, and review-heavy handoffs. SubmissionReady AI explores how structured intake, deterministic rules, and human-in-the-loop review can reduce rework while keeping professional judgment visible.
+
 ## Disclaimer
 
 This is an independent portfolio project built for learning and demonstration purposes.
@@ -24,7 +26,7 @@ When this process is handled manually, teams can face delays, inconsistent revie
 
 ## Solution
 
-SubmissionReady AI demonstrates a controlled AI-assisted workflow for document review, application preparation, requirement extraction, and decision-support workflows. It converts intake data into structured outputs while keeping deterministic business rules, source evidence, review flags, and human approval boundaries separate from AI-assisted interpretation.
+SubmissionReady AI demonstrates a controlled AI-assisted workflow for document review, application preparation, requirement extraction, and operational decision support. It converts intake data into structured outputs while keeping deterministic business rules, source evidence, review flags, and human approval boundaries separate from AI-assisted interpretation.
 
 The project uses mock extraction logic so it can run locally without an API key. The architecture is designed so an LLM could later be added for extraction and summarization while rules, review gates, and final decisions stay controlled.
 
