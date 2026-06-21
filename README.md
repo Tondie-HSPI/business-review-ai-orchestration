@@ -10,6 +10,10 @@ It uses mock data, sample business scenarios, and synthetic insurance/applicatio
 
 The project is designed to demonstrate applied AI, business analytics, document review, and human-in-the-loop workflow design.
 
+## Related Projects
+
+This is the active, flagship version of an idea that started as [Compliance Explained](https://github.com/Tondie-HSPI/compliance-explained-ai), an earlier prototype now retired. That project's COI/contract decoding logic carried forward into the intake → extraction → application prep → review packet workflow here.
+
 ## Business Problem
 
 Business, insurance, compliance, and service teams often need to turn intake notes, emails, contracts, COI requests, and application forms into accurate review packets. The work is repetitive but judgment-heavy: reviewers must identify what the request is asking for, extract important requirements, check what is missing, flag complex wording, and prepare the next action.
