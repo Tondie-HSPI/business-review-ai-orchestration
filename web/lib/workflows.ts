@@ -123,7 +123,7 @@ export type FormQuestion = {
   pdf_field: string;
 };
 
-export type SalesforceLikeRecord = {
+export type CrmLikeRecord = {
   account?: Record<string, unknown>;
   location?: Record<string, unknown>;
   opportunity?: Record<string, unknown>;
@@ -153,7 +153,7 @@ Prior carrier:
 Loss history:
 Notes: Applicant needs help preparing the application packet. Do not submit without human review.`;
 
-export const liquorRestaurantSample = `Quote request generated from mock Salesforce intake data.
+export const liquorRestaurantSample = `Quote request generated from synthetic CRM intake data.
 Applicant: Harbor & Vine Kitchen LLC
 DBA: Harbor & Vine
 Location address: 1420 Market Street
@@ -213,7 +213,7 @@ Waiver of subrogation requested: Yes
 Primary and noncontributory requested: Yes
 Special certificate wording: Include additional insured, waiver of subrogation, and primary and noncontributory wording if approved by policy terms.`;
 
-export const contractorSample = `Quote request generated from mock intake data.
+export const contractorSample = `Quote request generated from synthetic intake data.
 Applicant: Apex Build & Repair LLC
 DBA: Apex Build
 Location address: 2250 Trade Center Way
@@ -244,7 +244,7 @@ Waiver of subrogation requested: Yes
 Primary and noncontributory requested: Yes
 Special certificate wording: Include project name, additional insured, waiver of subrogation, and primary/noncontributory wording if allowed by policy terms.`;
 
-export const landscaperSample = `Quote request generated from mock intake data.
+export const landscaperSample = `Quote request generated from synthetic intake data.
 Applicant: Greenline Grounds LLC
 DBA: Greenline Grounds
 Location address: 810 Garden Ridge Road
@@ -594,7 +594,7 @@ export function buildApplicationPacket(text: string): ApplicationPacket {
 
 export function buildLiquorRestaurantPacket(
   text: string,
-  options: { sourceRecord?: SalesforceLikeRecord | null; formQuestions?: FormQuestion[] } = {}
+  options: { sourceRecord?: CrmLikeRecord | null; formQuestions?: FormQuestion[] } = {}
 ): LiquorRestaurantPacket {
   const raw = parseKeyValues(text);
   const fields = {
@@ -679,7 +679,7 @@ export function buildLiquorRestaurantPacket(
     workflow_scope: {
       selected_workflow: selectedWorkflowLabel(fields),
       routing_note:
-        "Only this workflow is used for the human review packet. SubmissionReady AI prepares the draft and flags items for rep review."
+        "Only this workflow is used for the client review packet. SubmissionReady AI prepares the draft and flags items for rep review."
     },
     official_form_status:
       "Draft intake support only; human review required before carrier submission.",
@@ -1177,7 +1177,7 @@ function inferOffPremisesAlcohol(value: string | null | undefined, operations: s
 function answerLiquorFormQuestions(
   fields: Record<string, string | null | undefined>,
   questions: FormQuestion[],
-  sourceRecord?: SalesforceLikeRecord | null
+  sourceRecord?: CrmLikeRecord | null
 ) {
   return questions.map((question) => ({
     id: question.id,
@@ -1189,12 +1189,12 @@ function answerLiquorFormQuestions(
   }));
 }
 
-export function salesforceRecordToQuoteText(record: SalesforceLikeRecord) {
+export function crmRecordToQuoteText(record: CrmLikeRecord) {
   const account = record.account ?? {};
   const location = record.location ?? {};
   const opportunity = record.opportunity ?? {};
   const risk = record.risk_profile ?? {};
-  const certificate = (record as SalesforceLikeRecord & { certificate_request?: Record<string, unknown> }).certificate_request ?? {};
+  const certificate = (record as CrmLikeRecord & { certificate_request?: Record<string, unknown> }).certificate_request ?? {};
   const coverages = Array.isArray(opportunity.requested_coverages)
     ? opportunity.requested_coverages.join(", ")
     : stringValue(opportunity.requested_coverages);
@@ -1245,7 +1245,7 @@ Special certificate wording: ${stringValue(certificate.special_certificate_wordi
 function answerQuestion(
   question: FormQuestion,
   fields: Record<string, string | null | undefined>,
-  sourceRecord?: SalesforceLikeRecord | null
+  sourceRecord?: CrmLikeRecord | null
 ) {
   const sourceAnswer = sourceRecord ? lookupPath(sourceRecord, question.source_field) : null;
   if (sourceAnswer !== null && sourceAnswer !== undefined && sourceAnswer !== "") {
@@ -1318,7 +1318,7 @@ function answerQuestion(
   return fallbackMap[question.id] ?? sourceFieldFallback[question.source_field] ?? null;
 }
 
-function lookupPath(record: SalesforceLikeRecord, dottedPath: string): unknown {
+function lookupPath(record: CrmLikeRecord, dottedPath: string): unknown {
   return dottedPath.split(".").reduce<unknown>((current, part) => {
     if (!current || typeof current !== "object") return null;
     return (current as Record<string, unknown>)[part];

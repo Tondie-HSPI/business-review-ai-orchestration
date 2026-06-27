@@ -2,21 +2,13 @@
 
 AI-assisted insurance application preparation and submission review workflow that takes an initial request and creates a submission-ready packet for human review.
 
-This project is framed around an operational pain point: commercial insurance and service workflows often depend on fragmented intake notes, manual interpretation, missing information checks, and review-heavy handoffs. SubmissionReady AI explores how structured intake, deterministic rules, and human-in-the-loop review can reduce rework while keeping professional judgment visible.
-
 ## Disclaimer
 
 This is an independent portfolio project built for learning and demonstration purposes.
 
 It uses mock data, sample business scenarios, and synthetic insurance/application examples. It does not include employer data, client data, proprietary workflows, carrier-specific confidential information, or internal company tools.
 
-It is not affiliated with, endorsed by, or based on any employer, insurer, carrier, client, or internal workplace system.
-
 The project is designed to demonstrate applied AI, business analytics, document review, and human-in-the-loop workflow design.
-
-## Related Projects
-
-This is the active, flagship version of an idea that started as [Compliance Explained](https://github.com/Tondie-HSPI/compliance-explained-ai), an earlier prototype now retired. That project's COI/contract decoding logic carried forward into the intake, extraction, application prep, and review packet workflow here.
 
 ## Business Problem
 
@@ -26,17 +18,17 @@ When this process is handled manually, teams can face delays, inconsistent revie
 
 ## Solution
 
-SubmissionReady AI demonstrates a controlled AI-assisted workflow for document review, application preparation, requirement extraction, and operational decision support. It converts intake data into structured outputs while keeping deterministic business rules, source evidence, review flags, and human approval boundaries separate from AI-assisted interpretation.
+SubmissionReady AI demonstrates a controlled AI-assisted workflow for document review, application preparation, requirement extraction, and decision-support workflows. It converts intake data into structured outputs while keeping deterministic business rules, source evidence, review flags, and human approval boundaries separate from AI-assisted interpretation.
 
 The project uses mock extraction logic so it can run locally without an API key. The architecture is designed so an LLM could later be added for extraction and summarization while rules, review gates, and final decisions stay controlled.
 
 ## SubmissionReady AI Use Case
 
-The main demo prepares a restaurant / liquor liability insurance application review packet from mock intake data. It does not submit anything automatically. It gives the rep a structured draft, flags inferred answers for review, identifies missing information, decodes certificate or contract wording, and creates draft follow-up language.
+The main demo prepares a restaurant / liquor liability insurance application review packet from synthetic intake data. It does not submit anything automatically. It gives the rep a structured draft, flags inferred answers for review, identifies missing information, decodes certificate or contract wording, and creates draft follow-up language.
 
 The workflow can:
 
-- upload or paste mock intake data
+- upload or paste synthetic intake data
 - attach a carrier application PDF for reference and tracking
 - upload a preprocessed form-question schema
 - infer likely application answers from intake and account data
@@ -185,7 +177,7 @@ status. Those items should be reviewed before quoting and certificate issuance.
 
 ## Liquor / Restaurant Quote Intake Example
 
-SubmissionReady AI includes mock Salesforce-style account data, mock restaurant quote intake notes, and a preprocessed form-question JSON schema. The browser demo lets the user upload intake data, upload a question schema, attach a carrier application PDF for reference, preview inferred answers, check flagged answers as reviewed, and download the generated JSON review packet.
+SubmissionReady AI includes synthetic CRM-style account data, sample restaurant quote intake notes, and a preprocessed form-question JSON schema. The browser demo lets the user upload intake data, upload a question schema, attach a carrier application PDF for reference, preview inferred answers, check flagged answers as reviewed, and download the generated JSON review packet.
 
 Current scope:
 
@@ -196,9 +188,9 @@ Current scope:
 - includes certificate requirements in the quote-prep flags
 - creates a CSR certificate request draft when certificate wording is included
 
-Next backend step:
+Current PDF capability:
 
-- physically fill PDF form fields after the form is mapped and reviewed
+- fills reviewed values into uploaded fillable PDF form fields when matching field names are available
 
 ## Run Locally
 
@@ -246,7 +238,7 @@ business-review-ai-orchestration/
     rules_engine.py
     sample_data.py
   data/
-    mock_salesforce_liquor_restaurant_account.json
+    synthetic_crm_liquor_restaurant_account.json
     liquor_restaurant_form_questions.json
     sample_business_request.txt
     sample_liquor_restaurant_quote_request.txt
@@ -270,7 +262,7 @@ business-review-ai-orchestration/
 
 This is a portfolio prototype, not a production compliance system, licensed insurance tool, official carrier application system, legal advice, insurance advice, underwriting decision tool, or certificate issuance system. It does not make final approval, coverage, compliance, legal, underwriting, or submission decisions.
 
-All sample data is mock. Any high-risk, ambiguous, incomplete, inferred, or carrier-facing output should be reviewed by a qualified human before use.
+All sample data is synthetic. Any high-risk, ambiguous, incomplete, inferred, or carrier-facing output should be reviewed by a qualified human before use.
 
 ## Future Improvements
 

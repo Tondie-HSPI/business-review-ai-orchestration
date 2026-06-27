@@ -1,5 +1,5 @@
 from src.sample_data import SAMPLE_LIQUOR_RESTAURANT_QUOTE
-from src.salesforce_intake import answer_form_questions, load_liquor_restaurant_questions
+from src.crm_intake import answer_form_questions, load_liquor_restaurant_questions
 
 
 REQUIRED_INTAKE_FIELDS = [

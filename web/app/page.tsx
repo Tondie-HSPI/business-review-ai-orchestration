@@ -13,8 +13,8 @@ import {
   liquorRestaurantSample,
   reviewBusinessRequest,
   ReviewOutput,
-  SalesforceLikeRecord,
-  salesforceRecordToQuoteText,
+  CrmLikeRecord,
+  crmRecordToQuoteText,
   WorkflowMode
 } from "../lib/workflows";
 
@@ -24,7 +24,7 @@ type AnswerDecision = "accepted" | "rejected";
 export default function Home() {
   const [mode, setMode] = useState<WorkflowMode>("liquor-restaurant");
   const [text, setText] = useState(liquorRestaurantSample);
-  const [sourceRecord, setSourceRecord] = useState<SalesforceLikeRecord | null>(null);
+  const [sourceRecord, setSourceRecord] = useState<CrmLikeRecord | null>(null);
   const [formQuestions, setFormQuestions] = useState<FormQuestion[]>(defaultLiquorRestaurantQuestions);
   const [applicationText, setApplicationText] = useState<string>(questionsToText(defaultLiquorRestaurantQuestions));
   const [uploadedPdfName, setUploadedPdfName] = useState<string>("");
@@ -80,9 +80,9 @@ export default function Home() {
     const content = await file.text();
 
     if (file.name.toLowerCase().endsWith(".json")) {
-      const parsed = JSON.parse(content) as SalesforceLikeRecord;
+      const parsed = JSON.parse(content) as CrmLikeRecord;
       setSourceRecord(parsed);
-      setText(salesforceRecordToQuoteText(parsed));
+      setText(crmRecordToQuoteText(parsed));
       setMode((currentMode) => (
         currentMode === "application-prep" || currentMode === "liquor-restaurant"
           ? currentMode

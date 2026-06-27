@@ -5,8 +5,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-def load_mock_salesforce_record() -> dict:
-    path = PROJECT_ROOT / "data" / "mock_salesforce_liquor_restaurant_account.json"
+def load_synthetic_crm_record() -> dict:
+    path = PROJECT_ROOT / "data" / "synthetic_crm_liquor_restaurant_account.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -15,7 +15,7 @@ def load_liquor_restaurant_questions() -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def salesforce_record_to_quote_text(record: dict) -> str:
+def crm_record_to_quote_text(record: dict) -> str:
     account = record["account"]
     location = record["location"]
     opportunity = record["opportunity"]
@@ -24,7 +24,7 @@ def salesforce_record_to_quote_text(record: dict) -> str:
 
     coverages = ", ".join(opportunity["requested_coverages"])
 
-    return f"""Quote request generated from mock Salesforce intake data.
+    return f"""Quote request generated from synthetic CRM intake data.
 Applicant: {account["name"]}
 DBA: {account["dba"]}
 Location address: {location["street"]}

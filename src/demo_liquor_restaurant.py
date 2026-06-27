@@ -2,12 +2,12 @@ import json
 from pathlib import Path
 
 from src.liquor_restaurant_packet import build_liquor_restaurant_packet
-from src.salesforce_intake import load_mock_salesforce_record, salesforce_record_to_quote_text
+from src.crm_intake import crm_record_to_quote_text, load_synthetic_crm_record
 
 
 def main() -> None:
-    record = load_mock_salesforce_record()
-    quote_text = salesforce_record_to_quote_text(record)
+    record = load_synthetic_crm_record()
+    quote_text = crm_record_to_quote_text(record)
     output = build_liquor_restaurant_packet(quote_text, source_record=record)
     print(json.dumps(output, indent=2))
 
