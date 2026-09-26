@@ -1,0 +1,30 @@
+{
+  "account": {
+    "name": "Northstar Systems Studio LLC",
+    "dba": "",
+    "email": "demo@example.invalid",
+    "phone": "555-0100"
+  },
+  "location": {
+    "street": "100 Sample Avenue",
+    "city": "Sampleton",
+    "state": "NY",
+    "zip": "00000"
+  },
+  "opportunity": {
+    "requested_coverages": [
+      "Technology E&O; limits to confirm"
+    ],
+    "effective_date": "To confirm"
+  },
+  "risk_profile": {
+    "operations": "Consulting, software implementation, custom workflow software, training, and hardware resale for small businesses.",
+    "projected_revenue": "$650,000",
+    "service_mix": "Consulting 40%; implementation 25%; software development 20%; training 10%; resale 5%.",
+    "client_system_access": "Yes, for implementation; scope needs review.",
+    "sensitive_records": "Unknown; ask for data categories and record counts.",
+    "client_contracts": "Some client agreements specify insurance; request copies for review.",
+    "contractors": "Yes; share of work and proof of insurance need confirmation.",
+    "claims_history": "Unknown; ask applicant directly."
+  }
+}
