@@ -264,6 +264,10 @@ This is a portfolio prototype, not a production compliance system, licensed insu
 
 All sample data is synthetic. Any high-risk, ambiguous, incomplete, inferred, or carrier-facing output should be reviewed by a qualified human before use.
 
+## Original Technology E&O Sample
+
+An [original technology E&O questionnaire and fictional account](docs/original-technology-eo-demo.md) are available as independent portfolio sample data. The current browser workflow remains focused on restaurant/liquor liability; the technology sample is a starting point for its separate review workflow.
+
 ## Future Improvements
 
 - Add optional OpenAI extraction behind an environment-variable API key.
