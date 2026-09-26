@@ -1,4 +1,4 @@
-SAMPLE_BUSINESS_REQUEST = """Client is requesting vendor onboarding approval for Northstar Claims Services.
+SAMPLE_BUSINESS_REQUEST = """Client is requesting vendor onboarding approval for Example-Only Claims Demo.
 They need access by June 15 for claims intake support. Contract language mentions
 SOC 2, data handling, indemnification, and a 24-hour incident notice requirement.
 Insurance limits were not included. The request asks for expedited approval.
@@ -6,7 +6,7 @@ Insurance limits were not included. The request asks for expedited approval.
 
 
 SAMPLE_GENERIC_APPLICATION_NOTES = """Generic carrier-neutral application prep notes for a sample professional services applicant.
-Applicant: Northstar Risk Advisory LLC
+Applicant: Example-Only Advisory LLC
 Operations: Compliance consulting and insurance documentation support for small businesses
 Business owner: Jordan Lee
 Requested effective date: June 15
@@ -19,12 +19,12 @@ Notes: Applicant needs help preparing the application packet. Do not submit with
 
 
 SAMPLE_LIQUOR_RESTAURANT_QUOTE = """Quote request for a restaurant and bar risk.
-Applicant: Harbor & Vine Kitchen LLC
-DBA: Harbor & Vine
-Location address: 1420 Market Street
-City: Raleigh
+Applicant: Example-Only Restaurant LLC
+DBA: Example-Only Restaurant
+Location address: 000 Example Way
+City: Sample City
 State: NC
-Zip: 27601
+Zip: 00000
 Email: manager@example.com
 Phone: 919-555-0182
 Coverage requested: General Liability, Liquor Liability, Property
@@ -51,8 +51,8 @@ Building owner: No
 Fryers: Yes
 Fire suppression: Wet system with cleaning contract.
 Certificate requested: Yes
-Certificate holder: Triangle Events Group
-Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
+Certificate holder: Example-Only Event Holder
+Certificate holder address: 000 Example Way, Sample City, NC 00000
 Certificate holder email: certificates@example.com
 Certificate purpose: Catering event contract for July 20
 Additional insured requested: Yes

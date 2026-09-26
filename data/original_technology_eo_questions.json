@@ -1,0 +1,62 @@
+[
+  {
+    "id": "applicant_name",
+    "question": "What is the business's legal name?",
+    "source_field": "account.name",
+    "pdf_field": "sample_applicant_name"
+  },
+  {
+    "id": "operations",
+    "question": "What products and services does the business provide?",
+    "source_field": "risk_profile.operations",
+    "pdf_field": "sample_operations"
+  },
+  {
+    "id": "annual_revenue",
+    "question": "What is the expected annual revenue?",
+    "source_field": "risk_profile.projected_revenue",
+    "pdf_field": "sample_projected_revenue"
+  },
+  {
+    "id": "service_mix",
+    "question": "What percentage of revenue comes from each service?",
+    "source_field": "risk_profile.service_mix",
+    "pdf_field": "sample_service_mix"
+  },
+  {
+    "id": "client_system_access",
+    "question": "Does the business access client systems, and for what work?",
+    "source_field": "risk_profile.client_system_access",
+    "pdf_field": "sample_client_system_access"
+  },
+  {
+    "id": "sensitive_records",
+    "question": "Does the business hold sensitive customer records? If so, how many?",
+    "source_field": "risk_profile.sensitive_records",
+    "pdf_field": "sample_sensitive_records"
+  },
+  {
+    "id": "client_contracts",
+    "question": "Does the business use written client agreements with insurance requirements?",
+    "source_field": "risk_profile.client_contracts",
+    "pdf_field": "sample_client_contracts"
+  },
+  {
+    "id": "contractors",
+    "question": "Do contractors deliver client work? What percentage, and is proof of insurance collected?",
+    "source_field": "risk_profile.contractors",
+    "pdf_field": "sample_contractors"
+  },
+  {
+    "id": "claims_history",
+    "question": "Have claims or incidents arisen from the business's services?",
+    "source_field": "risk_profile.claims_history",
+    "pdf_field": "sample_claims_history"
+  },
+  {
+    "id": "coverage_requested",
+    "question": "What coverage and limits are requested?",
+    "source_field": "opportunity.requested_coverages",
+    "pdf_field": "sample_coverage_requested"
+  }
+]
