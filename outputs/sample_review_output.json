@@ -1,6 +1,6 @@
 {
   "document_type": "vendor_onboarding_request",
-  "summary": "Vendor Onboarding Request for Northstar Claims Services involving soc 2 mentioned, data handling requirement mentioned, indemnification mentioned.",
+  "summary": "Vendor Onboarding Request for Example-Only Claims Demo involving soc 2 mentioned, data handling requirement mentioned, indemnification mentioned.",
   "extracted_requirements": [
     "SOC 2 mentioned",
     "Data handling requirement mentioned",

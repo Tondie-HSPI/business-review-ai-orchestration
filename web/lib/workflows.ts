@@ -130,7 +130,7 @@ export type CrmLikeRecord = {
   risk_profile?: Record<string, unknown>;
 };
 
-export const businessSample = `Small business GL quote review request for Bright Bean Cafe LLC.
+export const businessSample = `Small business GL quote review request for Example-Only Cafe LLC.
 Operations: Neighborhood coffee shop with light food service, sidewalk seating, and one leased storefront.
 Business owner: Maya Carter
 Requested effective date: June 15
@@ -144,7 +144,7 @@ Special wording: Lease requires additional insured status and primary/noncontrib
 Next action requested: prepare the quote submission packet for rep review.`;
 
 export const applicationSample = `Generic carrier-neutral application prep notes for a sample professional services applicant.
-Applicant: Northstar Risk Advisory LLC
+Applicant: Example-Only Advisory LLC
 Operations: Compliance consulting and insurance documentation support for small businesses
 Business owner: Jordan Lee
 Requested effective date: June 15
@@ -154,12 +154,12 @@ Loss history:
 Notes: Applicant needs help preparing the application packet. Do not submit without human review.`;
 
 export const liquorRestaurantSample = `Quote request generated from synthetic CRM intake data.
-Applicant: Harbor & Vine Kitchen LLC
-DBA: Harbor & Vine
-Location address: 1420 Market Street
-City: Raleigh
+Applicant: Example-Only Restaurant LLC
+DBA: Example-Only Restaurant
+Location address: 000 Example Way
+City: Sample City
 State: NC
-Zip: 27601
+Zip: 00000
 Email: manager@example.com
 Phone: 919-555-0182
 Coverage requested: General Liability, Liquor Liability, Property
@@ -204,8 +204,8 @@ Underage patrons after 11pm: No
 Bottle service: No
 Drinking games: No
 Certificate requested: Yes
-Certificate holder: Triangle Events Group
-Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
+Certificate holder: Example-Only Event Holder
+Certificate holder address: 000 Example Way, Sample City, NC 00000
 Certificate holder email: certificates@example.com
 Certificate purpose: Catering event contract for July 20
 Additional insured requested: Yes
@@ -245,9 +245,9 @@ Primary and noncontributory requested: Yes
 Special certificate wording: Include project name, additional insured, waiver of subrogation, and primary/noncontributory wording if allowed by policy terms.`;
 
 export const landscaperSample = `Quote request generated from synthetic intake data.
-Applicant: Greenline Grounds LLC
-DBA: Greenline Grounds
-Location address: 810 Garden Ridge Road
+Applicant: Example-Only Grounds LLC
+DBA: Example-Only Grounds
+Location address: 000 Example Way
 City: Durham
 State: NC
 Zip: 27703
@@ -266,7 +266,7 @@ Claims or violations: None in the past five years.
 Building owner: No
 Landscaping operations: Uses mowers, trailers, trimmers, and pesticide subcontractor for chemical applications. No tree removal over 15 feet.
 Certificate requested: Yes
-Certificate holder: Lakeside HOA
+Certificate holder: Example-Only HOA
 Certificate holder address: 45 Lakeview Drive, Durham, NC 27703
 Certificate holder email: hoa@example.com
 Certificate purpose: Annual landscape maintenance contract

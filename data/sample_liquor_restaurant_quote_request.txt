@@ -1,10 +1,10 @@
 Quote request for a restaurant and bar risk.
-Applicant: Harbor & Vine Kitchen LLC
-DBA: Harbor & Vine
-Location address: 1420 Market Street
-City: Raleigh
+Applicant: Example-Only Restaurant LLC
+DBA: Example-Only Restaurant
+Location address: 000 Example Way
+City: Sample City
 State: NC
-Zip: 27601
+Zip: 00000
 Email: manager@example.com
 Phone: 919-555-0182
 Coverage requested: General Liability, Liquor Liability, Property
@@ -31,8 +31,8 @@ Building owner: No
 Fryers: Yes
 Fire suppression: Wet system with cleaning contract.
 Certificate requested: Yes
-Certificate holder: Triangle Events Group
-Certificate holder address: 500 Convention Center Drive, Raleigh, NC 27601
+Certificate holder: Example-Only Event Holder
+Certificate holder address: 000 Example Way, Sample City, NC 00000
 Certificate holder email: certificates@example.com
 Certificate purpose: Catering event contract for July 20
 Additional insured requested: Yes

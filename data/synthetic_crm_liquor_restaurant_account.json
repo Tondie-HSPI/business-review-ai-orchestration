@@ -1,17 +1,17 @@
 {
   "account": {
-    "name": "Harbor & Vine Kitchen LLC",
-    "dba": "Harbor & Vine",
+    "name": "Example-Only Restaurant LLC",
+    "dba": "Example-Only Restaurant",
     "industry": "Restaurant and Bar",
     "website": "https://example.com/harbor-vine",
     "phone": "919-555-0182",
     "email": "manager@example.com"
   },
   "location": {
-    "street": "1420 Market Street",
-    "city": "Raleigh",
+    "street": "000 Example Way",
+    "city": "Sample City",
     "state": "NC",
-    "zip": "27601"
+    "zip": "00000"
   },
   "opportunity": {
     "requested_coverages": ["General Liability", "Liquor Liability", "Property"],
@@ -43,8 +43,8 @@
   },
   "certificate_request": {
     "certificate_requested": "Yes",
-    "certificate_holder": "Triangle Events Group",
-    "certificate_holder_address": "500 Convention Center Drive, Raleigh, NC 27601",
+    "certificate_holder": "Example-Only Event Holder",
+    "certificate_holder_address": "000 Example Way, Sample City, NC 00000",
     "certificate_holder_email": "certificates@example.com",
     "certificate_purpose": "Catering event contract for July 20",
     "additional_insured_requested": "Yes",

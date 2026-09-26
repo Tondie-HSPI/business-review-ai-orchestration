@@ -18,19 +18,19 @@
     ]
   },
   "intake_summary": {
-    "applicant": "Harbor & Vine Kitchen LLC",
-    "location": "1420 Market Street, Raleigh, NC, 27601",
+    "applicant": "Example-Only Restaurant LLC",
+    "location": "000 Example Way, Sample City, NC, 00000",
     "coverage_requested": "General Liability, Liquor Liability, Property",
     "operations": "Full-service restaurant with bar seating and weekend DJ."
   },
   "application_packet": {
     "applicant_information": {
-      "applicant": "Harbor & Vine Kitchen LLC",
-      "dba": "Harbor & Vine",
-      "location_address": "1420 Market Street",
-      "city": "Raleigh",
+      "applicant": "Example-Only Restaurant LLC",
+      "dba": "Example-Only Restaurant",
+      "location_address": "000 Example Way",
+      "city": "Sample City",
       "state": "NC",
-      "zip": "27601",
+      "zip": "00000",
       "email": "manager@example.com",
       "phone": "919-555-0182"
     },
@@ -53,7 +53,7 @@
     },
     "certificate_requirements": {
       "certificate_requested": "Yes",
-      "certificate_holder": "Triangle Events Group",
+      "certificate_holder": "Example-Only Event Holder",
       "certificate_purpose": "Catering event contract for July 20",
       "additional_insured_requested": "Yes",
       "waiver_of_subrogation_requested": "Yes",
@@ -65,8 +65,8 @@
     "requested": true,
     "status": "ready_for_csr_review",
     "certificate_holder": {
-      "name": "Triangle Events Group",
-      "address": "500 Convention Center Drive, Raleigh, NC 27601",
+      "name": "Example-Only Event Holder",
+      "address": "000 Example Way, Sample City, NC 00000",
       "email": "certificates@example.com"
     },
     "purpose": "Catering event contract for July 20",
@@ -83,7 +83,7 @@
       "Primary and noncontributory wording needs policy review.",
       "Special certificate wording should be reviewed before issuance."
     ],
-    "csr_email_draft": "Please review the certificate request below before issuance.\n\nInsured: Harbor & Vine Kitchen LLC\nCertificate holder: Triangle Events Group\nHolder address: 500 Convention Center Drive, Raleigh, NC 27601\nDelivery email: certificates@example.com\nPurpose: Catering event contract for July 20\n\nRequested wording / review flags:\n- Additional insured request needs policy/endorsement review.\n- Waiver of subrogation request needs endorsement review.\n- Primary and noncontributory wording needs policy review.\n- Special certificate wording should be reviewed before issuance.\n\nPlease confirm policy permissions and endorsements before issuing.",
+    "csr_email_draft": "Please review the certificate request below before issuance.\n\nInsured: Example-Only Restaurant LLC\nCertificate holder: Example-Only Event Holder\nHolder address: 000 Example Way, Sample City, NC 00000\nDelivery email: certificates@example.com\nPurpose: Catering event contract for July 20\n\nRequested wording / review flags:\n- Additional insured request needs policy/endorsement review.\n- Waiver of subrogation request needs endorsement review.\n- Primary and noncontributory wording needs policy review.\n- Special certificate wording should be reviewed before issuance.\n\nPlease confirm policy permissions and endorsements before issuing.",
     "requires_csr_review": true
   },
   "inferred_application_answers": [
@@ -166,11 +166,11 @@
     }
   ],
   "mapped_pdf_fields": {
-    "01 Applicant name": "Harbor & Vine Kitchen LLC",
-    "02 Location address": "1420 Market Street",
-    "03 City": "Raleigh",
+    "01 Applicant name": "Example-Only Restaurant LLC",
+    "02 Location address": "000 Example Way",
+    "03 City": "Sample City",
     "04 State": "NC",
-    "05 Zip": "27601",
+    "05 Zip": "00000",
     "07 email": "manager@example.com",
     "08 phone": "919-555-0182",
     "014 Description": "Full-service restaurant with bar seating and weekend DJ.",
@@ -185,7 +185,7 @@
     {
       "id": "applicant_name",
       "question": "Applicant's name, including DBA name",
-      "answer": "Harbor & Vine Kitchen LLC",
+      "answer": "Example-Only Restaurant LLC",
       "source_field": "account.name",
       "pdf_field": "01 Applicant name",
       "confidence": "high"
@@ -193,7 +193,7 @@
     {
       "id": "location_address",
       "question": "Location address",
-      "answer": "1420 Market Street",
+      "answer": "000 Example Way",
       "source_field": "location.street",
       "pdf_field": "02 Location address",
       "confidence": "high"
